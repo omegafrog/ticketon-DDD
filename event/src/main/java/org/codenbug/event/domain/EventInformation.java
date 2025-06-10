@@ -81,7 +81,10 @@ public class EventInformation {
 		validate();
 	}
 
-	private void validate() {
+	/**
+	 * parameter binding으로 생성된 경우 빈 생성자를 호출하므로 validate를 명시적으로 호출해 줘야 함
+	 */
+	protected void validate() {
 		validateStringColumn();
 		validateNumericColumn();
 		validateBookingNEventDate();
