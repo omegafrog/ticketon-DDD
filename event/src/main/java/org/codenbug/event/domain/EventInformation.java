@@ -1,6 +1,10 @@
 package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+
+import org.codenbug.event.global.NewEventRequest;
+import org.codenbug.event.global.SeatDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -8,12 +12,13 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
-import lombok.Setter;
+import lombok.Getter;
 
 /**
  * 유저에게 노출되는 event 객체의 정보가 포함된 객체
  */
 @Embeddable
+@Getter
 public class EventInformation {
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -39,19 +44,13 @@ public class EventInformation {
 	private Integer viewCount;
 	@Column(name = "seatSelectable", nullable = false, columnDefinition = "default false")
 	private Boolean seatSelectable;
-	@Column(name = "hallName", nullable = false)
-	private String hallName;
-	@Column(name = "seatCount", nullable = false)
-	@Setter
-	private Integer seatCount;
+
 	@Enumerated(EnumType.STRING)
 	private EventStatus status;
 	@Embedded
 	private SeatPriceRange priceRange;
 	@Embedded
 	private EventCategoryId categoryId;
-	@Embedded
-	private Location location;
 
 	protected EventInformation() {
 	}
@@ -59,26 +58,41 @@ public class EventInformation {
 	public EventInformation(String title, String thumbnailUrl, Integer ageLimit, String restrictions,
 		String description,
 		LocalDateTime bookingStart, LocalDateTime bookingEnd, LocalDateTime eventStart, LocalDateTime eventEnd,
-		Boolean seatSelectable, String hallName, Integer seatCount, EventStatus status,
-		SeatPriceRange priceRange, EventCategoryId categoryId, Location location) {
+		Boolean seatSelectable, EventStatus status,
+		SeatPriceRange priceRange, EventCategoryId categoryId) {
 		this.title = title;
 		this.thumbnailUrl = thumbnailUrl;
 		this.restrictions = restrictions;
 		this.description = description;
-		this.hallName = hallName;
 		this.bookingStart = bookingStart;
 		this.bookingEnd = bookingEnd;
 		this.eventStart = eventStart;
 		this.eventEnd = eventEnd;
-		this.seatCount = seatCount;
 		this.ageLimit = ageLimit;
 		this.viewCount = 0;
 		this.status = status == null ? EventStatus.OPEN : status;
 		this.seatSelectable = seatSelectable != null && seatSelectable;
 		this.categoryId = categoryId;
 		this.priceRange = priceRange;
-		this.location = location;
 		validate();
+	}
+	private static Comparator<SeatDto> priceComparator = new Comparator<>() {
+		@Override
+		public int compare(SeatDto o1, SeatDto o2) {
+			return o1.getPrice().compareTo(o2.getPrice());
+		}
+	};
+	public EventInformation(NewEventRequest request){
+		this(request.getTitle(), request.getThumbnailUrl(),
+			request.getAgeLimit(),
+			request.getRestriction(),
+			request.getDescription(), request.getBookingStart(), request.getBookingEnd(), request.getStartDate(),
+			request.getEndDate(),
+			request.getSeatInformation().isSeatSelectable(), request.getStatus(),
+			new SeatPriceRange(
+				request.getSeatInformation().getSeat().values().stream().min(priceComparator).get().getPrice(),
+				request.getSeatInformation().getSeat().values().stream().max(priceComparator).get().getPrice()),
+			request.getCategoryId());
 	}
 
 	/**
@@ -90,21 +104,17 @@ public class EventInformation {
 		validateBookingNEventDate();
 		categoryId.validate();
 		priceRange.validate();
-		location.validate();
 	}
 
 	private void validateNumericColumn() {
 		if (ageLimit != null && ageLimit < 0)
 			throw new IllegalStateException("age limit must be greater than 0");
-		if (seatCount == null || seatCount < 0)
-			throw new IllegalStateException("seat count must be greater than 0");
 	}
 
 	private void validateStringColumn() {
 		if (title == null || title.isEmpty() ||
 			thumbnailUrl == null || thumbnailUrl.isEmpty() ||
-			description == null || description.isEmpty() ||
-			hallName == null || hallName.isEmpty())
+			description == null || description.isEmpty())
 			throw new IllegalStateException("value must not be null or empty");
 	}
 

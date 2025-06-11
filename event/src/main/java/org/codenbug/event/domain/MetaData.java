@@ -17,20 +17,14 @@ public class MetaData {
 	private LocalDateTime createdAt;
 	@LastModifiedDate
 	private LocalDateTime modifiedAt;
-	@Embedded
-	private SeatLayoutId seatLayoutId;
 
-	protected MetaData() {}
 
-	public MetaData( SeatLayoutId seatLayoutId) {
+	public MetaData() {
 		this.deleted = false;
-		this.seatLayoutId = seatLayoutId;
 		validate();
 	}
 
 	protected void validate(){
-		if(seatLayoutId == null){
-			throw new IllegalStateException("Seat Layout ID is required");
-		}
+
 	}
 }
