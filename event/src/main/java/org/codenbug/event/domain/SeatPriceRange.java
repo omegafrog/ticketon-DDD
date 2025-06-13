@@ -8,13 +8,13 @@ import lombok.Getter;
 @Getter
 public class SeatPriceRange {
 	@Column(name = "minPrice", nullable = false)
-	private double minPrice;
+	private Integer minPrice;
 	@Column(name = "maxPrice", nullable = false)
-	private double maxPrice;
+	private Integer maxPrice;
 
 	protected SeatPriceRange() {}
 
-	public SeatPriceRange(double minPrice, double maxPrice) {
+	public SeatPriceRange(Integer minPrice, Integer maxPrice) {
 		if( minPrice > maxPrice) {
 			throw new IllegalArgumentException("minPrice must be less than maxPrice");
 		}

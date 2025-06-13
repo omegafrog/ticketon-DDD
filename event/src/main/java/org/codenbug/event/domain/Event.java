@@ -2,6 +2,8 @@ package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
 
+import org.codenbug.seat.domain.SeatLayout;
+import org.codenbug.seat.domain.SeatLayoutId;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Embedded;
@@ -51,14 +53,10 @@ public class Event {
 	 * event의 정보를 수정하는 메서드
 	 * 수정 시각이 예매가 끝난 이후라면 수정에 실패한다
 	 * @param information
-	 * @param metaData
 	 */
-	public void update( EventInformation information, MetaData metaData ) {
+	public void update( EventInformation information) {
 		verifyBookingNotEnded();
-		information.validate();
-		metaData.validate();
 		this.eventInformation = information;
-		this.metaData = metaData;
 	}
 
 	private void verifyBookingNotEnded() {

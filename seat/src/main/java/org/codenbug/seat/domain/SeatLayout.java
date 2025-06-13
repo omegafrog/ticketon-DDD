@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.codenbug.seat.global.UpdateSeatLayoutRequest;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -18,30 +20,36 @@ import lombok.Getter;
 
 @Getter
 @Entity
-@Table(name="seat_layout")
+@Table(name = "seat_layout")
 public class SeatLayout {
 	@Id
-	@GeneratedValue(strategy= GenerationType.IDENTITY)
-	private Long id;
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private SeatLayoutId id;
 
 	@Column(name = "layout")
 	private String layout;
 
 	@ElementCollection
 	@CollectionTable(name = "seat",
-	joinColumns = @JoinColumn(name = "layout_id"))
+		joinColumns = @JoinColumn(name = "layout_id"))
 	private Set<Seat> seats;
 
+	protected SeatLayout() {
+	}
 
-	protected SeatLayout() {}
-
-	public SeatLayout(String layout, List<Seat> seats){
+	public SeatLayout(String layout, List<Seat> seats) {
 		this.layout = layout;
 		this.seats = new HashSet<>(seats);
 	}
-	protected void validate(){
-		if(this.layout == null){
+
+	protected void validate() {
+		if (this.layout == null) {
 			throw new RuntimeException("layout cannot be null");
 		}
+	}
+
+	public void update(UpdateSeatLayoutRequest request) {
+		this.layout = request.getLayout() == null ? this.layout : request.getLayout();
+		this.seats = request.getSeats() == null ? this.seats : new HashSet<>(request.getSeats());
 	}
 }

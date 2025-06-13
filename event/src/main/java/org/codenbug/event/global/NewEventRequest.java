@@ -20,13 +20,15 @@ public class NewEventRequest {
 	private LocalDateTime bookingEnd;
 	private EventStatus status;
 	private int ageLimit;
+	private boolean seatSelectable;
+
 
 	protected NewEventRequest() {
 	}
 
 	public NewEventRequest(String title, EventCategoryId categoryId, String description, String restriction,
 		String thumbnailUrl, LocalDateTime startDate, LocalDateTime endDate,
-		LocalDateTime bookingStart, LocalDateTime bookingEnd, int ageLimit) {
+		LocalDateTime bookingStart, LocalDateTime bookingEnd, int ageLimit, boolean seatSelectable) {
 		this.title = title;
 		this.categoryId = categoryId;
 		this.description = description;
@@ -37,5 +39,6 @@ public class NewEventRequest {
 		this.bookingStart = bookingStart;
 		this.bookingEnd = bookingEnd;
 		this.ageLimit = ageLimit;
+		this.seatSelectable = seatSelectable;
 	}
 }

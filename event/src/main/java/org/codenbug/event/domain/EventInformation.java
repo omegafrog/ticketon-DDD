@@ -5,6 +5,7 @@ import java.util.Comparator;
 
 import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.SeatDto;
+import org.codenbug.event.global.UpdateEventRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -48,8 +49,6 @@ public class EventInformation {
 	@Enumerated(EnumType.STRING)
 	private EventStatus status;
 	@Embedded
-	private SeatPriceRange priceRange;
-	@Embedded
 	private EventCategoryId categoryId;
 
 	protected EventInformation() {
@@ -58,8 +57,7 @@ public class EventInformation {
 	public EventInformation(String title, String thumbnailUrl, Integer ageLimit, String restrictions,
 		String description,
 		LocalDateTime bookingStart, LocalDateTime bookingEnd, LocalDateTime eventStart, LocalDateTime eventEnd,
-		Boolean seatSelectable, EventStatus status,
-		SeatPriceRange priceRange, EventCategoryId categoryId) {
+		Boolean seatSelectable, EventStatus status, EventCategoryId categoryId) {
 		this.title = title;
 		this.thumbnailUrl = thumbnailUrl;
 		this.restrictions = restrictions;
@@ -73,26 +71,38 @@ public class EventInformation {
 		this.status = status == null ? EventStatus.OPEN : status;
 		this.seatSelectable = seatSelectable != null && seatSelectable;
 		this.categoryId = categoryId;
-		this.priceRange = priceRange;
 		validate();
 	}
-	private static Comparator<SeatDto> priceComparator = new Comparator<>() {
-		@Override
-		public int compare(SeatDto o1, SeatDto o2) {
-			return o1.getPrice().compareTo(o2.getPrice());
-		}
-	};
-	public EventInformation(NewEventRequest request){
+
+	public EventInformation(NewEventRequest request) {
 		this(request.getTitle(), request.getThumbnailUrl(),
 			request.getAgeLimit(),
 			request.getRestriction(),
 			request.getDescription(), request.getBookingStart(), request.getBookingEnd(), request.getStartDate(),
 			request.getEndDate(),
-			request.getSeatInformation().isSeatSelectable(), request.getStatus(),
-			new SeatPriceRange(
-				request.getSeatInformation().getSeat().values().stream().min(priceComparator).get().getPrice(),
-				request.getSeatInformation().getSeat().values().stream().max(priceComparator).get().getPrice()),
+			request.isSeatSelectable(), request.getStatus(),
 			request.getCategoryId());
+	}
+
+	// public EventInformation(EventInformation original, UpdateEventRequest request) {
+	// 	this(request.getTitle(), request.getThumbnailUrl(), request.getAgeLimit(), request.getRestriction(), request.getDescription(),
+	// 		request.getBookingStart(), request.getBookingEnd(), request.getStartDate(), request.getEndDate(),
+	// 		request.getSeatSelectable(), request.getStatus(), original.getCategoryId() );
+	// }
+
+	public EventInformation applyChange(UpdateEventRequest request){
+		this.title = request.getTitle() == null ? this.title : request.getTitle();
+		this.thumbnailUrl = request.getThumbnailUrl() == null ? thumbnailUrl : request.getThumbnailUrl();
+		this.ageLimit = request.getAgeLimit() == null? this.ageLimit : request.getAgeLimit();
+		this.restrictions = request.getRestriction() == null ? this.restrictions : request.getRestriction();
+		this.description = request.getDescription() == null ? this.description : request.getDescription();
+		this.eventStart = request.getStartDate() == null ? this.eventStart : request.getStartDate();
+		this.eventEnd = request.getEndDate() == null ? this.eventEnd : request.getEndDate();
+		this.bookingStart = request.getBookingStart() == null ? this.bookingStart : request.getBookingStart();
+		this.bookingEnd	= request.getBookingEnd() == null ? this.bookingEnd : request.getBookingEnd();
+		this.status = request.getStatus() == null ? this.status : request.getStatus();
+		this.seatSelectable = request.getSeatSelectable() == null ? this.seatSelectable : request.getSeatSelectable();
+		return this;
 	}
 
 	/**
@@ -103,7 +113,6 @@ public class EventInformation {
 		validateNumericColumn();
 		validateBookingNEventDate();
 		categoryId.validate();
-		priceRange.validate();
 	}
 
 	private void validateNumericColumn() {

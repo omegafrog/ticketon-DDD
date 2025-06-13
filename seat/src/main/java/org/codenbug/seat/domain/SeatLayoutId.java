@@ -1,4 +1,4 @@
-package org.codenbug.event.domain;
+package org.codenbug.seat.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
