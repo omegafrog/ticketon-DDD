@@ -64,4 +64,13 @@ public class Event {
 			throw new IllegalStateException("Cannot update event after booking is end");
 	}
 
+	public void canUpdate(Manager loggedInManager) {
+		if(!loggedInManager.equals(this.manager))
+			throw new IllegalStateException("Cannot update other user's event");
+	}
+
+	public void canDelete(Manager loggedInManager) {
+		if(!loggedInManager.equals(this.manager))
+			throw new IllegalStateException("Cannot delete other user's event");
+	}
 }

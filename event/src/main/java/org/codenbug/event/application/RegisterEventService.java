@@ -39,12 +39,7 @@ public class RegisterEventService {
 		return event.getEventId();
 	}
 
-	@Transactional
-	public void updateEvent(EventId id, UpdateEventRequest request) {
-		Event event = eventRepository.findEvent(id);
-		EventInformation newEventInformation = event.getEventInformation().applyChange(request);
-		event.update(newEventInformation);
-	}
+
 
 	private Manager getLoggedInManager() {
 		throw new UnsupportedOperationException("Not supported yet.");
