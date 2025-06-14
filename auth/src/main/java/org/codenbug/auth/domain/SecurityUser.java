@@ -17,8 +17,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
 import lombok.Builder;
 
+@Entity
 public class SecurityUser{
 	@EmbeddedId
 	private SecurityUserId securityUserId;

@@ -3,9 +3,18 @@ spring:
     active: dev
 
   datasource:
-    url: jdbc:h2:file:./auth
+    url: jdbc:h2:file:./auth;AUTO_SERVER=TRUE;MODE=MySQL;DATABASE_TO_UPPER=false
     username: sa
     password:
     driver-class-name: org.h2.Driver
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true
+
+
+server:
+  port: 9001
