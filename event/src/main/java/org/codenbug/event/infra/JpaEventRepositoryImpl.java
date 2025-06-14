@@ -8,11 +8,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class JpaEventRepositoryImpl implements EventRepository {
 
-	private final JpaEventRepository jpaEventRepository;
+	private JpaEventRepository jpaEventRepository;
 
 	public JpaEventRepositoryImpl(JpaEventRepository jpaEventRepository) {
 		this.jpaEventRepository = jpaEventRepository;
 	}
+	protected JpaEventRepositoryImpl(){}
 
 	@Override
 	public Event save(Event event) {

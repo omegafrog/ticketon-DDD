@@ -2,7 +2,6 @@ package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
 
-import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutId;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -41,6 +40,7 @@ public class Event {
 		metaData.validate();
 		this.eventId = generateEventId();
 		this.eventInformation = information;
+		this.seatLayoutId = seatLayoutId;
 		this.metaData = metaData;
 		this.manager = manager;
 	}

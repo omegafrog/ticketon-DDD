@@ -6,13 +6,16 @@ import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.Manager;
 import org.codenbug.event.global.UpdateEventRequest;
+import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
+@Service
 public class UpdateEventService {
 
-	private final EventRepository eventRepository;
+	private EventRepository eventRepository;
 
+	protected UpdateEventService(){}
 	public UpdateEventService(EventRepository eventRepository) {
 		this.eventRepository = eventRepository;
 	}

@@ -5,16 +5,21 @@ import static org.codenbug.auth.global.PrivacyConstant.*;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import lombok.Builder;
 
-public class SecurityUser {
+public class SecurityUser{
 	@EmbeddedId
 	private SecurityUserId securityUserId;
 
@@ -88,4 +93,6 @@ public class SecurityUser {
 	}
 
 	public void complete(){}
+
+
 }

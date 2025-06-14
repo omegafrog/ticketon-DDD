@@ -14,12 +14,16 @@ import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.seat.domain.Seat;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
+import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 
+@Service
 public class RegisterEventService {
-	private final EventRepository eventRepository;
-	private final SeatLayoutRepository seatLayoutRepository;
+	private EventRepository eventRepository;
+	private SeatLayoutRepository seatLayoutRepository;
+
+	protected RegisterEventService(){}
 
 	public RegisterEventService(EventRepository eventRepository, SeatLayoutRepository seatLayoutRepository) {
 		this.eventRepository = eventRepository;

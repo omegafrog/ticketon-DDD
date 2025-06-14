@@ -6,6 +6,7 @@ import java.util.Comparator;
 import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.SeatDto;
 import org.codenbug.event.global.UpdateEventRequest;
+import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -23,7 +24,7 @@ import lombok.Getter;
 public class EventInformation {
 	@Column(name = "title", nullable = false)
 	private String title;
-	@Column(name = "thumbnailUrl", nullable = false)
+	@Column(name = "thumbnail_url", nullable = false)
 	private String thumbnailUrl;
 	@Column(name = "ageLimit")
 	private Integer ageLimit;
@@ -33,17 +34,17 @@ public class EventInformation {
 	@Lob
 	@Column(name = "description", nullable = false)
 	private String description;
-	@Column(name = "bookingStart", nullable = false)
+	@Column(name = "booking_start", nullable = false)
 	private LocalDateTime bookingStart;
-	@Column(name = "bookingEnd", nullable = false)
+	@Column(name = "booking_end", nullable = false)
 	private LocalDateTime bookingEnd;
-	@Column(name = "eventStart", nullable = false)
+	@Column(name = "event_start", nullable = false)
 	private LocalDateTime eventStart;
-	@Column(name = "eventEnd", nullable = false)
+	@Column(name = "event_end", nullable = false)
 	private LocalDateTime eventEnd;
-	@Column(name = "viewCount", columnDefinition = "default 0", nullable = false)
+	@Column(name = "view_count", columnDefinition = "integer default 0", nullable = false)
 	private Integer viewCount;
-	@Column(name = "seatSelectable", nullable = false, columnDefinition = "default false")
+	@Column(name = "seat_selectable", columnDefinition = "boolean default false", nullable = false)
 	private Boolean seatSelectable;
 
 	@Enumerated(EnumType.STRING)
