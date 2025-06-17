@@ -35,6 +35,3 @@ out/
 
 ### VS Code ###
 .vscode/
-/*.mv.db
-/*.trace.db
-/src/main/resources/application-secret.yml

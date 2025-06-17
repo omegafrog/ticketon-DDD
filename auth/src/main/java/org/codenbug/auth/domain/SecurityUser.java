@@ -9,18 +9,18 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import lombok.Builder;
+import lombok.Getter;
 
 @Entity
+@Getter
 public class SecurityUser{
 	@EmbeddedId
 	private SecurityUserId securityUserId;
@@ -96,5 +96,9 @@ public class SecurityUser{
 
 	public void complete(){}
 
-
+	public void match(String password, PasswordEncoder passwordEncoder) {
+		if (!passwordEncoder.matches(password, this.password)){
+			throw new AccessDeniedException("Password match failed");
+		}
+	}
 }

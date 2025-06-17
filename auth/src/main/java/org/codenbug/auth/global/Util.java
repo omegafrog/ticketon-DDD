@@ -1,11 +1,17 @@
 package org.codenbug.auth.global;
 
+import java.time.Instant;
+import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
+import java.util.Date;
 
 import javax.crypto.SecretKey;
 
 import org.codenbug.auth.domain.AccessToken;
 import org.codenbug.auth.domain.RefreshToken;
+import org.codenbug.auth.domain.Role;
+import org.codenbug.auth.domain.TokenInfo;
+import org.codenbug.auth.domain.UserId;
 import org.springframework.security.access.AccessDeniedException;
 
 import io.jsonwebtoken.Claims;
@@ -57,6 +63,42 @@ public class Util {
 		public static SecretKey convertSecretKey(String key) {
 			return Keys.hmacShaKeyFor(key.getBytes());
 		}
+	}
+
+	public static TokenInfo generateTokens(UserId userId, Role role, String email, SecretKey secretKey) {
+		AccessToken accessToken = getAccessToken(userId, role, email);
+
+		RefreshToken refreshToken = getRefreshToken(userId);
+
+		return new TokenInfo(accessToken, refreshToken);
+	}
+
+	private static RefreshToken getRefreshToken(UserId userId) {
+		Claims refreshClaims = Jwts.claims()
+			.add("userId", userId)
+			.build();
+
+		String refreshvalue = Jwts.builder()
+			.claims(refreshClaims)
+			.expiration(Date.from(Instant.now().plusSeconds(60 * 60 * 24 * 7)))
+			.compact();
+
+		RefreshToken refreshToken = new RefreshToken(refreshvalue);
+		return refreshToken;
+	}
+
+	private static AccessToken getAccessToken(UserId userId, Role role, String email) {
+		Claims claims = Jwts.claims()
+			.add("userId", userId)
+			.add("role", role)
+			.add("email", email)
+			.build();
+		String token = Jwts.builder()
+			.claims(claims)
+			.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
+			.compact();
+		AccessToken accessToken = new AccessToken(token, "Bearer");
+		return accessToken;
 	}
 
 }

@@ -6,14 +6,13 @@ import org.codenbug.event.domain.EventRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class JpaEventRepositoryImpl implements EventRepository {
+public class EventRepositoryImpl implements EventRepository {
 
-	private JpaEventRepository jpaEventRepository;
+	private final JpaEventRepository jpaEventRepository;
 
-	public JpaEventRepositoryImpl(JpaEventRepository jpaEventRepository) {
+	public EventRepositoryImpl(JpaEventRepository jpaEventRepository) {
 		this.jpaEventRepository = jpaEventRepository;
 	}
-	protected JpaEventRepositoryImpl(){}
 
 	@Override
 	public Event save(Event event) {

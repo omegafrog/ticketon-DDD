@@ -20,13 +20,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/events")
 public class EventController {
 
-	private RegisterEventService registerEventService;
-	private UpdateEventService updateEventService;
-
-	protected EventController(){}
+	private final RegisterEventService registerEventService;
+	private final UpdateEventService updateEventService;
 
 	public EventController(RegisterEventService registerEventService, UpdateEventService updateEventService) {
 		this.registerEventService = registerEventService;

@@ -1,10 +1,13 @@
 package org.codenbug.app.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import org.codenbug.event.config.EventConfig;
+import org.codenbug.user.config.UserConfig;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
-@ComponentScan(basePackages = {"org.codenbug.auth", "org.codenbug.event"})
+@Import({
+	UserConfig.class,
+	EventConfig.class})
 public class AppConfig {
-
 }
