@@ -6,7 +6,7 @@
 clinet -> gateway -> gateway filter -> validate token / decode token -> api route
 
 ## 구현 과정
-### 패키지 추가
+### 모듈 추가
 * 새로운 패키지를 추가하는 이유
   * spring web mvc는 blocking 모델이라서 요청이 시작되면 하나의 스레드가 할당되고 요청이 종료되기 전까지 스레드를 점유한다.
   * 내부적으로 tomcat을 이용한다.
@@ -29,4 +29,61 @@ clinet -> gateway -> gateway filter -> validate token / decode token -> api rout
   * 스레드
     * 프로세스 내부에서 작업하는 최소 단위
     * 프로세스의 메모리 및 자원 공유
+### 의존성 추가
+```groovy
+// (기존 Spring Boot 의존성은 생략)
+dependencies {
+    // Spring Cloud Gateway 의존성 추가
+    implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
+    
+    // Spring Cloud의 버전 관리를 위해 필요합니다.
+    // 프로젝트 최상단 build.gradle에 dependencyManagement 블록으로 관리하는 것이 더 좋습니다.
+}
+```
 
+### 게이트웨이 라우팅 설정 파일 (`application.yml`)
+```yml
+server:
+  port: 8080 # 게이트웨이는 8080 포트에서 실행됩니다.
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # User 서비스로 가는 라우팅 규칙
+        - id: user-service-route # 규칙의 고유 ID
+          uri: http://localhost:8081 # user 모듈이 실행될 주소
+          predicates:
+            - Path=/api/v1/users/** # 이 경로 패턴의 요청이 오면 위 uri로 전달합니다.
+
+        # Event 서비스로 가는 라우팅 규칙
+        - id: event-service-route
+          uri: http://localhost:8082 # event 모듈이 실행될 주소
+          predicates:
+            - Path=/api/v1/events/**
+
+# 각 도메인 모듈(user, event)은 application.yml 또는 properties에 
+# server.port=8081, server.port=8082 와 같이 각각 다른 포트를 지정해야 합니다.
+```
+### 게이트웨이 애플리케이션 클래스 생성
+```java
+package org.codenbug.gateway;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class GatewayApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(GatewayApplication.class, args);
+    }
+
+}
+```
+
+### 게이트웨이 역할
+* 인가 토큰 검증
+* 토큰 decode 및 헤더 설정 ( userId, role )
