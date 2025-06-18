@@ -1,13 +1,17 @@
 package org.codenbug.user.domain;
 
+import com.fasterxml.uuid.Generators;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.Getter;
 
 @Entity
+@Table(name = "members")
 @Getter
 public class User {
 
@@ -30,9 +34,10 @@ public class User {
 	@Column(name = "age", nullable = false)
 	private Integer age;
 
-	protected User(){}
+	protected User() {
+	}
 
-	public User(String name, Sex sex, String phoneNum, String location, Integer age){
+	public User(String name, Sex sex, String phoneNum, String location, Integer age) {
 		this.userId = generateUserId();
 		this.name = name;
 		this.sex = sex;
@@ -42,6 +47,6 @@ public class User {
 	}
 
 	private UserId generateUserId() {
-		throw new UnsupportedOperationException("not implemented yet");
+		return new UserId(Generators.timeBasedEpochGenerator().generate().toString());
 	}
 }

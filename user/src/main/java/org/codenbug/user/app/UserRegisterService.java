@@ -17,6 +17,7 @@ public class UserRegisterService {
 	}
 
 	public UserId register(RegisterRequest request) {
+		// TODO : securityUser 생성 메소드 어떻게 호출
 		return userRepository.save(
 			new User(request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(), request.getLocation(),
 				request.getAge()));
