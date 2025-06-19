@@ -26,4 +26,9 @@ public class UserRepositoryImpl implements UserRepository {
 		return jpaRepository.findById(id)
 			.orElseThrow(() -> new EntityNotFoundException("Cannot find User entity"));
 	}
+
+	@Override
+	public void delete(String userId) {
+		jpaRepository.deleteById(new UserId(userId));
+	}
 }

@@ -9,18 +9,23 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.fasterxml.uuid.Generators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import lombok.Builder;
 import lombok.Getter;
 
 @Entity
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class SecurityUser{
 	@EmbeddedId
 	private SecurityUserId securityUserId;
@@ -31,7 +36,7 @@ public class SecurityUser{
 	@Embedded
 	private SocialInfo socialInfo;
 
-	@Column(name = "email")
+	@Column(name = "email", unique = true)
 	private String email;
 
 	@Column(name = "password")
@@ -84,6 +89,7 @@ public class SecurityUser{
 		this.email = email;
 		this.password = password;
 		this.role = role;
+		this.isAdditionalInfoCompleted = false;
 		this.accountExpiredAt = now.plusDays(accountExpiryDays);
 		this.accountLocked = false;
 		this.enabled = true;
@@ -91,7 +97,7 @@ public class SecurityUser{
 	}
 
 	private SecurityUserId generateSecurityUserId() {
-		throw new UnsupportedOperationException("Not implemented yet");
+		return new SecurityUserId(Generators.timeBasedEpochGenerator().generate().toString());
 	}
 
 	public void complete(){}
