@@ -1,5 +1,7 @@
 package org.codenbug.auth.consumer;
 
+import java.time.LocalDateTime;
+
 import org.codenbug.auth.app.AuthService;
 import org.codenbug.auth.domain.Role;
 import org.codenbug.auth.domain.UserId;
@@ -33,7 +35,7 @@ public class UserRegisteredEventConsumer {
 		} catch (Exception e) {
 			// log.error("Failed to register security user for userId: {}. Error: {}", event.getUserId(), e.getMessage());
 			// // 재시도 또는 실패 처리 로직 추가
-			UserRegisteredFailedEvent failedEvent = new UserRegisteredFailedEvent(event.getUserId());
+			UserRegisteredFailedEvent failedEvent = new UserRegisteredFailedEvent(event.getUserId(), LocalDateTime.now());
 			kafkaTemplate.send("user-registered-failed", failedEvent);
 		}
 	}

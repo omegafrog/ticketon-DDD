@@ -6,7 +6,9 @@ import org.codenbug.user.domain.UserRepository;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
@@ -29,6 +31,7 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public void delete(String userId) {
-		jpaRepository.deleteById(new UserId(userId));
+		log.info("Deleting user with userId: {}", userId);
+		jpaRepository.deleteByUserId(new UserId(userId));
 	}
 }

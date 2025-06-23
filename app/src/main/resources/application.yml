@@ -4,6 +4,7 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
       acks: all
       properties:
         # 멱등성(Idempotence) 활성화 (트랜잭션의 필수 조건)
@@ -11,40 +12,20 @@ spring:
 
   profiles:
     active: dev
-  jta:
-    enabled: true
-    # Atomikos 설정
-    atomikos:
-      datasource:
-        # XA-DataSource를 사용하도록 클래스 이름을 지정합니다.
-        xa-data-source-class-name: org.h2.jdbcx.JdbcDataSource
-        properties:
-          # 실제 H2 데이터베이스 파일 경로를 지정합니다.
-          URL: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL;DATABASE_TO_UPPER=false
-      # 트랜잭셔널 로그 파일 관련 설정 (기본값 사용 가능)
-      properties:
-        log-base-name: user-tx-log
 
+  datasource:
+    url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL;DATABASE_TO_UPPER=false
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
   jpa:
-    properties:
-      hibernate:
-        # JTA 플랫폼으로 Atomikos를 지정합니다.
-        transaction.jta.platform: org.hibernate.engine.transaction.jta.platform.internal.AtomikosJtaPlatform
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
-
-
-#  datasource:
-#    url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL;DATABASE_TO_UPPER=false
-#    username: sa
-#    password:
-#    driver-class-name: org.h2.Driver
-#  jpa:
-#    database-platform: org.hibernate.dialect.MySQL8Dialect
-#    hibernate:
-#      ddl-auto: update
-#  h2:
-#    console:
-#      enabled: true
+  h2:
+    console:
+      enabled: true
+  config:
+    import: "user.yml"
 server:
   port: 9000

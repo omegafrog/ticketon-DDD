@@ -8,8 +8,7 @@ import org.codenbug.user.domain.UserRepository;
 import org.codenbug.user.ui.RegisterRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserRegisterService {
@@ -23,7 +22,7 @@ public class UserRegisterService {
 		this.kafkaTemplate = kafkaTemplate;
 	}
 
-	@Transactional
+	@Transactional("transactionManager")
 	public UserId register(RegisterRequest request) {
 		// TODO : securityUser 생성 메소드 어떻게 호출
 

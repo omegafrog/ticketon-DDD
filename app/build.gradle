@@ -7,6 +7,13 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-jta-atomikos
+    implementation("org.springframework.boot:spring-boot-starter-jta-atomikos:2.7.18")
+
+    implementation 'org.springframework.kafka:spring-kafka'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+
+
     implementation project(':event')
     implementation project(':user')
     implementation project(':common')

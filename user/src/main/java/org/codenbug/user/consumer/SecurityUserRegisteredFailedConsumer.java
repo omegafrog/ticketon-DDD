@@ -4,6 +4,7 @@ import org.codenbug.message.UserRegisteredFailedEvent;
 import org.codenbug.user.app.UserRegisterService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,7 @@ public class SecurityUserRegisteredFailedConsumer {
 	}
 
 	@KafkaListener(topics = "user-registered-failed", groupId = "user-registered-failed")
+	@Transactional
 	public void consume(UserRegisteredFailedEvent event){
 		log.warn("Received user registration failure event for userId: {}. Starting compensating transaction.", event.getUserId());
 		try {
