@@ -3,8 +3,8 @@ package org.codenbug.auth.consumer;
 import java.time.LocalDateTime;
 
 import org.codenbug.auth.app.AuthService;
-import org.codenbug.auth.domain.Role;
 import org.codenbug.auth.domain.UserId;
+import org.codenbug.common.Role;
 import org.codenbug.message.UserRegisteredEvent;
 import org.codenbug.message.UserRegisteredFailedEvent;
 import org.springframework.kafka.annotation.KafkaListener;

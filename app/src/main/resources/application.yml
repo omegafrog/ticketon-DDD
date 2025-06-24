@@ -1,6 +1,7 @@
 spring:
   profiles:
     active: dev
+    include: secret
 
   datasource:
     url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL

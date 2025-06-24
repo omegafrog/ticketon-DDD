@@ -2,11 +2,11 @@ package org.codenbug.auth.app;
 
 import java.util.Map;
 
-import org.codenbug.auth.domain.Role;
 import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.auth.domain.SocialInfo;
+import org.codenbug.common.Role;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.auth.domain.UserId;
 import org.codenbug.common.Util;
