@@ -1,22 +1,26 @@
 server:
   port: 8080 # 게이트웨이는 8080 포트에서 실행됩니다.
 
+
 spring:
+  profiles:
+    include: secret
   application:
     name: api-gateway
   cloud:
     gateway:
       server:
-        webmvc:
+        webflux:
           routes:
             - id: auth-service
               uri: http://localhost:9001 # event 모듈이 실행될 주소
               predicates:
                 - Path=/api/v1/auth/**
-            #
+                        #
             - id: main-service # 규칙의 고유 ID
               uri: http://localhost:9000 # user 모듈이 실행될 주소
               predicates:
                 - Path=/api/v1/** # 이 경로 패턴의 요청이 오면 위 uri로 전달합니다.
+          default-filters: AuthorizationFilter
 
 

@@ -1,12 +1,10 @@
-package org.codenbug.auth.domain;
+package org.codenbug.common;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.LinkedHashMap;
 
 import javax.crypto.SecretKey;
-
-import org.codenbug.auth.global.Util;
-import org.springframework.security.access.AccessDeniedException;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,11 +22,14 @@ public class AccessToken {
 	public AccessToken(String rawValue, String type) {
 		this.rawValue = rawValue;
 		this.type = type;
-		claims = Util.getClaims(rawValue);
 	}
 
-	public static AccessToken refresh(UserId userId, Role role, boolean isSocialUser, String email, RefreshToken refreshToken,
+	public static AccessToken refresh(AccessToken accessToken, RefreshToken refreshToken,
 		SecretKey secretKey) {
+		String userId = accessToken.getClaims().get("userId", String.class);
+		String role = accessToken.getClaims().get("role", String.class);
+		String email = accessToken.getClaims().get("email", String.class);
+		boolean isSocialUser = accessToken.getClaims().get("isSocialUser", Boolean.class);
 		refreshToken.verify(userId, secretKey);
 
 		Claims payload = Jwts.claims()
@@ -38,33 +39,36 @@ public class AccessToken {
 			.add("isSocialUser", isSocialUser)
 			.build();
 
-		String accessToken = Jwts.builder()
+		String newtokenString = Jwts.builder()
 			.claims(payload)
 			.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
 			.signWith(secretKey, Jwts.SIG.HS256)
 			.compact();
 
-		return new AccessToken(accessToken, "Bearer");
+		return new AccessToken(newtokenString, "Bearer");
 	}
 
-	public void decode() {
-		claims = Util.getClaims(this.rawValue);
+	public AccessToken decode(String key) {
+		this.claims = Util.getClaims(this.rawValue, Util.Key.convertSecretKey(key));
+		return this;
 	}
 
-	public Role getRole() {
-		return claims.get("role", Role.class);
+	public String getRole() {
+		return claims.get("role", String.class);
 	}
 
-	public UserId getUserId() {
-		return new UserId(claims.get("userId", String.class));
+	public String getUserId() {
+		return claims.get("userId", String.class);
 	}
 
 	public boolean isSocialUser() {
 		return claims.get("isSocialUser", Boolean.class);
 	}
+
 	public String getEmail() {
 		return claims.get("email", String.class);
 	}
+
 	/**
 	 * if the access token is expired, return true
 	 * @return

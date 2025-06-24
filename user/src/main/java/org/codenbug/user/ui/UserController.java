@@ -1,6 +1,8 @@
 package org.codenbug.user.ui;
 
+import org.codenbug.common.AccessToken;
 import org.codenbug.common.RsData;
+import org.codenbug.common.Util;
 import org.codenbug.user.app.UserCommandQueryService;
 import org.codenbug.user.app.UserRegisterService;
 import org.codenbug.user.domain.UserId;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/users/")
@@ -30,9 +34,11 @@ public class UserController {
 		UserId userId = userRegisterService.register(request);
 		return ResponseEntity.ok(new RsData<>("202", "유저 생성 요청이 전송되었습니다.", userId));
 	}
-	@GetMapping("/{id}")
-	public ResponseEntity<RsData<UserInfo>> getUser(@PathVariable String id) {
-		UserInfo userinfo = userQueryService.findUser(new UserId(id));
+
+	@GetMapping("/me")
+	public ResponseEntity<RsData<UserInfo>> getMe(HttpServletRequest request) {
+		String userId = request.getHeader("User-Id");
+		UserInfo userinfo = userQueryService.findUser(new UserId(userId));
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
 	}
 }

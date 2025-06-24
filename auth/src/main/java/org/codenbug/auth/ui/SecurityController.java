@@ -1,9 +1,8 @@
 package org.codenbug.auth.ui;
 
 import org.codenbug.auth.app.AuthService;
-import org.codenbug.auth.domain.AccessToken;
-import org.codenbug.auth.domain.TokenInfo;
-import org.codenbug.auth.domain.UserId;
+import org.codenbug.common.AccessToken;
+import org.codenbug.common.TokenInfo;
 import org.codenbug.common.RsData;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -26,18 +25,20 @@ public class SecurityController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<RsData<AccessToken>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
+	public ResponseEntity<RsData<String>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
 
 		TokenInfo tokenInfo = authService.loginEmail(request);
 
 		resp.setHeader(HttpHeaders.AUTHORIZATION,
 			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
 
-		resp.addCookie(new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue()));
+		Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
+		refreshToken.setPath("/");
+		resp.addCookie(refreshToken);
 
-		return ResponseEntity.ok(new RsData<>("200", "login success.", tokenInfo.getAccessToken()));
+		return ResponseEntity.ok(new RsData<>("200", "login success.",
+			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
 
 	}
-
 
 }

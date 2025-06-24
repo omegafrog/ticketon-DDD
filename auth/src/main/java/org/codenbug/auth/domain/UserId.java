@@ -2,8 +2,10 @@ package org.codenbug.auth.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 @Embeddable
+@Getter
 public class UserId {
 
 	@Column(name = "user_id")

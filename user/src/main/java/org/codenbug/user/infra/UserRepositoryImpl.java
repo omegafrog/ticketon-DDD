@@ -25,6 +25,7 @@ public class UserRepositoryImpl implements UserRepository {
 
 	@Override
 	public User findUser(UserId id) {
+		log.info("Finding user with userId: {}", id);
 		return jpaRepository.findById(id)
 			.orElseThrow(() -> new EntityNotFoundException("Cannot find User entity"));
 	}

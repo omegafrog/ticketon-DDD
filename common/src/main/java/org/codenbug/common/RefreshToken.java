@@ -1,12 +1,9 @@
-package org.codenbug.auth.domain;
+package org.codenbug.common;
 
-import java.security.PublicKey;
 import java.time.Instant;
 import java.util.Date;
 
 import javax.crypto.SecretKey;
-
-import org.codenbug.auth.global.Util;
 
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
@@ -26,7 +23,7 @@ public class RefreshToken {
 	 * @param userId verifying user's id
 	 * @param secretKey key to sign signature
 	 */
-	public void verify(UserId userId, SecretKey secretKey) {
+	public void verify(String userId, SecretKey secretKey) {
 		Jwts.parser()
 			.verifyWith(secretKey)
 			.require("userId", userId)

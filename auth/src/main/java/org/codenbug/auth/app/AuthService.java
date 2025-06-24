@@ -1,14 +1,15 @@
 package org.codenbug.auth.app;
 
-import org.codenbug.auth.domain.AccessToken;
+import java.util.Map;
+
 import org.codenbug.auth.domain.Role;
 import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.auth.domain.SocialInfo;
-import org.codenbug.auth.domain.TokenInfo;
+import org.codenbug.common.TokenInfo;
 import org.codenbug.auth.domain.UserId;
-import org.codenbug.auth.global.Util;
+import org.codenbug.common.Util;
 import org.codenbug.auth.ui.LoginRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +35,8 @@ public class AuthService {
 
 		user.match(password, passwordEncoder);
 
-		return Util.generateTokens(user.getUserId(), Role.valueOf(user.getRole()), user.getEmail(),
+		return Util.generateTokens(
+			Map.of("userId", user.getUserId().getValue(), "role", Role.valueOf(user.getRole()), "email", user.getEmail()),
 			Util.Key.convertSecretKey(key));
 	}
 

@@ -1,4 +1,4 @@
-package org.codenbug.auth.domain;
+package org.codenbug.common;
 
 import lombok.Getter;
 
