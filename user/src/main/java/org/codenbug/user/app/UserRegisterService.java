@@ -6,7 +6,7 @@ import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.domain.UserRepository;
 import org.codenbug.user.ui.RegisterRequest;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,24 +14,22 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserRegisterService {
 
 	private final UserRepository userRepository;
-	private final KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
+	private final ApplicationEventPublisher publisher;
 
-	public UserRegisterService(UserRepository userRepository,
-		KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate) {
+	public UserRegisterService(UserRepository userRepository, ApplicationEventPublisher publisher) {
 		this.userRepository = userRepository;
-		this.kafkaTemplate = kafkaTemplate;
+		this.publisher = publisher;
 	}
 
-	@Transactional("transactionManager")
+	@Transactional
 	public UserId register(RegisterRequest request) {
-		// TODO : securityUser 생성 메소드 어떻게 호출
-
 		UserId userId = userRepository.save(
 			new User(request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(), request.getLocation(),
 				request.getAge()));
 		UserRegisteredEvent event = new UserRegisteredEvent(userId.getValue(), request.getEmail(),
 			request.getPassword(), "USER");
-		kafkaTemplate.send("user-registered", event);
+		// user insert transaction commit 이후 securityUser insert를 위한 이벤트 발행
+		publisher.publishEvent(event);
 		return userId;
 	}
 

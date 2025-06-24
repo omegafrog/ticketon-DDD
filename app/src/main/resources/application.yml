@@ -1,15 +1,4 @@
 spring:
-  kafka:
-    bootstrap-servers: localhost:29092,localhost:39092,localhost:49092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-
-      acks: all
-      properties:
-        # 멱등성(Idempotence) 활성화 (트랜잭션의 필수 조건)
-        enable.idempotence: true
-
   profiles:
     active: dev
 
