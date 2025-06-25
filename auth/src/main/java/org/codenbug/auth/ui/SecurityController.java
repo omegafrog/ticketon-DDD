@@ -7,6 +7,7 @@ import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.common.AccessToken;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.common.RsData;
+import org.codenbug.securityaop.aop.AuthNeeded;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,6 +49,7 @@ public class SecurityController {
 			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
 	}
 
+	@AuthNeeded
 	@GetMapping("/logout")
 	public ResponseEntity<RsData<Void>> logout(HttpServletRequest req, HttpServletResponse resp){
 		Cookie refreshToken = Arrays.stream(req.getCookies())

@@ -4,6 +4,7 @@ import org.codenbug.common.AccessToken;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.Util;
+import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.codenbug.securityaop.aop.UserSecurityToken;
@@ -40,8 +41,9 @@ public class UserController {
 	}
 
 	@GetMapping("/me")
+	@AuthNeeded
 	@RoleRequired(value={Role.USER})
-	public ResponseEntity<RsData<UserInfo>> getMe(HttpServletRequest request) {
+	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		UserInfo userinfo = userQueryService.findUser(new UserId(userSecurityToken.getUserId()));
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));

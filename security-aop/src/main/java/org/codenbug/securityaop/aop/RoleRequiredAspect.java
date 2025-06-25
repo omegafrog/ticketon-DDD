@@ -47,11 +47,17 @@ public class RoleRequiredAspect {
 
 		if( !List.of(roleRequired.value()).contains(role))
 			throw new AccessDeniedException("Access Denied");
-
+		return joinPoint.proceed();
+	}
+	@Around("@annotation(AuthNeeded)")
+	public Object setUserSecurityToken(ProceedingJoinPoint joinPoint) throws Throwable {
+		String userId = request.getHeader("User-Id");
+		Role role = Role.valueOf(request.getHeader("Role"));
+		// boolean socialUser = request.getHeader("socialUser") != null;
+		String email = request.getHeader("Email");
 		try (LoggedInUserContext context = LoggedInUserContext.open(new UserSecurityToken(userId, email, role))
 		) {
 			return joinPoint.proceed();
 		}
-
 	}
 }
