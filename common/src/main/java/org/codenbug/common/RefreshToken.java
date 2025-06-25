@@ -27,7 +27,9 @@ public class RefreshToken {
 		Jwts.parser()
 			.verifyWith(secretKey)
 			.require("userId", userId)
-			.requireNotBefore(Date.from(Instant.now())).build()
+			.build()
 			.parse(value);
 	}
+
+
 }

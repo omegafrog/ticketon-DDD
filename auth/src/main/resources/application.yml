@@ -29,7 +29,10 @@ spring:
   h2:
     console:
       enabled: true
-
+  data:
+    redis:
+      port: 6379
+      host: localhost
 
 
 server:

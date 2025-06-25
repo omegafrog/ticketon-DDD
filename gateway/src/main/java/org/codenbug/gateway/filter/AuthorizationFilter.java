@@ -1,21 +1,30 @@
 package org.codenbug.gateway.filter;
 
+import java.sql.Ref;
 import java.util.List;
 
 import org.codenbug.common.AccessToken;
 import org.codenbug.common.RefreshToken;
+import org.codenbug.common.RsData;
+import org.codenbug.common.TokenInfo;
 import org.codenbug.common.Util;
 import org.codenbug.common.exception.ExpiredJwtException;
 import org.codenbug.common.exception.JwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
+import org.springframework.web.server.ServerWebExchange;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -27,40 +36,68 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	@Value("${custom.jwt.secret}")
 	private String jwtSecret;
 
-	public AuthorizationFilter() {
+	private final RedisRefreshTokenBlackList refreshTokenStorage;
+	private final ObjectMapper objectMapper;
+
+	public AuthorizationFilter(RedisRefreshTokenBlackList refreshTokenStorage, ObjectMapper objectMapper) {
 		super(Config.class);
+		this.refreshTokenStorage = refreshTokenStorage;
+		this.objectMapper = objectMapper;
 	}
 
+	/**
+	 * Get authorization token from request and set custom headers.
+	 * Headers are {@code User-Id}, {@code Email}, {@code Role}.
+	 * If the access token is expired and the refresh token is valid, refresh access token.
+	 * @param config include Configuration information like bypass url
+	 *
+	 */
 	@Override
 	public GatewayFilter apply(Config config) {
 		return (exchange, chain) -> {
 			ServerHttpRequest request = exchange.getRequest();
 			ServerHttpResponse response = exchange.getResponse();
 
-			if (config.passPatterns.stream()
-				.anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getURI().getPath()))) {
-				log.debug("pass authorization filter");
+			AccessToken accessToken;
+			RefreshToken refreshToken = null;
+
+			if (checkWhiteList(config, exchange, chain, request))
 				return chain.filter(exchange);
-			}
 
-			String authHeader = request.getHeaders().getFirst("Authorization");
-			String authCookie = getRefreshTokenCookie(request).getValue();
-
-			AccessToken accessToken = Util.parseAccessToken(authHeader);
-			RefreshToken refreshToken = Util.parseRefreshToken(authCookie);
+			// check token validation
 			try {
+				accessToken = getAccessToken(request);
+				refreshToken = getRefreshToken(request);
+
+				refreshTokenStorage.checkBlackList(refreshToken);
+
 				Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
+				Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
+				refreshTokenStorage.checkBlackList(refreshToken);
 			} catch (ExpiredJwtException e) {
 				log.debug("access token is expired");
-				accessToken = AccessToken.refresh(accessToken, refreshToken, Util.Key.convertSecretKey(jwtSecret));
-				setToken(response, accessToken, refreshToken);
-			} catch (JwtException e) {
-				log.debug("access token is invalid");
-				response.setStatusCode(org.springframework.http.HttpStatus.UNAUTHORIZED);
-				return response.setComplete();
+				TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
+				accessToken = tokenInfo.getAccessToken();
+				refreshToken = tokenInfo.getRefreshToken();
+
+			} catch (JwtException  e) {
+				return errorResponse(e, response);
+			} catch (RuntimeException e){
+				response.setStatusCode(HttpStatus.BAD_REQUEST);
+				response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+				try {
+					return response.writeWith(Mono.just(response.bufferFactory().wrap(
+						objectMapper.writeValueAsBytes(new RsData<Void>("400", e.getMessage(), null)))));
+				} catch (JsonProcessingException ex) {
+					throw new RuntimeException(ex);
+				}
 			}
+
 			accessToken.decode(jwtSecret);
 			ServerHttpRequest mutatedRequest = request.mutate()
+				.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
+				.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
+					60 * 60 * 24 * 7, "/", false, false, "None"))
 				.header("User-Id", accessToken.getUserId())
 				.header("Role", accessToken.getRole())
 				.header("Email", accessToken.getEmail())
@@ -71,6 +108,15 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		};
 	}
 
+	private Mono<Void> errorResponse(JwtException e, ServerHttpResponse response) {
+		log.debug("access token is invalid or logged out");
+		try {
+			return unAuthorizedResponse(response, e);
+		} catch (JsonProcessingException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
 	@Getter
 	static class Config {
 		//설정값이 필요하면 추가
@@ -78,12 +124,42 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			"/api/v1/auth/login");
 	}
 
-	private void setToken(ServerHttpResponse response, AccessToken token, RefreshToken refreshToken) {
-		response.getHeaders().add("Authorization", token.getType() + " " + token.getRawValue());
-		response.getHeaders()
-			.add(HttpHeaders.SET_COOKIE, setCookieHeader(
-				"refreshToken", token.getRawValue(), 60 * 30, "/", true, true, "None"
-			));
+	private Mono<Void> unAuthorizedResponse(ServerHttpResponse response, JwtException e) throws
+		JsonProcessingException {
+		response.setStatusCode(HttpStatus.UNAUTHORIZED);
+		response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+		return response.writeWith(Mono.just(response.bufferFactory().wrap(
+			objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
+
+	}
+
+	private TokenInfo refreshAccessToken(RefreshToken refreshToken, Throwable expiredJwtException) {
+		TokenInfo refreshedTokens = Util.refresh(refreshToken, Util.Key.convertSecretKey(jwtSecret),
+			expiredJwtException);
+
+		return refreshedTokens;
+	}
+
+	private RefreshToken getRefreshToken(ServerHttpRequest request) {
+		String authCookie = getRefreshTokenCookie(request).getValue();
+		RefreshToken refreshToken = Util.parseRefreshToken(authCookie);
+		return refreshToken;
+	}
+
+	private static AccessToken getAccessToken(ServerHttpRequest request) {
+		String authHeader = request.getHeaders().getFirst("Authorization");
+		AccessToken accessToken = Util.parseAccessToken(authHeader);
+		return accessToken;
+	}
+
+	private static boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
+		ServerHttpRequest request) {
+		if (config.passPatterns.stream()
+			.anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getURI().getPath()))) {
+			log.debug("pass authorization filter");
+			return true;
+		}
+		return false;
 	}
 
 	private String setCookieHeader(String name, String value, int maxAge, String path, boolean secure, boolean httpOnly,
@@ -107,7 +183,3 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	}
 }
 
-//
-//
-//
-// }

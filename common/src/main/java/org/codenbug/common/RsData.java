@@ -14,4 +14,6 @@ public class RsData<T> {
 		this.code = code;
 		this.message = message;
 	}
+
+
 }

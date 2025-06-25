@@ -2,6 +2,7 @@ package org.codenbug.auth.app;
 
 import java.util.Map;
 
+import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.domain.SecurityUserRepository;
@@ -35,9 +36,11 @@ public class AuthService {
 
 		user.match(password, passwordEncoder);
 
-		return Util.generateTokens(
-			Map.of("userId", user.getUserId().getValue(), "role", Role.valueOf(user.getRole()), "email", user.getEmail()),
+		TokenInfo tokenInfo = Util.generateTokens(
+			Map.of("userId", user.getUserId().getValue(), "role", Role.valueOf(user.getRole()), "email",
+				user.getEmail()),
 			Util.Key.convertSecretKey(key));
+		return tokenInfo;
 	}
 
 	public SecurityUserId register(UserId userId, String email, String password, Role role) {

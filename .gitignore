@@ -39,3 +39,5 @@ out/
 /*.trace.db
 /*.lock.db
 
+/docker/redis/data/
+/docker/mysql/data/

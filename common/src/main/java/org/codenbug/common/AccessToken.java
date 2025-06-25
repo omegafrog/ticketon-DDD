@@ -24,30 +24,6 @@ public class AccessToken {
 		this.type = type;
 	}
 
-	public static AccessToken refresh(AccessToken accessToken, RefreshToken refreshToken,
-		SecretKey secretKey) {
-		String userId = accessToken.getClaims().get("userId", String.class);
-		String role = accessToken.getClaims().get("role", String.class);
-		String email = accessToken.getClaims().get("email", String.class);
-		boolean isSocialUser = accessToken.getClaims().get("isSocialUser", Boolean.class);
-		refreshToken.verify(userId, secretKey);
-
-		Claims payload = Jwts.claims()
-			.add("userId", userId)
-			.add("role", role)
-			.add("email", email)
-			.add("isSocialUser", isSocialUser)
-			.build();
-
-		String newtokenString = Jwts.builder()
-			.claims(payload)
-			.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
-			.signWith(secretKey, Jwts.SIG.HS256)
-			.compact();
-
-		return new AccessToken(newtokenString, "Bearer");
-	}
-
 	public AccessToken decode(String key) {
 		this.claims = Util.getClaims(this.rawValue, Util.Key.convertSecretKey(key));
 		return this;
