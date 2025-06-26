@@ -26,7 +26,7 @@ public class SecurityUser{
 	@EmbeddedId
 	private SecurityUserId securityUserId;
 
-	@Embedded
+	@Column(name = "user_id", unique = true)
 	private UserId userId;
 
 	@Embedded
@@ -73,14 +73,13 @@ public class SecurityUser{
 	protected SecurityUser() {
 	}
 
-	public SecurityUser( UserId userId, SocialInfo socialInfo, String email,
+	public SecurityUser( SocialInfo socialInfo, String email,
 		String password, String role) {
 		LocalDateTime now = LocalDateTime.now();
 
 		socialInfo.validate();
 
 		this.securityUserId = generateSecurityUserId();
-		this.userId = userId;
 		this.socialInfo = socialInfo;
 		this.email = email;
 		this.password = password;
@@ -102,5 +101,9 @@ public class SecurityUser{
 		if (!passwordEncoder.matches(password, this.password)){
 			throw new AccessDeniedException("Password match failed");
 		}
+	}
+
+	public void updateUserId(UserId userId) {
+		this.userId = userId;
 	}
 }

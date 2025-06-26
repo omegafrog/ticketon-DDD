@@ -1,6 +1,5 @@
 package org.codenbug.user.app;
 
-import org.codenbug.message.UserRegisteredEvent;
 import org.codenbug.user.domain.Sex;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
@@ -25,11 +24,7 @@ public class UserRegisterService {
 	public UserId register(RegisterRequest request) {
 		UserId userId = userRepository.save(
 			new User(request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(), request.getLocation(),
-				request.getAge()));
-		UserRegisteredEvent event = new UserRegisteredEvent(userId.getValue(), request.getEmail(),
-			request.getPassword(), "USER");
-		// user insert transaction commit 이후 securityUser insert를 위한 이벤트 발행
-		publisher.publishEvent(event);
+				request.getAge(), request.getSecurityUserId()));
 		return userId;
 	}
 

@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class UserRegisteredFailedEvent {
-	private String userId;
-	private LocalDateTime createdAt;
+	private String securityUserId;
 }

@@ -120,8 +120,10 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	@Getter
 	static class Config {
 		//설정값이 필요하면 추가
-		public static List<String> passPatterns = List.of("/api/v1/users/register",
-			"/api/v1/auth/login");
+		public static List<String> passPatterns = List.of(
+			"/api/v1/auth/register",
+			"/api/v1/auth/login",
+			"/api/v1/auth/social/**");
 	}
 
 	private Mono<Void> unAuthorizedResponse(ServerHttpResponse response, JwtException e) throws

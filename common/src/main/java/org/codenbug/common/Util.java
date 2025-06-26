@@ -101,7 +101,7 @@ public class Util {
 	public static TokenInfo generateTokens(Claims claims, SecretKey secretKey) {
 		AccessToken accessToken = getAccessToken(claims, secretKey);
 
-		RefreshToken refreshToken = getRefreshToken(claims, secretKey);
+		RefreshToken refreshToken = getRefreshToken(Map.of("access-jti", accessToken.getClaims().getId()), secretKey);
 
 		return new TokenInfo(accessToken, refreshToken);
 	}

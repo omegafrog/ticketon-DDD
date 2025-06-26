@@ -34,11 +34,7 @@ public class UserController {
 		this.userQueryService = userQueryService;
 	}
 
-	@PostMapping("/register")
-	public ResponseEntity<RsData<UserId>> register(@RequestBody RegisterRequest request) {
-		UserId userId = userRegisterService.register(request);
-		return ResponseEntity.ok(new RsData<>("202", "유저 생성 요청이 전송되었습니다.", userId));
-	}
+
 
 	@GetMapping("/me")
 	@AuthNeeded

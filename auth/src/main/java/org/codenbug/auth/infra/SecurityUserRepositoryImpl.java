@@ -1,8 +1,11 @@
 package org.codenbug.auth.infra;
 
+import java.util.Optional;
+
 import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.domain.SecurityUserRepository;
+import org.codenbug.auth.domain.SocialId;
 import org.springframework.stereotype.Repository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -17,18 +20,27 @@ public class SecurityUserRepositoryImpl implements SecurityUserRepository {
 	}
 
 	@Override
-	public SecurityUser findSecurityUser(SecurityUserId securityUserId) {
-		return jpaRepository.findById(securityUserId)
-			.orElseThrow(() -> new EntityNotFoundException("Cannot find Security user."));
+	public Optional<SecurityUser> findSecurityUser(SecurityUserId securityUserId) {
+		return jpaRepository.findById(securityUserId);
 	}
 
 	@Override
-	public SecurityUser findSecurityUserByEmail(String email) {
+	public Optional<SecurityUser> findSecurityUserByEmail(String email) {
 		return jpaRepository.findByEmail(email);
 	}
 
 	@Override
 	public SecurityUserId save(SecurityUser securityUser) {
 		return jpaRepository.save(securityUser).getSecurityUserId();
+	}
+
+	@Override
+	public Optional<SecurityUser> findSecurityUserBySocialId(SocialId socialId) {
+		return jpaRepository.findBySocialInfo_SocialId(socialId);
+	}
+
+	@Override
+	public void delete(String securityUserId) {
+		jpaRepository.deleteById(new SecurityUserId(securityUserId));
 	}
 }

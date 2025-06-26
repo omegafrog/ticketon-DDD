@@ -3,6 +3,7 @@ package org.codenbug.user.domain;
 import com.fasterxml.uuid.Generators;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,16 +35,20 @@ public class User {
 	@Column(name = "age", nullable = false)
 	private Integer age;
 
+	@Embedded
+	private SecurityUserId securityUserId;
+
 	protected User() {
 	}
 
-	public User(String name, Sex sex, String phoneNum, String location, Integer age) {
+	public User(String name, Sex sex, String phoneNum, String location, Integer age, SecurityUserId securityUserId) {
 		this.userId = generateUserId();
 		this.name = name;
 		this.sex = sex;
 		this.phoneNum = phoneNum;
 		this.location = location;
 		this.age = age;
+		this.securityUserId = securityUserId;
 	}
 
 	private UserId generateUserId() {

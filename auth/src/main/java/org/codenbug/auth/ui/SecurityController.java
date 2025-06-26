@@ -1,35 +1,54 @@
 package org.codenbug.auth.ui;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.codenbug.auth.app.AuthService;
+import org.codenbug.auth.app.OAuthService;
 import org.codenbug.auth.domain.RefreshTokenBlackList;
+import org.codenbug.auth.domain.SecurityUserId;
+import org.codenbug.auth.domain.UserId;
+import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.common.RsData;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Slf4j
 public class SecurityController {
 
 	private final AuthService authService;
+	private final OAuthService oAuthService;
 	private final RefreshTokenBlackList blackList;
 
-	public SecurityController(AuthService authService, RefreshTokenBlackList blackList) {
+	public SecurityController(AuthService authService, OAuthService oAuthService, RefreshTokenBlackList blackList) {
 		this.authService = authService;
+		this.oAuthService = oAuthService;
 		this.blackList = blackList;
+	}
+
+	@PostMapping("/register")
+	public ResponseEntity<RsData<SecurityUserId>> register(@RequestBody RegisterRequest request) {
+		SecurityUserId userId = authService.register(request);
+		return ResponseEntity.ok(new RsData<>("202", "유저 생성 요청이 전송되었습니다.", userId));
 	}
 
 	@PostMapping("/login")
@@ -42,7 +61,7 @@ public class SecurityController {
 
 		Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
 		refreshToken.setPath("/");
-		refreshToken.setMaxAge(60*60*24*7);
+		refreshToken.setMaxAge(60 * 60 * 24 * 7);
 		resp.addCookie(refreshToken);
 
 		return ResponseEntity.ok(new RsData<>("200", "login success.",
@@ -51,7 +70,7 @@ public class SecurityController {
 
 	@AuthNeeded
 	@GetMapping("/logout")
-	public ResponseEntity<RsData<Void>> logout(HttpServletRequest req, HttpServletResponse resp){
+	public ResponseEntity<RsData<Void>> logout(HttpServletRequest req, HttpServletResponse resp) {
 		Cookie refreshToken = Arrays.stream(req.getCookies())
 			.filter(cookie -> cookie.getName().equals("refreshToken"))
 			.findFirst()
@@ -60,11 +79,57 @@ public class SecurityController {
 		refreshToken.setMaxAge(0);
 		resp.addCookie(refreshToken);
 
-		blackList.add(req.getHeader("User-Id") ,refreshToken);
-
-
+		blackList.add(req.getHeader("User-Id"), refreshToken);
 
 		return ResponseEntity.ok(new RsData<>("200", "logout success.", null));
+	}
+
+	@GetMapping(value = "/social/{socialLoginType}")
+	public ResponseEntity<String> request(
+		@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
+
+		String redirectURL = authService.request(socialLoginType);
+
+		return ResponseEntity.ok(redirectURL);  // 리다이렉션 URL을 응답으로 반환
+	}
+
+	@GetMapping(value = "/social/{socialLoginType}/callback")
+	public ResponseEntity<RsData<Void>> callback(
+		@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
+		@RequestParam(name = "code") String code,
+		@RequestParam(name = "redirectUrl", required = false) String redirectUrl,
+		HttpServletResponse response) {
+
+		log.info(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
+		log.info(">> 콜백 시 사용된 리다이렉트 URL: {}", redirectUrl);
+
+		try {
+
+			String decodedCode = URLDecoder.decode(code, StandardCharsets.UTF_8);
+			// 액세스 토큰을 통해 사용자 정보를 받아오고 JWT 토큰 생성 (리다이렉트 URL 전달)
+			SocialLoginResponse userResponse = oAuthService.requestAccessTokenAndSaveUser(socialLoginType, decodedCode);
+
+			// 쿠키에 토큰 저장 (UserController.login 메서드와 유사하게)
+			AccessToken accessToken = userResponse.tokenInfo().getAccessToken();
+			response.setHeader("Authorization", accessToken.getType() + " " + accessToken.getRawValue());
+			Cookie refreshTokenCookie = new Cookie("refreshToken",
+				userResponse.tokenInfo().getRefreshToken().getValue());
+			refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
+			refreshTokenCookie.setPath("/");
+			refreshTokenCookie.setSecure(false);
+			refreshTokenCookie.setHttpOnly(false);
+			refreshTokenCookie.setAttribute("SameSite", "None");
+
+			response.addCookie(refreshTokenCookie);
+
+			return ResponseEntity.ok(
+				new RsData<>("200-SUCCESS", "소셜 로그인 성공", null));
+
+		} catch (Exception e) {
+			log.error(">> 소셜 로그인 처리 중 오류 발생: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new RsData<>("500-INTERNAL_SERVER_ERROR", "소셜 로그인 처리 중 오류가 발생했습니다.", null));
+		}
 	}
 
 }

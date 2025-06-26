@@ -1,4 +1,4 @@
-package org.codenbug.auth.domain;
+package org.codenbug.user.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -13,12 +13,7 @@ public class SecurityUserId {
 	protected SecurityUserId() {
 	}
 
-	public SecurityUserId(String value) {
+	public SecurityUserId(String value){
 		this.value = value;
-	}
-
-	@Override
-	public String toString() {
-		return value;
 	}
 }

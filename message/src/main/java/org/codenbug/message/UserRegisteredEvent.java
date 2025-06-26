@@ -1,25 +1,17 @@
 package org.codenbug.message;
 
-import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
 public class UserRegisteredEvent {
+	private String securityUserId;
 	private String userId;
-	private String email;
-	private String password;
-	private String role;
-	private LocalDateTime createdAt;
 
-	public UserRegisteredEvent(String userId, String email, String password, String role) {
+	protected UserRegisteredEvent(){}
+
+	public UserRegisteredEvent(String securityUserId, String userId) {
+		this.securityUserId = securityUserId;
 		this.userId = userId;
-		this.email = email;
-		this.password = password;
-		this.role = role;
-		createdAt = LocalDateTime.now();
 	}
 }
