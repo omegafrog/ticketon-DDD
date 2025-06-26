@@ -6,10 +6,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SocialProvider;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.auth.global.UserInfo;
@@ -20,44 +18,44 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component("KAKAO")
 public class KakaoProvider implements SocialProvider {
 
 	/**
 	 * application.yml에서 주입받는 카카오 OAuth 관련 설정값들
 	 */
-	@Value("${sns.kakao.url}")
-	private String KAKAO_SNS_BASE_URL;  // 카카오 인증 기본 URL
-
 	@Value("${sns.kakao.client.id}")
-	private String KAKAO_SNS_CLIENT_ID;  // 카카오 애플리케이션 클라이언트 ID
+	private String kakaoClientId;  // 카카오 애플리케이션 클라이언트 ID
 
 	@Value("${sns.kakao.callback.url}")
-	private String KAKAO_SNS_CALLBACK_URL;  // 인증 후 콜백받을 URL
-
-	@Value("${sns.kakao.client.secret}")
-	private String KAKAO_SNS_CLIENT_SECRET;  // 카카오 애플리케이션 시크릿 키
+	private String kakaoCallbackUri;  // 인증 후 콜백받을 URL
 
 	@Value("${sns.kakao.token.url}")
-	private String KAKAO_SNS_TOKEN_BASE_URL;  // 토큰 요청을 위한 URL
+	private String kakaoTokenUri;  // 토큰 요청을 위한 URL
 
-	@Value("#{'${allowed.redirect.domains}'.split(',')}")
-	private List<String> allowedDomains;
+	// @Value("#{'${allowed.redirect.domains}'.split(',')}")
+	// private List<String> allowedDomains;
 
 	private final ObjectMapper objectMapper;
 
 	public KakaoProvider(ObjectMapper objectMapper) {
 		this.objectMapper = objectMapper;
+	}
+
+	@Override
+	public String getOauthLoginUri() {
+		return SocialLoginType.KAKAO.getUrl(kakaoClientId, kakaoCallbackUri);
 	}
 
 	@Override
@@ -72,21 +70,20 @@ public class KakaoProvider implements SocialProvider {
 		// 토큰 요청에 필요한 파라미터 설정
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("code", code);  // 인증 코드
-		params.add("client_id", KAKAO_SNS_CLIENT_ID);  // 클라이언트 ID
-		params.add("client_secret", KAKAO_SNS_CLIENT_SECRET);  // 클라이언트 시크릿
-		params.add("redirect_uri", KAKAO_SNS_CALLBACK_URL);  // 리다이렉트 URI
+		params.add("client_id", kakaoClientId);  // 클라이언트 ID
+		params.add("redirect_uri", kakaoCallbackUri);  // 리다이렉트 URI
 		params.add("grant_type", "authorization_code");  // 인증 타입
 
 		// HTTP 요청 엔티티 생성 (헤더와 바디 포함)
 		HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(params, headers);
 
 		log.info("카카오 액세스 토큰 요청 시작 - redirect_uri: {}, client_id: {}",
-			KAKAO_SNS_CALLBACK_URL, KAKAO_SNS_CLIENT_ID);
+			kakaoCallbackUri, kakaoClientId);
 
 		try {
 			// POST 요청 실행 및 응답 수신
 			ResponseEntity<String> responseEntity =
-				restTemplate.postForEntity(KAKAO_SNS_TOKEN_BASE_URL, requestEntity, String.class);
+				restTemplate.postForEntity(kakaoTokenUri, requestEntity, String.class);
 
 			// 응답 상태 확인 및 결과 반환
 			if (responseEntity.getStatusCode() == HttpStatus.OK) {
@@ -137,14 +134,19 @@ public class KakaoProvider implements SocialProvider {
 		String socialId = "";
 		String name = "";
 		String email = "";
+		int age = 0;
+		String sex = "";
 		try {
 			socialId = objectMapper.readTree(userInfo).get("id").asText();
 			name = objectMapper.readTree(userInfo).get("properties").get("nickname").asText();
 			email = objectMapper.readTree(userInfo).get("kakao_account").get("email").asText();
+			age = Integer.parseInt(
+				objectMapper.readTree(userInfo).get("kakao_account").get("age_range").asText().split("~")[0]);
+			sex = objectMapper.readTree(userInfo).get("kakao_account").get("gender").asText().toUpperCase();
 		}catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-		return new UserInfo(socialId, name, socialLoginType.getName(), email, Role.USER.toString());
+		return new UserInfo(socialId, name, socialLoginType.getName(), email, Role.USER.toString(), age, sex);
 	}
 
 	/**

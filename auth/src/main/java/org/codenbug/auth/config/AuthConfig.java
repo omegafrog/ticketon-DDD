@@ -1,5 +1,6 @@
 package org.codenbug.auth.config;
 
+import org.codenbug.auth.infra.KakaoProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,8 @@ import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableJpaRepositories(basePackages = {"org.codenbug.auth.infra"})

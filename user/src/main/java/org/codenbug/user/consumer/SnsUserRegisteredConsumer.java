@@ -27,8 +27,8 @@ public class SnsUserRegisteredConsumer {
 		try {
 			// securityUser로 user를 생성
 			userRegisterService.register(
-				new RegisterRequest(new SecurityUserId(event.getSecurityUserId()), event.getName(), null, null,
-					null, null));
+				new RegisterRequest(new SecurityUserId(event.getSecurityUserId()), event.getName(), event.getAge(),
+					event.getSex(),null, null));
 		} catch (Exception e) {
 			log.error("Failed to create User for securityUserId: {}", event.getSecurityUserId(), e);
 			// TODO: securityUser이벤트로 user 생성 실패시 보상 트랜잭션 필요

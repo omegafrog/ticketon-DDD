@@ -6,6 +6,7 @@ import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.auth.domain.SocialInfo;
+import org.codenbug.auth.domain.SocialProvider;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.auth.ui.RegisterRequest;
 import org.codenbug.common.Role;
@@ -19,22 +20,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class AuthService {
 
+	private final ObjectMapper objectMapper;
 	private SecurityUserRepository securityUserRepository;
 	private PasswordEncoder passwordEncoder;
+	private final ProviderFactory factory;
 	@Value("${custom.jwt.secret}")
 	private String key;
 	private final ApplicationEventPublisher publisher;
 
 	public AuthService(SecurityUserRepository securityUserRepository, PasswordEncoder passwordEncoder,
-		ApplicationEventPublisher publisher) {
+		ApplicationEventPublisher publisher, ObjectMapper objectMapper, ProviderFactory factory) {
 		this.securityUserRepository = securityUserRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.publisher = publisher;
+		this.objectMapper = objectMapper;
+		this.factory = factory;
 	}
 
 	public TokenInfo loginEmail(LoginRequest loginRequest) {
@@ -64,7 +71,8 @@ public class AuthService {
 	}
 
 	public String request(SocialLoginType socialLoginType) {
-		return socialLoginType.getUrl();
+		SocialProvider provider = factory.getProvider(socialLoginType.name().toUpperCase());
+		return provider.getOauthLoginUri();
 	}
 
 }

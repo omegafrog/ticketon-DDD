@@ -15,12 +15,16 @@ public class UserInfo {
 	private Provider provider;
 	private String email;
 	private Role role;
+	private int age;
+	private String sex;
 
-	public UserInfo(String socialId, String name, String provider, String email, String role){
+	public UserInfo(String socialId, String name, String provider, String email, String role, int age, String sex){
 		this.socialId = new SocialId(socialId);
 		this.name = name;
 		this.provider = new Provider(provider);
 		this.email = email;
 		this.role = Role.valueOf(role);
+		this.age = age;
+		this.sex = sex;
 	}
 }

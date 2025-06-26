@@ -13,5 +13,14 @@ public enum SocialLoginType {
 		this.name = name;
 		this.url = url;
 	}
+	public String getUrl(String clientId, String redirectUrl){
+		return url
+			+ """
+			?client_id=%s\
+			&redirect_uri=%s\
+			&response_type=code\
+			&scope=profile_nickname,profile_image,account_email,gender,age_range"""
+			.formatted(clientId, redirectUrl);
+	}
 
 }

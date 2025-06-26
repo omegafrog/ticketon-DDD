@@ -9,11 +9,13 @@ import javax.crypto.SecretKey;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 public class AccessToken {
 	private String rawValue;
 	private String type;
+	@Setter
 	private Claims claims;
 
 	protected AccessToken() {

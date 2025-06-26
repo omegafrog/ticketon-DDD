@@ -122,9 +122,16 @@ public class Util {
 		String token = Jwts.builder()
 			.claims(claims)
 			.signWith(secretKey, Jwts.SIG.HS256)
+			.id(java.util.UUID.randomUUID().toString())
 			.expiration(Date.from(Instant.now().plusSeconds(60 * 1)))
 			.compact();
 		AccessToken accessToken = new AccessToken(token, "Bearer");
+		Claims payload = (Claims)Jwts.parser()
+			.verifyWith(secretKey)
+			.build()
+			.parse(accessToken.getRawValue())
+			.getPayload();
+		accessToken.setClaims(payload);
 		return accessToken;
 	}
 

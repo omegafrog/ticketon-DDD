@@ -23,7 +23,8 @@ public class UserRegisterService {
 	@Transactional
 	public UserId register(RegisterRequest request) {
 		UserId userId = userRepository.save(
-			new User(request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(), request.getLocation(),
+			new User(request.getName(), request.getSex() == null ? null : Sex.valueOf(request.getSex()),
+				request.getPhoneNum(), request.getLocation(),
 				request.getAge(), request.getSecurityUserId()));
 		return userId;
 	}

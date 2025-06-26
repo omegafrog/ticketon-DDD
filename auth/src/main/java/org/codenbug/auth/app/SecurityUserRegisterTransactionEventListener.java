@@ -16,8 +16,8 @@ public class SecurityUserRegisterTransactionEventListener {
 	}
 
 	@TransactionalEventListener
-	public void handleSnsUserRegistrationCompleted(SecurityUserRegisteredEvent event) {
-		kafkaTemplate.send("sns-user-registered", event);
+	public void handleSecurityUserRegistrationCompleted(SecurityUserRegisteredEvent event) {
+		kafkaTemplate.send("security-user-registered", event);
 	}
 
 }

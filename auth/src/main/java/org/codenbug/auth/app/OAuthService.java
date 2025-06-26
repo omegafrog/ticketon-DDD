@@ -32,20 +32,22 @@ public class OAuthService {
 	private final SecurityUserRepository repository;
 	private final ApplicationEventPublisher publisher;
 	private final ObjectMapper objectMapper;
+	private final ProviderFactory factory;
 	@Value("${custom.jwt.secret}")
 	private String jwtSecret;
 
 	public OAuthService(SecurityUserRepository repository, ApplicationEventPublisher publisher,
-		ObjectMapper objectMapper) {
+		ObjectMapper objectMapper, ProviderFactory factory) {
 		this.repository = repository;
 		this.publisher = publisher;
 		this.objectMapper = objectMapper;
+		this.factory = factory;
 	}
 
 	@Transactional
 	public SocialLoginResponse requestAccessTokenAndSaveUser(SocialLoginType socialLoginType, String code) {
 
-		SocialProvider provider = SocialLoginUtilFactory.getProvider(socialLoginType, objectMapper);
+		SocialProvider provider = factory.getProvider(socialLoginType.getName().toUpperCase());
 		// 1. 액세스 토큰을 포함한 JSON 응답을 요청
 		String accessTokenJson = provider.requestAccessToken(code);
 		log.info(">> 소셜 로그인 액세스 토큰 응답: {}", accessTokenJson);
@@ -82,7 +84,8 @@ public class OAuthService {
 		SecurityUser newUser = new SecurityUser(new SocialInfo(parsed.getSocialId(), parsed.getProvider(), true),
 			parsed.getEmail(), null, Role.USER.name());
 		repository.save(newUser);
-		publisher.publishEvent(new SnsUserRegisteredEvent(newUser.getSecurityUserId().toString(), parsed.getName()));
+		publisher.publishEvent(new SnsUserRegisteredEvent(newUser.getSecurityUserId().toString(), parsed.getName(),
+			parsed.getAge(), parsed.getSex()));
 
 		// 6. SNS 사용자용 JWT 토큰 생성
 		// SNS 사용자용 토큰 생성 메서드 사용
@@ -98,7 +101,6 @@ public class OAuthService {
 		// 7. 토큰 및 사용자 정보를 포함한 응답 반환
 		return new SocialLoginResponse(tokenInfo);
 	}
-
 
 	// JSON에서 액세스 토큰만 추출하는 메서드
 	private String extractAccessTokenFromJson(String accessTokenJson) {
@@ -119,7 +121,8 @@ public class OAuthService {
 			// HTML 에러 페이지인지 확인
 			if (trimmed.toLowerCase().contains("<html") || trimmed.toLowerCase().contains("<!doctype")) {
 				log.error(">> HTML 에러 페이지가 반환되었습니다. 카카오 OAuth 설정(redirect_uri, client_id 등)을 확인해주세요.");
-				throw new RuntimeException("카카오 OAuth 설정 오류: HTML 에러 페이지가 반환되었습니다. redirect_uri와 카카오 애플리케이션 설정을 확인해주세요.");
+				throw new RuntimeException(
+					"카카오 OAuth 설정 오류: HTML 에러 페이지가 반환되었습니다. redirect_uri와 카카오 애플리케이션 설정을 확인해주세요.");
 			}
 
 			// 한글 에러 메시지인지 확인
@@ -173,6 +176,7 @@ public class OAuthService {
 			throw new RuntimeException("액세스 토큰 응답 파싱 실패: " + e.getMessage(), e);
 		}
 	}
+
 	private String createUserFriendlyErrorMessage(String error, String errorDescription, String errorCode) {
 		StringBuilder message = new StringBuilder("카카오 로그인 실패: ");
 

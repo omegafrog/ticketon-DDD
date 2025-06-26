@@ -14,7 +14,6 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   profiles:
-    active: dev
     include: secret
 
   datasource:

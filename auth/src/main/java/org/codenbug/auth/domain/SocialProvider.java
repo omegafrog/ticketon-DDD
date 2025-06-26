@@ -9,4 +9,6 @@ public interface SocialProvider {
 	String getUserInfo(SocialLoginType socialLoginType, String accessToken);
 
 	UserInfo parseUserInfo(String userInfo, SocialLoginType socialLoginType);
+
+	String getOauthLoginUri();
 }
