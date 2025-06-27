@@ -94,7 +94,7 @@ public class SecurityController {
 	}
 
 	@GetMapping(value = "/social/{socialLoginType}/callback")
-	public ResponseEntity<RsData<Void>> callback(
+	public ResponseEntity<RsData<String>> callback(
 		@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
 		@RequestParam(name = "code") String code,
 		@RequestParam(name = "redirectUrl", required = false) String redirectUrl,
@@ -123,7 +123,7 @@ public class SecurityController {
 			response.addCookie(refreshTokenCookie);
 
 			return ResponseEntity.ok(
-				new RsData<>("200-SUCCESS", "소셜 로그인 성공", null));
+				new RsData<>("200-SUCCESS", "소셜 로그인 성공", accessToken.getType() + " " + accessToken.getRawValue()));
 
 		} catch (Exception e) {
 			log.error(">> 소셜 로그인 처리 중 오류 발생: {}", e.getMessage(), e);

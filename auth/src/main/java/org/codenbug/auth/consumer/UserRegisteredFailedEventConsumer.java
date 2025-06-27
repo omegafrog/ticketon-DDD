@@ -26,7 +26,7 @@ public class UserRegisteredFailedEventConsumer {
 		this.kafkaTemplate = kafkaTemplate;
 	}
 
-	@KafkaListener(topics = "user-registered", groupId = "security-user-group")
+	@KafkaListener(topics = "user-registered-failed", groupId = "user-registered-failed-group")
 	@Transactional
 	public void consume(UserRegisteredFailedEvent event) {
 		try {

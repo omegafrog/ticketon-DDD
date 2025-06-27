@@ -73,9 +73,13 @@ public class OAuthService {
 		// 5. 기존 사용자 확인 후 처리
 		Optional<SecurityUser> existingUser = repository.findSecurityUserByEmail(parsed.getEmail());
 
+		TokenInfo tokenInfo = null;
 		// 이미 존재하는 사용자라면 실패 응답
 		if (existingUser.isPresent()) {
-			throw new RuntimeException("Already existing user using email. please log in by email.");
+			tokenInfo = Util.generateTokens(
+				Map.of("userId", existingUser.get().getUserId().toString(), "role", existingUser.get().getRole(),
+					"email", existingUser.get().getEmail()), Util.Key.convertSecretKey(jwtSecret));
+			return new SocialLoginResponse(tokenInfo);
 		}
 
 		// 새 사용자라면 저장
@@ -91,7 +95,7 @@ public class OAuthService {
 		// SNS 사용자용 토큰 생성 메서드 사용
 		log.info(">> SNS 사용자 토큰 생성: socialId={}, provider={}", parsed.getSocialId(), parsed.getProvider());
 
-		TokenInfo tokenInfo = Util.generateTokens(
+		tokenInfo = Util.generateTokens(
 			Map.of("socialId", parsed.getSocialId().getValue(), "provider", parsed.getProvider().getValue()),
 			Util.Key.convertSecretKey(jwtSecret));
 
