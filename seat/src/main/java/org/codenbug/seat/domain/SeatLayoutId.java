@@ -8,10 +8,10 @@ import lombok.Getter;
 @Getter
 public class SeatLayoutId {
 	@Column(name = "seat_layout_id", nullable = true)
-	private Long seatLayoutId;
+	private Long value;
 
 	protected SeatLayoutId() {}
-	public SeatLayoutId(Long seatLayoutId) {
-		this.seatLayoutId = seatLayoutId;
+	public SeatLayoutId(Long value) {
+		this.value = value;
 	}
 }

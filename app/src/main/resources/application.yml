@@ -12,10 +12,15 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
   h2:
     console:
       enabled: true
   config:
     import: "user.yml"
+
 server:
   port: 9000

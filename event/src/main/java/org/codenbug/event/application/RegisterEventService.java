@@ -12,6 +12,7 @@ import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RegisterEventService {
@@ -26,6 +27,7 @@ public class RegisterEventService {
 		this.seatLayoutService = seatLayoutService;
 	}
 
+	@Transactional
 	public EventId registerNewEvent(NewEventRequest request) {
 
 		eventCategoryService.validateExist(request.getCategoryId().getValue());

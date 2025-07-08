@@ -19,7 +19,7 @@ public class SeatLayoutRepositoryImpl implements SeatLayoutRepository {
 	}
 
 	@Override
-	public SeatLayout findSeatLayout(SeatLayoutId id) {
+	public SeatLayout findSeatLayout(Long id) {
 		return jpaSeatRepository.findSeatLayoutById(id);
 	}
 }
