@@ -17,6 +17,7 @@ dependencies {
     implementation project(':event')
     implementation project(':user')
     implementation project(':common')
+    compileOnly project(':seat')
     implementation project(':security-aop')
 }
 

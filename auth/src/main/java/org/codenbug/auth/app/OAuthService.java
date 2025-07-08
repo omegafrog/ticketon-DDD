@@ -50,7 +50,7 @@ public class OAuthService {
 		SocialProvider provider = factory.getProvider(socialLoginType.getName().toUpperCase());
 		// 1. 액세스 토큰을 포함한 JSON 응답을 요청
 		String accessTokenJson = provider.requestAccessToken(code);
-		log.info(">> 소셜 로그인 액세스 토큰 응답: {}", accessTokenJson);
+		log.debug(">> 소셜 로그인 액세스 토큰 응답: {}", accessTokenJson);
 
 		// 2. JSON에서 액세스 토큰만 추출
 		String accessToken = extractAccessTokenFromJson(accessTokenJson);
@@ -59,22 +59,22 @@ public class OAuthService {
 			log.error(">> 액세스 토큰 추출 실패");
 			throw new RuntimeException("access token 추출에 실패했습니다.");
 		}
-		log.info(">> 추출된 액세스 토큰: {}", accessToken);
+		log.debug(">> 추출된 액세스 토큰: {}", accessToken);
 
 		// 3. 액세스 토큰을 사용해 사용자 정보 요청
 		String userInfo = provider.getUserInfo(socialLoginType, accessToken);
-		log.info(">> 소셜 API에서 받은 사용자 정보: {}", userInfo);
+		log.debug(">> 소셜 API에서 받은 사용자 정보: {}", userInfo);
 
 		// 4. 사용자 정보를 파싱하여 SnsUser 객체 생성
 		UserInfo parsed = provider.parseUserInfo(userInfo, socialLoginType);
-		log.info(">> 파싱된 사용자 정보: socialId={}, name={}, provider={}, email={}",
+		log.debug(">> 파싱된 사용자 정보: socialId={}, name={}, provider={}, email={}",
 			parsed.getSocialId(), parsed.getName(), parsed.getProvider(), parsed.getEmail());
 
 		// 5. 기존 사용자 확인 후 처리
 		Optional<SecurityUser> existingUser = repository.findSecurityUserByEmail(parsed.getEmail());
 
 		TokenInfo tokenInfo = null;
-		// 이미 존재하는 사용자라면 실패 응답
+		// 이미 존재하는 사용자라면 토큰 생성
 		if (existingUser.isPresent()) {
 			tokenInfo = Util.generateTokens(
 				Map.of("userId", existingUser.get().getUserId().toString(), "role", existingUser.get().getRole(),
@@ -83,7 +83,7 @@ public class OAuthService {
 		}
 
 		// 새 사용자라면 저장
-		log.info(">> 신규 사용자 등록 이벤트 발행: socialId={}, provider={}", parsed.getSocialId(), parsed.getProvider());
+		log.debug(">> 신규 사용자 등록 이벤트 발행: socialId={}, provider={}", parsed.getSocialId(), parsed.getProvider());
 
 		SecurityUser newUser = new SecurityUser(new SocialInfo(parsed.getSocialId(), parsed.getProvider(), true),
 			parsed.getEmail(), null, Role.USER.name());
@@ -93,7 +93,7 @@ public class OAuthService {
 
 		// 6. SNS 사용자용 JWT 토큰 생성
 		// SNS 사용자용 토큰 생성 메서드 사용
-		log.info(">> SNS 사용자 토큰 생성: socialId={}, provider={}", parsed.getSocialId(), parsed.getProvider());
+		log.debug(">> SNS 사용자 토큰 생성: socialId={}, provider={}", parsed.getSocialId(), parsed.getProvider());
 
 		tokenInfo = Util.generateTokens(
 			Map.of("socialId", parsed.getSocialId().getValue(), "provider", parsed.getProvider().getValue()),
@@ -115,7 +115,7 @@ public class OAuthService {
 		}
 
 		// 응답 내용 로깅 (디버깅용)
-		log.info(">> 액세스 토큰 응답 내용: {}", accessTokenJson);
+		log.debug(">> 액세스 토큰 응답 내용: {}", accessTokenJson);
 
 		// 응답이 JSON 형태인지 간단히 확인
 		String trimmed = accessTokenJson.trim();
@@ -140,13 +140,12 @@ public class OAuthService {
 
 		// JSON을 파싱하여 액세스 토큰만 추출
 		try {
-			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode jsonNode = objectMapper.readTree(accessTokenJson);
 
 			// access_token 필드 확인
 			if (jsonNode.has("access_token")) {
 				String accessToken = jsonNode.get("access_token").asText();
-				log.info(">> 액세스 토큰 추출 성공");
+				log.debug(">> 액세스 토큰 추출 성공");
 				return accessToken;
 			} else {
 				log.error(">> JSON 응답에 access_token 필드가 없습니다. 응답: {}", accessTokenJson);

@@ -10,6 +10,7 @@ import org.codenbug.common.TokenInfo;
 import org.codenbug.common.Util;
 import org.codenbug.common.exception.ExpiredJwtException;
 import org.codenbug.common.exception.JwtException;
+import org.codenbug.gateway.config.WhitelistProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
@@ -36,11 +37,14 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	@Value("${custom.jwt.secret}")
 	private String jwtSecret;
 
+	private final WhitelistProperties whitelistProperties;
+
 	private final RedisRefreshTokenBlackList refreshTokenStorage;
 	private final ObjectMapper objectMapper;
 
-	public AuthorizationFilter(RedisRefreshTokenBlackList refreshTokenStorage, ObjectMapper objectMapper) {
+	public AuthorizationFilter(WhitelistProperties whitelistProperties, RedisRefreshTokenBlackList refreshTokenStorage, ObjectMapper objectMapper) {
 		super(Config.class);
+		this.whitelistProperties = whitelistProperties;
 		this.refreshTokenStorage = refreshTokenStorage;
 		this.objectMapper = objectMapper;
 	}
@@ -121,9 +125,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	static class Config {
 		//설정값이 필요하면 추가
 		public static List<String> passPatterns = List.of(
-			"/api/v1/auth/register",
-			"/api/v1/auth/login",
-			"/api/v1/auth/social/**");
+			);
 	}
 
 	private Mono<Void> unAuthorizedResponse(ServerHttpResponse response, JwtException e) throws
@@ -154,9 +156,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		return accessToken;
 	}
 
-	private static boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
+	private boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
 		ServerHttpRequest request) {
-		if (config.passPatterns.stream()
+		if (whitelistProperties.getUrls().stream()
 			.anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getURI().getPath()))) {
 			log.debug("pass authorization filter");
 			return true;

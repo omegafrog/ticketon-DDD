@@ -1,12 +1,9 @@
 package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
 
 import org.codenbug.event.global.NewEventRequest;
-import org.codenbug.event.global.SeatDto;
 import org.codenbug.event.global.UpdateEventRequest;
-import org.hibernate.annotations.ColumnDefault;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -69,7 +66,7 @@ public class EventInformation {
 		this.eventEnd = eventEnd;
 		this.ageLimit = ageLimit;
 		this.viewCount = 0;
-		this.status = status == null ? EventStatus.OPEN : status;
+		this.status = status == null ? EventStatus.CLOSED : status;
 		this.seatSelectable = seatSelectable != null && seatSelectable;
 		this.categoryId = categoryId;
 		validate();
@@ -81,7 +78,7 @@ public class EventInformation {
 			request.getRestriction(),
 			request.getDescription(), request.getBookingStart(), request.getBookingEnd(), request.getStartDate(),
 			request.getEndDate(),
-			request.isSeatSelectable(), request.getStatus(),
+			request.isSeatSelectable(), EventStatus.CLOSED,
 			request.getCategoryId());
 	}
 

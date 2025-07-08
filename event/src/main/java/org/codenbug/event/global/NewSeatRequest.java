@@ -2,6 +2,8 @@ package org.codenbug.event.global;
 
 import java.util.List;
 
+import org.codenbug.seat.global.SeatDto;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

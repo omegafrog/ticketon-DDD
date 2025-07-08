@@ -4,7 +4,7 @@ import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
-import org.codenbug.event.domain.Manager;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +24,8 @@ public class UpdateEventService {
 	public void updateEvent(EventId id, UpdateEventRequest request) {
 		Event event = eventRepository.findEvent(id);
 
-		Manager loggedInManager = getLoggedInManager();
-		event.canUpdate(loggedInManager);
+		ManagerId loggedInManagerId = getLoggedInManager();
+		event.canUpdate(loggedInManagerId);
 
 		EventInformation newEventInformation = event.getEventInformation().applyChange(request);
 		event.update(newEventInformation);
@@ -35,11 +35,11 @@ public class UpdateEventService {
 	public void deleteEvent(EventId id){
 		Event event = eventRepository.findEvent(id);
 
-		Manager loggedInManager = getLoggedInManager();
-		event.canDelete(loggedInManager);
+		ManagerId loggedInManagerId = getLoggedInManager();
+		event.canDelete(loggedInManagerId);
 	}
 
-	private Manager getLoggedInManager() {
+	private ManagerId getLoggedInManager() {
 		throw new UnsupportedOperationException("Not supported yet.");
 	}
 }

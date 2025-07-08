@@ -7,4 +7,8 @@ import jakarta.persistence.Embeddable;
 public class SeatId {
 	@Column(name = "seat_id")
 	private String value;
+	protected SeatId(){}
+	public SeatId(String value) {
+		this.value = value;
+	}
 }

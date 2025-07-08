@@ -2,6 +2,7 @@ package org.codenbug.event.ui;
 
 import java.util.List;
 
+import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;
@@ -9,6 +10,8 @@ import org.codenbug.event.domain.EventId;
 import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.seat.domain.SeatLayoutId;
+import org.codenbug.securityaop.aop.AuthNeeded;
+import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +20,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 @RequestMapping("/api/v1/events")
@@ -30,24 +32,29 @@ public class EventController {
 		this.registerEventService = registerEventService;
 		this.updateEventService = updateEventService;
 	}
+
 	/**
 	 * 이벤트 등록 API
 	 * @param request 이벤트 등록 요청 DTO
 	 * @return 성공 시 RsData<EventRegisterResponse> 포맷으로 응답
 	 */
-	// @RoleRequired({UserRole.MANAGER, UserRole.ADMIN})
+	@AuthNeeded
+	@RoleRequired(Role.MANAGER)
 	@PostMapping
-	public ResponseEntity<RsData<EventId>> eventRegister(@RequestBody NewEventRequest request,
-		@RequestBody SeatLayoutId layoutId) {
+	public ResponseEntity<RsData<EventId>> eventRegister(@RequestBody NewEventRequest request) {
+		// register seat
+
 		// register event
-		EventId eventId = registerEventService.registerNewEvent(request, layoutId);
+		EventId eventId = registerEventService.registerNewEvent(request);
 		return ResponseEntity.ok(new RsData<>(
 			"200",
 			"이벤트 등록 성공",
 			eventId
 		));
 	}
-	// @RoleRequired({UserRole.MANAGER, UserRole.ADMIN})
+
+	@AuthNeeded
+	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PutMapping("/{eventId}")
 	public ResponseEntity<RsData<EventId>> updateEvent(
 		@PathVariable String eventId,
@@ -61,9 +68,10 @@ public class EventController {
 		));
 	}
 
-	// @RoleRequired({UserRole.MANAGER, UserRole.ADMIN})
+	@AuthNeeded
+	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PatchMapping("/{eventId}")
-	public ResponseEntity<RsData<Void>> deleteEvent(@PathVariable String eventId) throws IllegalAccessException {
+	public ResponseEntity<RsData<Void>> deleteEvent(@PathVariable String eventId) {
 		updateEventService.deleteEvent(new EventId(eventId));
 		return ResponseEntity.ok(new RsData<>(
 			"200",

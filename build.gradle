@@ -28,6 +28,13 @@ subprojects {
     apply plugin: 'org.springframework.boot'
     apply plugin: 'io.spring.dependency-management'
 
+    dependencies {
+        // https://mvnrepository.com/artifact/com.fasterxml.uuid/java-uuid-generator
+        implementation("com.fasterxml.uuid:java-uuid-generator:5.1.0")
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+    }
+
     repositories {
         mavenCentral()
     }

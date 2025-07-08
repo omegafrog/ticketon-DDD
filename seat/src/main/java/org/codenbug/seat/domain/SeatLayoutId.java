@@ -7,7 +7,7 @@ import lombok.Getter;
 @Embeddable
 @Getter
 public class SeatLayoutId {
-	@Column(name = "seat_layout_id")
+	@Column(name = "seat_layout_id", nullable = true)
 	private Long seatLayoutId;
 
 	protected SeatLayoutId() {}

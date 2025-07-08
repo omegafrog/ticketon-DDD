@@ -6,12 +6,12 @@ import lombok.Getter;
 
 @Embeddable
 @Getter
-public class Manager {
+public class ManagerId {
 	@Column(name = "manager_id")
 	private String managerId;
 
-	protected Manager() {}
-	public Manager(String managerId) {
+	protected ManagerId() {}
+	public ManagerId(String managerId) {
 		this.managerId = managerId;
 	}
 }

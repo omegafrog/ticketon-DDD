@@ -1,4 +1,4 @@
-package org.codenbug.event.global;
+package org.codenbug.seat.global;
 
 import lombok.Getter;
 

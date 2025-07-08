@@ -1,14 +1,17 @@
 package org.codenbug.seat.domain;
 
+import com.fasterxml.uuid.Generators;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import lombok.Getter;
 
 @Embeddable
 @Getter
 public class Seat {
-	@EmbeddedId
+	@Embedded
 	private SeatId seatId;
 	@Column(name = "signature")
 	private String signature;
@@ -26,6 +29,6 @@ public class Seat {
 		this.amount = amount;
 	}
 	private SeatId generateSeatId() {
-		throw new RuntimeException("Not implemented yet");
+		return new SeatId(Generators.timeBasedEpochGenerator().generate().toString());
 	}
 }

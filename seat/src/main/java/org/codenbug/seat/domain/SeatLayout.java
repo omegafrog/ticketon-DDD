@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.codenbug.seat.global.SeatDto;
 import org.codenbug.seat.global.UpdateSeatLayoutRequest;
 
 import jakarta.persistence.CollectionTable;
@@ -24,7 +25,7 @@ import lombok.Getter;
 public class SeatLayout {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private SeatLayoutId id;
+	private Long id;
 
 	@Column(name = "layout")
 	private String layout;
@@ -37,15 +38,67 @@ public class SeatLayout {
 	protected SeatLayout() {
 	}
 
-	public SeatLayout(String layout, List<Seat> seats) {
-		this.layout = layout;
+	public SeatLayout(List<List<String>> layout, List<Seat> seats) {
+		validate(layout, seats);
+		StringBuilder builder = new StringBuilder();
+		builder.append("[\n");
+		for (List<String> row : layout) {
+			builder.append("[");
+			builder.append(row.stream().collect(Collectors.joining(", ")));
+			builder.append("]");
+			builder.append(",\n");
+		}
+		builder.append("]");
+		this.layout = builder.toString();
 		this.seats = new HashSet<>(seats);
 	}
 
-	protected void validate() {
-		if (this.layout == null) {
-			throw new RuntimeException("layout cannot be null");
+	private void validate(List<List<String>> layout, List<Seat> seats) {
+		// 	"layout":[
+		// 	["A1", "A2", "A3"],
+		// 	["B1", "B2", "B3"]
+		// ],
+		// "seats":[
+		// 	{
+		// 		"signature":"A1",
+		// 		"grade": "S",
+		// 		"price": 123
+		// 	}
+		// ]
+		// layout has signature, so seats list item's signature must equal to layout's signature
+		// Check if all signatures in 'seats' are present in 'layout'
+		long size = layout.stream().flatMap(List::stream).filter(s -> !s.equals("null")).count();
+		if (seats.size() != size)
+			throw new IllegalArgumentException("layout's signature must match with seats");
+		for (Seat seat : seats) {
+			boolean found = false;
+			for (List<String> row : layout) {
+				if (row.contains(seat.getSignature())) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				throw new IllegalArgumentException("Seat signature '" + seat.getSignature() + "' not found in layout.");
+			}
 		}
+
+		// Check if all signatures in 'layout' are present in 'seats'
+		for (List<String> row : layout) {
+			for (String signature : row) {
+				boolean found = false;
+				for (Seat seat : seats) {
+					if (seat.getSignature().equals(signature)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					throw new IllegalArgumentException("Layout signature '" + signature + "' not found in seats.");
+				}
+			}
+		}
+
 	}
 
 	public void update(UpdateSeatLayoutRequest request) {

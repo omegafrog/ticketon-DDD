@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.codenbug.seat.domain.SeatLayoutId;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.uuid.Generators;
+
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -27,7 +29,7 @@ public class Event {
 	@Embedded
 	private EventInformation eventInformation;
 	@Embedded
-	private Manager manager;
+	private ManagerId managerId;
 	@Embedded
 	private SeatLayoutId seatLayoutId;
 	@Embedded
@@ -35,18 +37,18 @@ public class Event {
 
 	protected Event() {}
 
-	public Event( EventInformation information, SeatLayoutId seatLayoutId, Manager manager, MetaData metaData) {
+	public Event( EventInformation information, ManagerId managerId, Long seatLayoutId, MetaData metaData) {
 		information.validate();
 		metaData.validate();
 		this.eventId = generateEventId();
 		this.eventInformation = information;
-		this.seatLayoutId = seatLayoutId;
 		this.metaData = metaData;
-		this.manager = manager;
+		this.managerId = managerId;
+		this.seatLayoutId = new SeatLayoutId(seatLayoutId);
 	}
 
 	private static EventId generateEventId() {
-		throw new RuntimeException("eventId를 생성");
+		return new EventId(Generators.timeBasedEpochGenerator().generate().toString());
 	}
 
 	/**
@@ -64,13 +66,13 @@ public class Event {
 			throw new IllegalStateException("Cannot update event after booking is end");
 	}
 
-	public void canUpdate(Manager loggedInManager) {
-		if(!loggedInManager.equals(this.manager))
+	public void canUpdate(ManagerId loggedInManagerId) {
+		if(!loggedInManagerId.equals(this.managerId))
 			throw new IllegalStateException("Cannot update other user's event");
 	}
 
-	public void canDelete(Manager loggedInManager) {
-		if(!loggedInManager.equals(this.manager))
+	public void canDelete(ManagerId loggedInManagerId) {
+		if(!loggedInManagerId.equals(this.managerId))
 			throw new IllegalStateException("Cannot delete other user's event");
 	}
 }

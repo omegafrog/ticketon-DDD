@@ -65,8 +65,9 @@ public class Util {
 			String userId = claims.get("userId", String.class);
 			String role = claims.get("role", String.class);
 			String email = claims.get("email", String.class);
+			String jti = claims.get("jti", String.class);
 			// boolean isSocialUser = claims.get("isSocialUser", Boolean.class);
-			refreshToken.verify(userId, secretKey);
+			refreshToken.verify(jti, secretKey);
 
 			Claims payload = Jwts.claims()
 				.add("userId", userId)

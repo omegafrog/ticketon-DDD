@@ -20,13 +20,13 @@ public class RefreshToken {
 
 	/**
 	 * verify the refreshToken to ensure it matches the given userId and was issued after the date
-	 * @param userId verifying user's id
+	 * @param accessTokenJti access token's jti
 	 * @param secretKey key to sign signature
 	 */
-	public void verify(String userId, SecretKey secretKey) {
+	public void verify(String accessTokenJti, SecretKey secretKey) {
 		Jwts.parser()
 			.verifyWith(secretKey)
-			.require("userId", userId)
+			.require("access-jti", accessTokenJti)
 			.build()
 			.parse(value);
 	}

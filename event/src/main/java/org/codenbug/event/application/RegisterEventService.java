@@ -1,51 +1,51 @@
 package org.codenbug.event.application;
 
+import org.codenbug.categoryid.app.EventCategoryService;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
-import org.codenbug.event.domain.Manager;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.MetaData;
-import org.codenbug.seat.global.UpdateSeatLayoutRequest;
-import org.codenbug.seat.domain.SeatLayoutId;
 import org.codenbug.event.global.NewEventRequest;
-import org.codenbug.event.global.NewSeatRequest;
-import org.codenbug.event.global.UpdateEventRequest;
-import org.codenbug.seat.domain.Seat;
-import org.codenbug.seat.domain.SeatLayout;
-import org.codenbug.seat.domain.SeatLayoutRepository;
+import org.codenbug.seat.app.RegisterSeatLayoutService;
+import org.codenbug.securityaop.aop.LoggedInUserContext;
+import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class RegisterEventService {
-	private EventRepository eventRepository;
-	private SeatLayoutRepository seatLayoutRepository;
+	private final EventRepository eventRepository;
+	private final EventCategoryService eventCategoryService;
+	private final RegisterSeatLayoutService seatLayoutService;
 
-	protected RegisterEventService(){}
-
-	public RegisterEventService(EventRepository eventRepository, SeatLayoutRepository seatLayoutRepository) {
+	public RegisterEventService(EventRepository eventRepository, EventCategoryService eventCategoryService,
+		RegisterSeatLayoutService seatLayoutService) {
 		this.eventRepository = eventRepository;
-		this.seatLayoutRepository = seatLayoutRepository;
+		this.eventCategoryService = eventCategoryService;
+		this.seatLayoutService = seatLayoutService;
 	}
 
-	public EventId registerNewEvent(NewEventRequest request, SeatLayoutId seatLayoutId) {
+	public EventId registerNewEvent(NewEventRequest request) {
+
+		eventCategoryService.validateExist(request.getCategoryId().getValue());
+
+		Long seatLayoutId = seatLayoutService.registerSeatLayout(request.getSeatLayout());
 
 		EventInformation eventInformation = new EventInformation(request);
 
 		MetaData metaData = new MetaData();
 
-		Manager manager = getLoggedInManager();
+		ManagerId managerId = getLoggedInManager();
 
-		Event event = new Event(eventInformation, seatLayoutId, manager, metaData);
+		Event event = new Event(eventInformation, managerId, seatLayoutId, metaData);
 		eventRepository.save(event);
+
 		return event.getEventId();
 	}
 
-
-
-	private Manager getLoggedInManager() {
-		throw new UnsupportedOperationException("Not supported yet.");
+	private ManagerId getLoggedInManager() {
+		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
+		return new ManagerId(userSecurityToken.getUserId());
 	}
 }
