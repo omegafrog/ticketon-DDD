@@ -4,6 +4,7 @@ import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
+import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.seat.app.UpdateSeatLayoutService;
@@ -43,10 +44,16 @@ public class UpdateEventService {
 
 		ManagerId loggedInManagerId = getLoggedInManager();
 		event.canDelete(loggedInManagerId);
+		event.delete();
 	}
 
 	private ManagerId getLoggedInManager() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		return new ManagerId(userSecurityToken.getUserId());
+	}
+
+	public void changeStatus(String eventId, String status) {
+		Event event = eventRepository.findEvent(new EventId(eventId));
+		event.updateStatus(EventStatus.valueOf(status.toUpperCase()));
 	}
 }

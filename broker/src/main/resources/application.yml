@@ -1,0 +1,39 @@
+spring:
+  profiles:
+    include: secret
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  application:
+    name: broker-service # Eureka에 등록될 서비스의 고유 이름
+  datasource:
+    url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+  h2:
+    console:
+      enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # Eureka 서버 주소
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+custom:
+  instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  events:
+    url: http://localhost:9000/api/v1/events
+
+server:
+  port: 0

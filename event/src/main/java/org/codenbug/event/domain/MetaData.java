@@ -6,11 +6,12 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Embeddable
 @Getter
+@AllArgsConstructor
 public class MetaData {
 	private Boolean deleted;
 	@CreatedDate
@@ -18,13 +19,17 @@ public class MetaData {
 	@LastModifiedDate
 	private LocalDateTime modifiedAt;
 
-
 	public MetaData() {
 		this.deleted = false;
 		validate();
 	}
 
-	protected void validate(){
+	public MetaData ofDeleted() {
+		return new MetaData(true, this.createdAt, LocalDateTime.now());
+	}
+
+	protected void validate() {
 
 	}
+
 }

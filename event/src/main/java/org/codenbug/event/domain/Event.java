@@ -75,4 +75,25 @@ public class Event {
 		if(!loggedInManagerId.equals(this.managerId))
 			throw new IllegalStateException("Cannot delete other user's event");
 	}
+
+	public void updateStatus(EventStatus status) {
+		this.eventInformation = new EventInformation(
+			this.eventInformation.getTitle(),
+			this.eventInformation.getThumbnailUrl(),
+			this.eventInformation.getAgeLimit(),
+			this.eventInformation.getRestrictions(),
+			this.eventInformation.getDescription(),
+			this.eventInformation.getBookingStart(),
+			this.eventInformation.getBookingEnd(),
+			this.eventInformation.getEventStart(),
+			this.eventInformation.getEventEnd(),
+			this.eventInformation.getSeatSelectable(),
+			status,
+			this.eventInformation.getCategoryId()
+		);
+	}
+
+	public void delete() {
+		this.metaData = metaData.ofDeleted();
+	}
 }

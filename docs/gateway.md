@@ -87,3 +87,19 @@ public class GatewayApplication {
 ### 게이트웨이 역할
 * 인가 토큰 검증
 * 토큰 decode 및 헤더 설정 ( userId, role )
+
+# nginx vs spring cloud
+1. Nginx (또는 AWS의 ALB 같은 클라우드 로드밸런서)의 역할
+- 최전방 방어벽: 인터넷의 모든 트래픽을 가장 먼저 받습니다.
+- SSL/TLS 종료(Termination): https:// 요청을 처리하여 내부망으로 들어갈 때는 암호화되지 않은 HTTP로 변환합니다. 내부 서버들이 복잡한 SSL 처리를 신경 쓰지 않게 해줍니다.
+- API Gateway 로드밸런싱: 여러 개로 스케일 아웃된 Spring Cloud Gateway 서버들에게 트래픽을 1차적으로 분산합니다. (Gateway 자체의 고가용성 확보)
+- 정적 콘텐츠 서빙: 이미지, JS, CSS 파일 등은 마이크로서비스까지 요청을 보내지 않고 Nginx가 직접 빠르게 응답합니다.
+2. Spring Cloud Gateway의 역할 
+- 지능적인 문지기: Nginx로부터 "안전하게 걸러진" 트래픽을 받습니다.
+- 인증/인가: 요청 헤더의 JWT 토큰이 유효한지, 해당 사용자가 이 API를 호출할 권한이 있는지 등을 확인합니다.
+- 동적 라우팅: 유레카에 등록된 서비스들의 실시간 상태를 확인하고, 가장 적절한 마이크로서비스 인스턴스로 요청을 전달합니다. (예: lb://broker-service)
+- API 정책 적용: 특정 API에 대한 요청 횟수 제한(Rate Limiting), 데이터 형식 변환 등 세밀한 제어를 수행합니다.요약
+
+Nginx: "어떤 서버로 보낼까?"를 IP 주소를 보고 결정하는, 빠르고 강력한 교통 경찰.
+
+Spring Cloud Gateway: "이 요청은 어떤 서비스로 보내야 할까?"를 서비스 이름과 비즈니스 규칙을 보고 결정하는, 똑똑하고 섬세한 안내 데스크.
