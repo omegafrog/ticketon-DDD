@@ -3,7 +3,7 @@ package org.codenbug.event.global;
 import java.time.LocalDateTime;
 
 import org.codenbug.event.domain.EventStatus;
-import org.codenbug.seat.global.SeatLayoutDto;
+import org.codenbug.seat.global.RegisterSeatLayoutDto;
 
 import lombok.Getter;
 
@@ -20,7 +20,7 @@ public class UpdateEventRequest {
 	private EventStatus status;
 	private Integer ageLimit;
 	private Boolean seatSelectable;
-	private SeatLayoutDto seatLayout;
+	private RegisterSeatLayoutDto seatLayout;
 
 	protected UpdateEventRequest() {}
 }

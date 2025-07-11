@@ -14,8 +14,7 @@ import org.springframework.context.annotation.Import;
 @Import({
 	UserConfig.class,
 	EventConfig.class,
-
-AopConfig.class})
+	AopConfig.class})
 public class AppConfig {
 
 

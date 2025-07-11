@@ -74,16 +74,16 @@ public class QueueInfoScheduler {
 		// 대기열 큐에 있는 모든 유저들에게 대기열 순번과 userId, eventId를 전송합니다.
 		for (Object record : waitingList) {
 			// 대기열 큐 메시지로부터 데이터를 파싱합니다.
-			Long userId = Long.parseLong(
+			String userId =
 				objectMapper.readTree(record.toString())
 					.get(QUEUE_MESSAGE_USER_ID_KEY_NAME)
 					.toString()
-					.replaceAll("\"", ""));
-			Long eventId = Long.parseLong(
+					.replaceAll("\"", "");
+			String eventId =
 				objectMapper.readTree(record.toString())
 					.get(QUEUE_MESSAGE_EVENT_ID_KEY_NAME)
 					.toString()
-					.replaceAll("\"", ""));
+					.replaceAll("\"", "");
 			Long idx = Long.parseLong(
 				objectMapper.readTree(record.toString())
 					.get(QUEUE_MESSAGE_IDX_KEY_NAME)
@@ -91,7 +91,7 @@ public class QueueInfoScheduler {
 					.replaceAll("\"", ""));
 
 			if (!emitterMap.containsKey(userId)) {
-				log.debug("user %d가 연결이 끊어진 상태입니다.".formatted(userId));
+				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
 				continue;
 			}
 
@@ -111,7 +111,7 @@ public class QueueInfoScheduler {
 				);
 			} catch (Exception e) {
 				emitter.complete();
-				log.debug("user %d가 연결이 끊어진 상태입니다.".formatted(userId));
+				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
 			}
 		}
 	}

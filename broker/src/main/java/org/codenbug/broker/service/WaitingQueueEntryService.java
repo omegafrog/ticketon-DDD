@@ -39,14 +39,13 @@ public class WaitingQueueEntryService {
 		this.redisTemplate = redisTemplate;
 	}
 
-	public SseEmitter entry(Long eventId) throws JsonProcessingException {
+	public SseEmitter entry(String eventId) throws JsonProcessingException {
 		// 로그인한 유저 id 조회
 		String id = getLoggedInUserId();
 
 		// emitter 생성 및 저장
 		SseEmitter emitter = sseEmitterService.add(id, eventId);
 
-		// TODO: waiting thread에 유저를 추가하도록 전달
 		enter(id, eventId);
 		return emitter;
 	}
@@ -58,7 +57,7 @@ public class WaitingQueueEntryService {
 	 * @param userId 대기열에 추가할 유저 id
 	 * @param eventId 행사의 id
 	 */
-	private void enter(String userId, Long eventId) throws JsonProcessingException {
+	private void enter(String userId, String eventId) throws JsonProcessingException {
 
 		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
 		emitterMap.forEach((id, emitterConnection) -> {

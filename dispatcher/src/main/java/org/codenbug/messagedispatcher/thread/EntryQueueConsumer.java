@@ -43,8 +43,8 @@ public class EntryQueueConsumer {
 
 		redisTemplate.opsForStream()
 			.add(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, Map.of(
-				"userId", Long.parseLong(userId),
-				"eventId", Long.parseLong(eventId),
+				"userId", userId,
+				"eventId", eventId,
 				"instanceId", instanceId)
 			);
 		// 2) ACK

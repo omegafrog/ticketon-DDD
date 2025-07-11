@@ -56,14 +56,13 @@ public class EntryPromoteThread {
 		List<String> keys = redisTemplate.keys(WAITING_QUEUE_KEY_NAME + ":*").stream().collect(Collectors.toList());
 		if(keys.isEmpty())
 			return;
-		redisTemplate.multi();
 		try {
 
 			for (String key : keys) {
 				String eventId = key.split(":")[1];
 				String entryCountHashKey = ENTRY_QUEUE_COUNT_KEY_NAME;                    // ex: "ENTRY_QUEUE_COUNT"
 				String waitingRecordHash =
-					"WAITING_QUEUE_RECORD:" + eventId;            // ex: "WAITING_QUEUE_RECORD:42"
+					"WAITING_QUEUE_RECORD:"+eventId;           // ex: "WAITING_QUEUE_RECORD:42"
 				String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId;       // ex: "waiting:42"
 				String waitingInUserHash =
 					WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId; // ex: "WAITING_QUEUE_IN_USER_RECORD:42"
@@ -78,22 +77,21 @@ public class EntryPromoteThread {
 				);
 
 				// ARGV는 [eventId] 하나만 필요
-				Long result = redisTemplate.execute(
+				Object result = redisTemplate.execute(
 					promoteAllScript,
 					scriptKeys,
-					Long.parseLong(eventId)
+					eventId
 				);
-				if (result == null) {
-					throw new RuntimeException("promoteToEntryQueue failed");
-				}
-				if (result == 0L) {
-					throw new RuntimeException("promoteToEntryQueue failed");
-				}
+				// if (result == null) {
+				// 	throw new RuntimeException("promoteToEntryQueue failed");
+				// }
+				// if (result == 0L) {
+				// 	throw new RuntimeException("promoteToEntryQueue failed");
+				// }
+				log.info("{}", result.toString());
 			}
-			redisTemplate.exec();
 		} catch (Exception e) {
 			log.info(e.getMessage());
-			redisTemplate.discard();
 		}
 	}
 

@@ -2,6 +2,7 @@ package org.codenbug.broker.redis;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.codenbug.broker.entity.SseConnection;
 import org.codenbug.broker.entity.Status;
@@ -101,8 +102,8 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 
 		Map<String, String> body = message.getValue();
 
-		Long userId = Long.parseLong(body.get("userId"));
-		Long eventId = Long.parseLong(body.get("eventId"));
+		String userId = body.get("userId").replaceAll("\"", "");
+		String eventId = body.get("eventId").replaceAll("\"", "");
 		SseConnection sseConnection = sseEmitterService.getEmitterMap().get(userId);
 
 		if (sseConnection == null || !sseConnection.getEventId().equals(eventId)) {
@@ -116,6 +117,7 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 			"entryAuthToken");
 		redisTemplate.opsForHash()
 			.put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(), token);
+		redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5, TimeUnit.MINUTES);
 		try {
 
 			emitter.send(
