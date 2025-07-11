@@ -10,12 +10,12 @@ public class SseConnection {
 	@Setter
 	private Status status;
 
-	private Long eventId;
+	private String eventId;
 
 	public SseConnection() {
 	}
 
-	public SseConnection(SseEmitter emitter, Status status, Long eventId) {
+	public SseConnection(SseEmitter emitter, Status status, String eventId) {
 		this.emitter = emitter;
 		this.status = status;
 		this.eventId = eventId;
@@ -29,7 +29,7 @@ public class SseConnection {
 		return status;
 	}
 
-	public Long getEventId() {
+	public String getEventId() {
 		return eventId;
 	}
 }

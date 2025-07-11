@@ -11,6 +11,7 @@ import org.codenbug.seat.global.UpdateSeatLayoutRequest;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +30,8 @@ public class SeatLayout {
 
 	@Column(name = "layout")
 	private String layout;
+	@Embedded
+	private Location location;
 
 	@ElementCollection
 	@CollectionTable(name = "seat",
@@ -38,7 +41,8 @@ public class SeatLayout {
 	protected SeatLayout() {
 	}
 
-	public SeatLayout(List<List<String>> layout, List<Seat> seats) {
+	public SeatLayout(List<List<String>> layout, Location location, List<Seat> seats) {
+		this.location = location;
 		validate(layout, seats);
 		this.layout = convertLayout(layout);
 		this.seats = new HashSet<>(seats);

@@ -8,15 +8,22 @@ import lombok.Getter;
 @Getter
 public class Location {
 	@Column(name = "location", nullable = false)
-	private String value;
+	private String locationName;
 
-	protected Location() {}
+	@Column(name = "hallName", nullable = false)
+	private String hallName;
 
-	public Location(String value) {
-		this.value = value;
+	protected Location() {
+	}
+
+	public Location(String locationName, String hallName) {
+		this.locationName = locationName;
+		this.hallName = hallName;
 	}
 	protected void validate(){
-		if ( value == null || value.isEmpty() )
+		if ( locationName == null || locationName.isEmpty() )
 			throw new IllegalArgumentException("location cannot be empty");
+		if ( hallName == null || hallName.isEmpty() )
+			throw new IllegalArgumentException("hallName cannot be empty");
 	}
 }

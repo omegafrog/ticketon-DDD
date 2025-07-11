@@ -2,7 +2,6 @@ package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
 
-import org.codenbug.seat.domain.SeatLayoutId;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.uuid.Generators;

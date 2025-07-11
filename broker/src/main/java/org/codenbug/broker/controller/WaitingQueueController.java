@@ -51,7 +51,7 @@ public class WaitingQueueController {
 	@RoleRequired({Role.USER})
 	@GetMapping(value = "/events/{id}/tickets/waiting", produces = MediaType.TEXT_EVENT_STREAM_VALUE
 		+ ";charset=UTF-8")
-	public SseEmitter entryWaiting(@PathVariable("id") Long eventId) throws JsonProcessingException {
+	public SseEmitter entryWaiting(@PathVariable("id") String eventId) throws JsonProcessingException {
 		return waitingQueueEntryService.entry(eventId);
 	}
 }

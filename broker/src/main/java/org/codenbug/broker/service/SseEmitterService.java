@@ -34,7 +34,7 @@ public class SseEmitterService {
 		this.objectMapper = objectMapper;
 	}
 
-	public SseEmitter add(String userId, Long eventId) {
+	public SseEmitter add(String userId, String eventId) {
 		if (emitterMap.containsKey(userId)) {
 			throw new RuntimeException("다른 대기열에 이미 들어와 있습니다.");
 		}
