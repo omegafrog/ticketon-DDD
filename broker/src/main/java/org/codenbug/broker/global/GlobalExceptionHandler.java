@@ -2,7 +2,6 @@ package org.codenbug.broker.global;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -32,16 +31,16 @@ public class GlobalExceptionHandler {
 			.body(e.getMessage());
 	}
 
-	@ExceptionHandler(AccessDeniedException.class)
-	public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
-		log.error("Access denied: {}", e.getMessage());
-		ErrorResponse response = new ErrorResponse(
-			HttpStatus.FORBIDDEN.value(),
-			"접근 권한이 없습니다.",
-			e.getMessage()
-		);
-		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-	}
+	// @ExceptionHandler(AccessDeniedException.class)
+	// public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+	// 	log.error("Access denied: {}", e.getMessage());
+	// 	ErrorResponse response = new ErrorResponse(
+	// 		HttpStatus.FORBIDDEN.value(),
+	// 		"접근 권한이 없습니다.",
+	// 		e.getMessage()
+	// 	);
+	// 	return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+	// }
 
 	// 에러 응답 클래스
 	private record ErrorResponse(

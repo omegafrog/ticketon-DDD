@@ -33,7 +33,7 @@ eureka:
 custom:
   instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
   events:
-    url: http://localhost:9000/api/v1/events
+    url: http://localhost:9000
 
 server:
   port: 0
