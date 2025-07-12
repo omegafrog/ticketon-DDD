@@ -1,5 +1,6 @@
 package org.codenbug.broker.redis;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -119,7 +120,6 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 			.put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(), token);
 		redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5, TimeUnit.MINUTES);
 		try {
-
 			emitter.send(
 				SseEmitter.event()
 					.data(Map.of(
@@ -129,10 +129,14 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 						"token", token
 					))
 			);
-			redisTemplate.opsForStream()
-				.acknowledge(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
-		} catch (Exception e) {
-			emitter.complete();
+		} catch (IOException e) {
+			emitter.completeWithError(e);
+			log.error("messageListener:{}", e.getMessage());
 		}
+		catch (IllegalStateException e){
+			log.error("messageListener:{}", e.getMessage());
+		}
+		redisTemplate.opsForStream()
+			.acknowledge(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
 	}
 }

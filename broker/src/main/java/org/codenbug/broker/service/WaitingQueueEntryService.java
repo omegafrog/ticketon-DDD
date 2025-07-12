@@ -2,10 +2,8 @@ package org.codenbug.broker.service;
 
 import static org.codenbug.broker.redis.RedisConfig.*;
 
-import java.io.IOException;
 import java.util.Map;
 
-import org.codenbug.broker.entity.SseConnection;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -59,30 +57,31 @@ public class WaitingQueueEntryService {
 	 */
 	private void enter(String userId, String eventId) throws JsonProcessingException {
 
-		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
-		emitterMap.forEach((id, emitterConnection) -> {
-			try {
-				emitterConnection.getEmitter().send(SseEmitter.event()
-					.comment("heartBeat")
-					.build());
-			} catch (IOException e) {
-				System.out.println("error");
-				emitterConnection.getEmitter().complete();
-			}
-		});
-		// 총 좌석수 얻기
-		RestTemplate restTemplate = new RestTemplate();
+		// Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
+		// emitterMap.forEach((id, emitterConnection) -> {
+		// 	try {
+		// 		emitterConnection.getEmitter().send(SseEmitter.event()
+		// 			.comment("heartBeat")
+		// 			.build());
+		// 	} catch (IOException e) {
+		// 		System.out.println("error");
+		// 		emitterConnection.getEmitter().complete();
+		// 	}
+		// });
 
-		ResponseEntity<String> forEntity = restTemplate.getForEntity(
-			url + "/api/v1/events/" + eventId, String.class);
-
-		int seatCount = objectMapper.readTree(forEntity.getBody())
-			.get("data")
-			.get("information")
-			.get("seatCount")
-			.asInt();
 
 		if (!simpleRedisTemplate.opsForHash().hasKey(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString())) {
+			// 총 좌석수 얻기
+			RestTemplate restTemplate = new RestTemplate();
+
+			ResponseEntity<String> forEntity = restTemplate.getForEntity(
+				url + "/api/v1/events/" + eventId, String.class);
+
+			int seatCount = objectMapper.readTree(forEntity.getBody())
+				.get("data")
+				.get("information")
+				.get("seatCount")
+				.asInt();
 			simpleRedisTemplate.opsForHash()
 				.put(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString(), seatCount);
 		}

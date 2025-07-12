@@ -4,6 +4,8 @@ spring:
     include: secret
 
   datasource:
+    hikari:
+      maximum-pool-size: 1000
     url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
     username: sa
     password:
@@ -24,3 +26,7 @@ spring:
 
 server:
   port: 9000
+  tomcat:
+    threads:
+      max: 1100
+

@@ -77,6 +77,7 @@ public class EntryPromoteThread {
 				);
 
 				// ARGV는 [eventId] 하나만 필요
+				log.info("승격 실행. scriptKeys : {}", scriptKeys);
 				Object result = redisTemplate.execute(
 					promoteAllScript,
 					scriptKeys,
@@ -88,10 +89,11 @@ public class EntryPromoteThread {
 				// if (result == 0L) {
 				// 	throw new RuntimeException("promoteToEntryQueue failed");
 				// }
-				log.info("{}", result.toString());
+				// log.info("{}", result.toString());
 			}
 		} catch (Exception e) {
 			log.info(e.getMessage());
+			log.error(e.getCause().getMessage());
 		}
 	}
 

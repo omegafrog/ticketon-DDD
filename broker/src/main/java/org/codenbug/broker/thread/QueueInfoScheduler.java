@@ -2,8 +2,11 @@ package org.codenbug.broker.thread;
 
 import static org.codenbug.broker.redis.RedisConfig.*;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.codenbug.broker.entity.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
@@ -47,26 +50,25 @@ public class QueueInfoScheduler {
 			try {
 				doPrintInfo(emitterMap, key);
 			} catch (JsonProcessingException e) {
-				throw new RuntimeException(e);
+				log.error(e.getMessage());
 			}
 		});
 
 	}
 
 	private void doPrintInfo(Map<String, SseConnection> emitterMap, String key) throws JsonProcessingException {
-		// eventId에 해당하는 모든 stream 가져오기
-		List<Object> waitingList = redisTemplate.opsForZSet()
-			.range(key, 0, -1).stream().map(
-				item -> {
-					try {
-						return redisTemplate.opsForHash()
-							.get("WAITING_QUEUE_RECORD:" + key.split(":")[1].toString(),
-								objectMapper.readTree(item.toString()).get("userId").asText());
-					} catch (JsonProcessingException e) {
-						throw new RuntimeException(e);
-					}
-				}
-			).toList();
+		Set<String> waitingKeyList = redisTemplate.opsForZSet().range(key, 0, -1);
+		List<Object> waitingList = new ArrayList<>();
+		for (String waitingKey : waitingKeyList) {
+			Object result = null;
+			result = redisTemplate.opsForHash()
+				.get("WAITING_QUEUE_RECORD:" + key.split(":")[1].toString(),
+					objectMapper.readTree(waitingKey.toString()).get("userId").asText());
+
+			if (result == null)
+				continue;
+			waitingList.add(result);
+		}
 
 		if (waitingList == null || waitingList.isEmpty()) {
 			return;
@@ -109,9 +111,15 @@ public class QueueInfoScheduler {
 									"{\"userId\":\"%s\"}".formatted(userId))
 								+ 1))
 				);
-			} catch (Exception e) {
-				emitter.complete();
+			} catch (IOException e) {
+				emitter.completeWithError(e);
 				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
+				log.error("messageListener1:{}", e.getMessage());
+				// throw new RuntimeException(e);
+			} catch (IllegalStateException e) {
+				log.error("messageListener2:{}", e.getMessage());
+				// throw new RuntimeException(e);
+
 			}
 		}
 	}
@@ -126,8 +134,12 @@ public class QueueInfoScheduler {
 					SseEmitter.event()
 						.comment("heartBeat")
 				);
-			} catch (Exception e) {
-				emitter.complete();
+			} catch (IOException e) {
+				emitter.completeWithError(e);
+				log.error("messageListener:{}", e.getMessage());
+
+			} catch (IllegalStateException e) {
+				log.error("messageListener:{}", e.getMessage());
 			}
 		}
 	}

@@ -19,9 +19,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/broker")
+@Slf4j
 public class WaitingQueueController {
 
 	private final WaitingQueueEntryService waitingQueueEntryService;
@@ -52,6 +54,7 @@ public class WaitingQueueController {
 	@GetMapping(value = "/events/{id}/tickets/waiting", produces = MediaType.TEXT_EVENT_STREAM_VALUE
 		+ ";charset=UTF-8")
 	public SseEmitter entryWaiting(@PathVariable("id") String eventId) throws JsonProcessingException {
+		log.info("eventId : {}", eventId);
 		return waitingQueueEntryService.entry(eventId);
 	}
 }
