@@ -44,3 +44,9 @@ server:
       max: 500
     # 연결 요청을 대기열에 쌓아둘 수 있는 최대 수
     accept-count: 100
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,metrics"

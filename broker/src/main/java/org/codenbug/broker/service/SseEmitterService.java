@@ -40,17 +40,19 @@ public class SseEmitterService {
 		}
 		// 새로운 emitter 생성
 		SseEmitter emitter = new SseEmitter(0L);
+		emitterMap.putIfAbsent(userId, new SseConnection(emitter, Status.IN_ENTRY, eventId));
+
 		// emitter연결이 끊어질 때 만약 entry상태라면 entry count를 1 증가
 		emitter.onCompletion(() -> {
-			log.info("emitter completed");
+			// log.info("emitter completed");
 			closeConn(userId, eventId);
 		});
 		emitter.onError((e) -> {
-			log.info("emitter error");
+			// log.info("emitter error");
 			closeConn(userId, eventId);
 		});
 		emitter.onTimeout(() -> {
-			log.info("emitter timeout");
+			// log.info("emitter timeout");
 			closeConn(userId, eventId);
 		});
 
@@ -61,16 +63,15 @@ public class SseEmitterService {
 					.data("sse 연결 성공. userId:" + userId));
 		} catch (IOException e) {
 			emitter.completeWithError(e);
-			log.error("messageListener:{}", e.getMessage());
+			// log.error("messageListener:{}", e.getMessage());
 
 			throw new RuntimeException(e);
 		} catch (IllegalStateException e) {
-			log.error("messageListener:{}", e.getMessage());
+			// log.error("messageListener:{}", e.getMessage());
 			throw new RuntimeException(e);
 		}
 
 		// 전역 공간에 emitter 저장
-		emitterMap.put(userId, new SseConnection(emitter, Status.IN_ENTRY, eventId));
 
 		return emitter;
 	}

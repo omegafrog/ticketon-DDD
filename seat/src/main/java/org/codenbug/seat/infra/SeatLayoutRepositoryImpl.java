@@ -1,7 +1,6 @@
 package org.codenbug.seat.infra;
 
 import org.codenbug.seat.domain.SeatLayout;
-import org.codenbug.seat.domain.SeatLayoutId;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.springframework.stereotype.Repository;
 

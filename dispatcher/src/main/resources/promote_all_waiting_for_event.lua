@@ -29,6 +29,7 @@ if (#waitingItems == 0) then
     return 1
 end
 
+local cnt = #waitingItems
 -- 3) 각 waitingItem마다 순차 처리
 for idx = 1, #waitingItems do
     local itemJson = waitingItems[idx]
@@ -88,4 +89,4 @@ for idx = 1, #waitingItems do
 end
 
 -- 모든 사용자 프로모션 성공
-return 1
+return cnt

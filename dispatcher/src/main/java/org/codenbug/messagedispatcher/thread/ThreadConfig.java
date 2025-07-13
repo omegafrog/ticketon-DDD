@@ -1,6 +1,7 @@
 package org.codenbug.messagedispatcher.thread;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,5 +20,9 @@ public class ThreadConfig {
 		executor.setThreadNamePrefix("single-thread-");
 		executor.initialize();
 		return executor;
+	}
+	@Bean
+	public AtomicLong promotionCounter() {
+		return new AtomicLong(0);
 	}
 }

@@ -104,7 +104,8 @@ public class QueueInfoScheduler {
 			try {
 				emitter.send(
 					SseEmitter.event()
-						.data(Map.of("status", sseConnection.getStatus(), QUEUE_MESSAGE_USER_ID_KEY_NAME, userId,
+						.data(Map.of("status", sseConnection.getStatus(),
+							QUEUE_MESSAGE_USER_ID_KEY_NAME, userId,
 							QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId, "order",
 							redisTemplate.opsForZSet()
 								.rank(WAITING_QUEUE_KEY_NAME + ":" + eventId,

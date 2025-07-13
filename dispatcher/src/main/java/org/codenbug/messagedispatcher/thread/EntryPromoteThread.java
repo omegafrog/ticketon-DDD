@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.springframework.core.io.ClassPathResource;
@@ -31,10 +32,13 @@ public class EntryPromoteThread {
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ObjectMapper objectMapper;
 	private final DefaultRedisScript<Long> promoteAllScript;
+	private final AtomicLong promotionCounter;
 
-	public EntryPromoteThread(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+	public EntryPromoteThread(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
+		AtomicLong promotionCounter) {
 		this.redisTemplate = redisTemplate;
 		this.objectMapper = objectMapper;
+		this.promotionCounter = promotionCounter;
 		promoteAllScript = new DefaultRedisScript<>();
 		promoteAllScript.setScriptText(loadLuaScriptFromResource("promote_all_waiting_for_event.lua"));
 		promoteAllScript.setResultType(Long.class);
@@ -77,8 +81,8 @@ public class EntryPromoteThread {
 				);
 
 				// ARGV는 [eventId] 하나만 필요
-				log.info("승격 실행. scriptKeys : {}", scriptKeys);
-				Object result = redisTemplate.execute(
+				// log.info("승격 실행. scriptKeys : {}", scriptKeys);
+				Long cnt = redisTemplate.execute(
 					promoteAllScript,
 					scriptKeys,
 					eventId
@@ -90,6 +94,7 @@ public class EntryPromoteThread {
 				// 	throw new RuntimeException("promoteToEntryQueue failed");
 				// }
 				// log.info("{}", result.toString());
+				promotionCounter.addAndGet(cnt);
 			}
 		} catch (Exception e) {
 			log.info(e.getMessage());
