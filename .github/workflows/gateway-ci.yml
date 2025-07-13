@@ -1,4 +1,4 @@
-name: broker 테스트 및 빌드
+name: gateway 테스트 및 빌드
 
 on:
   pull_request:

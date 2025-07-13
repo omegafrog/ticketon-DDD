@@ -1,4 +1,4 @@
-name: dispatch module 테스트 및 빌드
+name: dispatcher module 테스트 및 빌드
 
 on:
   pull_request:
