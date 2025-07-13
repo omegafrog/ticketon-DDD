@@ -10,6 +10,9 @@ WORKDIR /app
 # This is necessary because the 'broker' module may depend on 'common', etc.
 COPY . .
 
+RUN chmod +x ./gradlew
+
+
 # Build the 'broker' module, skipping tests for a faster build.
 # The --no-daemon option is recommended for CI/CD and containerized environments.
 RUN ./gradlew :dispatch:build -x test --no-daemon

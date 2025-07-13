@@ -6,6 +6,7 @@ FROM gradle:8.5-jdk21-alpine AS builder
 # Set the working directory inside the container
 WORKDIR /auth
 
+RUN chmod +x ./gradlew
 # Copy the entire project to build all dependencies
 # This is necessary because the 'broker' module may depend on 'common', etc.
 COPY . .
