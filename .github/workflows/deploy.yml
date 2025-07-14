@@ -180,10 +180,16 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
-            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:${{ github.ref_name }} && \
+            mkdir /config && \
+            aws ssm get-parameter --name "/ticketon/broker/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
+            aws ssm get-parameter --name "/ticketon/broker/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
+            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:latest && \
             docker stop broker 2>/dev/null || true && \
             docker rm broker 2>/dev/null || true && \
-            docker run -d --name broker --network env_common -p 9001:9001 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:${{ github.ref_name }} && \
+            docker run -d --name broker \
+            -v /config/application.yml:/app/config/application.yml \
+            -v /config/application-secret.yml:/app/config/application-secret.yml \
+            -p 9002:9002 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:latest && \
             docker image prune -a -f || true
 
 
