@@ -424,6 +424,7 @@ jobs:
           "Name=instance-state-name,Values=running" \
           --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
+          echo "instance_id=$INSTANCE_ID"
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
       
 
