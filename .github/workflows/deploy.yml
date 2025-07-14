@@ -254,7 +254,6 @@ jobs:
           command: |
             rm -rf /config && \
             mkdir /config && \
-            aws ssm get-parameter --name "/ticketon/dispatcher/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
             aws ssm get-parameter --name "/ticketon/dispatcher/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
             docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-dispatcher-deploy:latest && \
             docker stop dispatcher 2>/dev/null || true && \
@@ -303,7 +302,6 @@ jobs:
           command: |
             rm -rf /config && \
             mkdir /config && \
-            aws ssm get-parameter --name "/ticketon/dispatcher/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
             aws ssm get-parameter --name "/ticketon/dispatcher/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
             docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-dispatcher-deploy:${{ github.ref_name }} && \
             docker stop dispatcher 2>/dev/null || true && \
