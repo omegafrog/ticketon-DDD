@@ -382,6 +382,7 @@ jobs:
           "Name=instance-state-name,Values=running" \
           --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
+          echo "instance_id=$INSTANCE_ID"
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
       - name: AWS SSM Send-Command
@@ -395,11 +396,18 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
-            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:latest && \
+            mkdir /config
+            aws ssm get-parameter --name "/ticketon/gateway/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml
+            aws ssm get-parameter --name "/ticketon/gateway/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml
+            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:${{ github.ref_name }} && \
             docker stop gateway 2>/dev/null || true && \
             docker rm gateway 2>/dev/null || true && \
-            docker run -d --name gateway --network env_common -p 9002:9002 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:latest && \
+            docker run -d --name gateway\
+            -v /config/application.yml:/app/config/application.yml \
+            -v /config/application-secret.yml:/app/config/application-secret.yml \
+            -p 9002:9002 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:${{ github.ref_name }} && \
             docker image prune -a -f || true
+            
   deployGatewayServerUsingTag:
     runs-on: ubuntu-latest
     if: inputs.selectServer == 'gateway' && startsWith(github.ref, 'refs/tags/')
