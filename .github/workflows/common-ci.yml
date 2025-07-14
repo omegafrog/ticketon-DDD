@@ -271,7 +271,7 @@ jobs:
           "Name=tag:Name,Values=team01-main" \
           "Name=tag:Team,Values=devcos5-team01" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
       - name: AWS SSM Send-Command
@@ -315,7 +315,7 @@ jobs:
           "Name=tag:Name,Values=team01-main" \
           "Name=tag:Team,Values=devcos5-team01" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -362,7 +362,7 @@ jobs:
           "Name=tag:Name,Values=team01-main" \
           "Name=tag:Team,Values=devcos5-team01" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 

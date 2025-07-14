@@ -38,7 +38,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=app" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
       - name: AWS SSM Send-Command
@@ -79,7 +79,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=app" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
       - name: AWS SSM Send-Command
@@ -121,7 +121,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=broker" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -164,7 +164,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=broker" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -209,7 +209,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=dispatcher" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -251,7 +251,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=dispatcher" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -294,7 +294,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=auth" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -337,7 +337,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=auth" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -380,7 +380,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=gateway" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -422,7 +422,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=gateway" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
       
@@ -472,7 +472,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=eureka" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
@@ -514,7 +514,7 @@ jobs:
           --filters \
           "Name=tag:Name,Values=eureka" \
           "Name=instance-state-name,Values=running" \
-          --query "Reservations[].Instances[0].InstanceId" \
+          --query "Reservations[0].Instances[0].InstanceId" \
           --output text) 
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
 
