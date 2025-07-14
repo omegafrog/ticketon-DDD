@@ -16,6 +16,7 @@ import jakarta.annotation.PostConstruct;
 
 @Component
 public class EntryQueueConsumer {
+
 	private final StreamMessageListenerContainer<String, MapRecord<String, String, String>> container;
 	private final RedisTemplate<String, Object> redisTemplate;
 
