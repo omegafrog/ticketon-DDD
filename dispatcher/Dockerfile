@@ -26,7 +26,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Copy the built JAR file from the builder stage
-COPY --from=builder /app/dispatch/build/libs/*.jar app.jar
+COPY --from=builder /app/dispatcher/build/libs/*.jar app.jar
 
 
 # Command to run the application
