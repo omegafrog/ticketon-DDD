@@ -495,16 +495,16 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
-            mkdir -p /config && \
-            aws ssm get-parameter --name "/ticketon/eureka/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
-            aws ssm get-parameter --name "/ticketon/eureka/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
-            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:latest && \
-            docker stop eureka 2>/dev/null || true && \
-            docker rm eureka 2>/dev/null || true && \
+            mkdir -p /config
+            aws ssm get-parameter --name "/ticketon/eureka/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml
+            aws ssm get-parameter --name "/ticketon/eureka/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml
+            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:latest
+            docker stop eureka 2>/dev/null || true
+            docker rm eureka 2>/dev/null || true
             docker run -d --name eureka \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
-            -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:latest && \
+            -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:latest
             docker image prune -a -f || true
   deployEurekaServerUsingTag:
     runs-on: ubuntu-latest
@@ -543,15 +543,15 @@ jobs:
           working-directory: /
           comment: Deploy
           command: |
-            mkdir -p /config && \
-            aws ssm get-parameter --name "/ticketon/eureka/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
-            aws ssm get-parameter --name "/ticketon/eureka/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
-            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }} && \
-            docker stop eureka 2>/dev/null || true && \
-            docker rm eureka 2>/dev/null || true && \
+            mkdir -p /config
+            aws ssm get-parameter --name "/ticketon/eureka/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml
+            aws ssm get-parameter --name "/ticketon/eureka/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml
+            docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }}
+            docker stop eureka 2>/dev/null || true
+            docker rm eureka 2>/dev/null || true
             docker run -d --name eureka \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
-            -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }} && \
+            -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }}
             docker image prune -a -f || true          
 
