@@ -6,7 +6,7 @@ on:
       - "dispatcher/**"
   push:
     branches:
-      - develop
+      - main
     paths:
       - "dispatcher/**"
 jobs:
