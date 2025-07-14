@@ -9,7 +9,7 @@ on:
         type: choice
         options:
           - app
-          - dispatch
+          - dispatcher
           - broker
           - eureka
           - gateway
