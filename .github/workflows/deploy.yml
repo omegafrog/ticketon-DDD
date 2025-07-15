@@ -62,7 +62,7 @@ jobs:
             docker run -d --name app \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
-            -p 9001:9001 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-app-deploy:latest && \
+            -p 9000:9000 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-app-deploy:latest && \
             docker image prune -a -f || true
   deployAppServerUsingTag:
     runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
             docker run -d --name app \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
-            -p 9001:9001 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-app-deploy:${{ github.ref_name }} && \
+            -p 9000:9000 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-app-deploy:${{ github.ref_name }} && \
             docker image prune -a -f || true
 
   deployBrokerServer:
