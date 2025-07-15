@@ -8,12 +8,13 @@ import org.codenbug.auth.app.AuthService;
 import org.codenbug.auth.app.OAuthService;
 import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUserId;
-import org.codenbug.auth.domain.UserId;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
-import org.codenbug.common.TokenInfo;
+import org.codenbug.common.RefreshToken;
 import org.codenbug.common.RsData;
+import org.codenbug.common.TokenInfo;
 import org.codenbug.securityaop.aop.AuthNeeded;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,12 @@ public class SecurityController {
 	private final OAuthService oAuthService;
 	private final RefreshTokenBlackList blackList;
 
+	@Value("${custom.cookie.domain}")
+	private String domain;
+	@Value("${spring.profiles.active}")
+	private String activeProfile;
+
+
 	public SecurityController(AuthService authService, OAuthService oAuthService, RefreshTokenBlackList blackList) {
 		this.authService = authService;
 		this.oAuthService = oAuthService;
@@ -59,13 +66,24 @@ public class SecurityController {
 		resp.setHeader(HttpHeaders.AUTHORIZATION,
 			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
 
-		Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
-		refreshToken.setPath("/");
-		refreshToken.setMaxAge(60 * 60 * 24 * 7);
+		Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
 		resp.addCookie(refreshToken);
 
 		return ResponseEntity.ok(new RsData<>("200", "login success.",
 			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+	}
+
+	private Cookie createRefreshTokenCookie(RefreshToken refreshToken) {
+		Cookie created = new Cookie("refreshToken", refreshToken.getValue());
+		if(activeProfile!=null && activeProfile.equals("prod")){
+			created.setDomain(domain);
+		}
+		created.setPath("/");
+		created.setMaxAge(60 * 60 * 24 * 7);
+		created.setSecure(false);
+		created.setHttpOnly(false);
+		created.setAttribute("SameSite", "None");
+		return created;
 	}
 
 	@AuthNeeded
@@ -112,13 +130,7 @@ public class SecurityController {
 			// 쿠키에 토큰 저장 (UserController.login 메서드와 유사하게)
 			AccessToken accessToken = userResponse.tokenInfo().getAccessToken();
 			response.setHeader("Authorization", accessToken.getType() + " " + accessToken.getRawValue());
-			Cookie refreshTokenCookie = new Cookie("refreshToken",
-				userResponse.tokenInfo().getRefreshToken().getValue());
-			refreshTokenCookie.setMaxAge(60 * 60 * 24 * 7);
-			refreshTokenCookie.setPath("/");
-			refreshTokenCookie.setSecure(false);
-			refreshTokenCookie.setHttpOnly(false);
-			refreshTokenCookie.setAttribute("SameSite", "None");
+			Cookie refreshTokenCookie = createRefreshTokenCookie(userResponse.tokenInfo().getRefreshToken());
 
 			response.addCookie(refreshTokenCookie);
 

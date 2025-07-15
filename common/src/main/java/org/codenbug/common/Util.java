@@ -1,7 +1,6 @@
 package org.codenbug.common;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
@@ -9,7 +8,6 @@ import javax.crypto.SecretKey;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -135,5 +133,6 @@ public class Util {
 		accessToken.setClaims(payload);
 		return accessToken;
 	}
+
 
 }
