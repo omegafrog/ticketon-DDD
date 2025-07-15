@@ -27,4 +27,4 @@ WORKDIR /app
 COPY --from=builder /app/app/build/libs/*.jar app.jar
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar","-Dspring.config.location=file:/config/application.yml, file:/config/application-secret.yml", "app.jar"]
+ENTRYPOINT ["java", "-jar","-Dspring.config.location=file:/app/config/application.yml, file:/app/config/application-secret.yml", "app.jar"]

@@ -27,4 +27,4 @@ WORKDIR /app
 COPY --from=builder /app/eureka/build/libs/*.jar app.jar
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/config/application.yml", "app.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/app/config/application.yml", "app.jar"]
