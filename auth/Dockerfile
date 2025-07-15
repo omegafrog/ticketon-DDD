@@ -28,4 +28,4 @@ COPY --from=builder /app/auth/build/libs/*.jar app.jar
 
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar","-Dspring.config.location=file:/config/application.yml, file:/config/application-secret.yml", "app.jar"]
