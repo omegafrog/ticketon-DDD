@@ -38,3 +38,4 @@ out/
 /*.mv.db
 /*.trace.db
 /src/main/resources/application-secret.yml
+/src/main/resources/application-prod.yml
