@@ -443,12 +443,14 @@ jobs:
           command: |
             rm -rf /config && \
             mkdir /config && \
+            aws ssm get-parameter --name "/ticketon/gateway/application-prod.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-prod.yml && \
             aws ssm get-parameter --name "/ticketon/gateway/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
             aws ssm get-parameter --name "/ticketon/gateway/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
             docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:latest && \
             docker stop gateway 2>/dev/null || true && \
             docker rm gateway 2>/dev/null || true && \
             docker run -d --name gateway \
+            -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8080:8080 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:latest && \
