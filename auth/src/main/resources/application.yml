@@ -40,5 +40,12 @@ server:
 custom:
   cookie:
     domain: localhost
-
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

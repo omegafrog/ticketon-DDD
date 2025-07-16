@@ -35,3 +35,13 @@ filter:
       - "/api/v1/auth/register"
       - "/api/v1/auth/login"
       - "/api/v1/auth/social/**"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
