@@ -30,3 +30,12 @@ server:
     threads:
       max: 1100
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true

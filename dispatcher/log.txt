@@ -85,3 +85,7 @@
 2025-07-16T15:38:46.606+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2025-07-16T15:43:46.608+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2025-07-16T15:48:46.609+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-16T15:53:46.622+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-16T15:58:46.630+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-16T16:03:46.645+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-16T16:08:46.659+09:00  INFO 22376 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
