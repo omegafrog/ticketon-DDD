@@ -38,6 +38,7 @@ public class SecurityConfig {
 						(request, response, authException) -> {
 							log.error(authException.getMessage());
 							response.setStatus(401);
+							response.setContentType("application/json");
 							response.setCharacterEncoding("utf-8");
 							response.getWriter().write(
 								objectMapper.writeValueAsString(new RsData<>("403", authException.getMessage(), null))
@@ -46,6 +47,7 @@ public class SecurityConfig {
 					accessDeniedHandler((request1, response1, accessDeniedException) -> {
 						log.error(accessDeniedException.getMessage());
 						response1.setStatus(403);
+						response1.setContentType("application/json");
 						response1.setCharacterEncoding("utf-8");
 						response1.getWriter().write(
 							objectMapper.writeValueAsString(
