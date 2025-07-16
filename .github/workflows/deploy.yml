@@ -162,7 +162,8 @@ jobs:
             aws ssm get-parameter --name "/ticketon/broker/application-prod.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-prod.yml && \
             aws ssm get-parameter --name "/ticketon/broker/application-secret.yml" --with-decryption --query "Parameter.Value" --output text > /config/application-secret.yml && \
             aws ssm get-parameter --name "/ticketon/broker/application.yml" --with-decryption --query "Parameter.Value" --output text > /config/application.yml && \
-            PRIVATE_IP=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4) && \
+            TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+            PRIVATE_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4) && \
             docker pull ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:latest && \
             docker stop broker 2>/dev/null || true && \
             docker rm broker 2>/dev/null || true && \
