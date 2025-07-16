@@ -169,7 +169,7 @@ jobs:
             docker rm broker 2>/dev/null || true && \
             docker run -d --name broker \
             --restart unless-stopped \
-            -e EUREKA_INSTANCE_IP_ADDRESS=$PRIVATE_IP \
+            -e EUREKA_CLIENT_HOST_NAME=$PRIVATE_IP \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -225,7 +225,7 @@ jobs:
             docker rm broker 2>/dev/null || true && \
             docker run -d --name broker \
             --restart unless-stopped \
-            -e EUREKA_INSTANCE_IP_ADDRESS=$PRIVATE_IP \
+            -e EUREKA_CLIENT_HOST_NAME=$PRIVATE_IP \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
