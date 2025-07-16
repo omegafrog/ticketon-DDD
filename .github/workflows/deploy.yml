@@ -61,6 +61,7 @@ jobs:
             docker stop app 2>/dev/null || true && \
             docker rm app 2>/dev/null || true && \
             docker run -d --name app \
+            --restart unless-stopped \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -111,6 +112,7 @@ jobs:
             docker stop app 2>/dev/null || true && \
             docker rm app 2>/dev/null || true && \
             docker run -d --name app \
+            --restart unless-stopped \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -163,6 +165,7 @@ jobs:
             docker stop broker 2>/dev/null || true && \
             docker rm broker 2>/dev/null || true && \
             docker run -d --name broker \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 9002:9002 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:latest && \
@@ -213,6 +216,7 @@ jobs:
             docker stop broker 2>/dev/null || true && \
             docker rm broker 2>/dev/null || true && \
             docker run -d --name broker \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 9002:9002 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-broker-deploy:${{ github.ref_name }} && \
@@ -263,6 +267,7 @@ jobs:
             docker stop dispatcher 2>/dev/null || true && \
             docker rm dispatcher 2>/dev/null || true && \
             docker run -d --name dispatcher \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -p 9001:9001 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-dispatcher-deploy:latest && \
             docker image prune -a -f || true
@@ -310,6 +315,7 @@ jobs:
             docker stop dispatcher 2>/dev/null || true && \
             docker rm dispatcher 2>/dev/null || true && \
             docker run -d --name dispatcher \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -p 9001:9001 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-dispatcher-deploy:${{ github.ref_name }} && \
             docker image prune -a -f || true
@@ -360,6 +366,7 @@ jobs:
             docker stop auth 2>/dev/null || true && \
             docker rm auth 2>/dev/null || true && \
             docker run -d --name auth \
+            --restart unless-stopped \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -412,6 +419,7 @@ jobs:
             docker stop auth 2>/dev/null || true && \
             docker rm auth 2>/dev/null || true && \
             docker run -d --name auth \
+            --restart unless-stopped \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -464,6 +472,7 @@ jobs:
             docker stop gateway 2>/dev/null || true && \
             docker rm gateway 2>/dev/null || true && \
             docker run -d --name gateway \
+            --restart unless-stopped \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -517,6 +526,7 @@ jobs:
             docker stop gateway 2>/dev/null || true && \
             docker rm gateway 2>/dev/null || true && \
             docker run -d --name gateway \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8080:8080 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:${{ github.ref_name }} && \
@@ -566,6 +576,7 @@ jobs:
             docker stop eureka 2>/dev/null || true
             docker rm eureka 2>/dev/null || true
             docker run -d --name eureka \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:latest
@@ -613,6 +624,7 @@ jobs:
             docker stop eureka 2>/dev/null || true
             docker rm eureka 2>/dev/null || true
             docker run -d --name eureka \
+            --restart unless-stopped \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }}
