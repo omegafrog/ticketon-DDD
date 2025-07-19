@@ -1,0 +1,94 @@
+package org.codenbug.purchase.ui;
+
+import java.io.IOException;
+
+import org.codenbug.common.Role;
+import org.codenbug.common.RsData;
+import org.codenbug.purchase.app.PurchaseService;
+import org.codenbug.purchase.global.CancelPaymentRequest;
+import org.codenbug.purchase.global.CancelPaymentResponse;
+import org.codenbug.purchase.global.ConfirmPaymentRequest;
+import org.codenbug.purchase.global.ConfirmPaymentResponse;
+import org.codenbug.purchase.global.EntryTokenValidator;
+import org.codenbug.purchase.global.InitiatePaymentRequest;
+import org.codenbug.purchase.global.InitiatePaymentResponse;
+import org.codenbug.securityaop.aop.AuthNeeded;
+import org.codenbug.securityaop.aop.LoggedInUserContext;
+import org.codenbug.securityaop.aop.RoleRequired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/payments")
+public class PurchaseController {
+	private final PurchaseService purchaseService;
+	private final EntryTokenValidator entryTokenValidator;
+
+	/**
+	 * 티켓 구매 전 사전 등록
+	 *
+	 * @param request 이벤트 id
+	 * @return 결제 준비 완료 응답
+	 */
+	@PostMapping("/init")
+	@AuthNeeded
+	@RoleRequired({Role.USER})
+	public ResponseEntity<RsData<InitiatePaymentResponse>> initiatePayment(
+		@RequestBody InitiatePaymentRequest request,
+		@RequestHeader("entryAuthToken") String entryAuthToken
+	) {
+		String userId = LoggedInUserContext.get().getUserId();
+
+		entryTokenValidator.validate(userId, entryAuthToken);
+		InitiatePaymentResponse response = purchaseService.initiatePayment(request, userId);
+		return ResponseEntity.ok(new RsData<>("200", "결제 준비 완료", response));
+	}
+
+	/**
+	 * 티켓 구매 승인
+	 *
+	 * @param request 결제 준비 완료된 데이터
+	 * @return 결제 승인 완료 응답
+	 */
+	@PostMapping("/confirm")
+	public ResponseEntity<RsData<ConfirmPaymentResponse>> confirmPayment(
+		@RequestBody ConfirmPaymentRequest request,
+		@RequestHeader("entryAuthToken") String entryAuthToken
+	) throws IOException, InterruptedException {
+		String userId = LoggedInUserContext.get().getUserId();
+
+
+		entryTokenValidator.validate(userId, entryAuthToken);
+		ConfirmPaymentResponse response = purchaseService.confirmPayment(request, userId);
+		return ResponseEntity.ok(new RsData<>("200", "결제 승인 완료", response));
+	}
+
+	/**
+	 * 유저 측 티켓 결제 취소
+	 *
+	 * @param paymentKey 결제 키 (Toss에서 발급된 고유 키)
+	 * @param request 취소 사유 및 취소 금액
+	 * @return 결제 취소 완료 응답
+	 */
+	@PostMapping("/{paymentKey}/cancel")
+	public ResponseEntity<RsData<CancelPaymentResponse>> cancelPayment(
+		@PathVariable String paymentKey,
+		@RequestBody CancelPaymentRequest request
+	) {
+		String userId = LoggedInUserContext.get().getUserId();
+
+
+		CancelPaymentResponse response = purchaseService.cancelPayment(request, paymentKey, userId);
+		return ResponseEntity.ok(new RsData<>("200", "결제 취소 완료", response));
+	}
+}

@@ -1,6 +1,5 @@
 package org.codenbug.gateway.filter;
 
-import java.sql.Ref;
 import java.util.List;
 
 import org.codenbug.common.AccessToken;
@@ -87,11 +86,11 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			} catch (JwtException  e) {
 				return errorResponse(e, response);
 			} catch (RuntimeException e){
-				response.setStatusCode(HttpStatus.BAD_REQUEST);
+				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
 				try {
 					return response.writeWith(Mono.just(response.bufferFactory().wrap(
-						objectMapper.writeValueAsBytes(new RsData<Void>("400", e.getMessage(), null)))));
+						objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
 				} catch (JsonProcessingException ex) {
 					throw new RuntimeException(ex);
 				}
@@ -101,7 +100,7 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			ServerHttpRequest mutatedRequest = request.mutate()
 				.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
 				.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
-					60 * 60 * 24 * 7, "/", false, false, "None"))
+					60 * 60 * 24 * 7, "/", false, false, "lat"))
 				.header("User-Id", accessToken.getUserId())
 				.header("Role", accessToken.getRole())
 				.header("Email", accessToken.getEmail())

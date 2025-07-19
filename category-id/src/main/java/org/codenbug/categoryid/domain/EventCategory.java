@@ -2,8 +2,10 @@ package org.codenbug.categoryid.domain;
 
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import lombok.Getter;
 
 @Entity
+@Getter
 public class EventCategory {
 	@EmbeddedId
 	private CategoryId id;

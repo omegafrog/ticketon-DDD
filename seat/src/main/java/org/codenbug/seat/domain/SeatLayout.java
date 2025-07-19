@@ -5,18 +5,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.codenbug.seat.global.SeatDto;
-import org.codenbug.seat.global.UpdateSeatLayoutRequest;
-
-import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 
@@ -33,9 +28,7 @@ public class SeatLayout {
 	@Embedded
 	private Location location;
 
-	@ElementCollection
-	@CollectionTable(name = "seat",
-		joinColumns = @JoinColumn(name = "layout_id"))
+	@OneToMany(mappedBy = "seatLayout")
 	private Set<Seat> seats;
 
 	protected SeatLayout() {

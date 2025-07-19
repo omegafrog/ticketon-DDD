@@ -1,5 +1,7 @@
 package org.codenbug.seat.global;
 
+import org.codenbug.seat.domain.Seat;
+
 import lombok.Getter;
 
 @Getter
@@ -14,5 +16,9 @@ public class SeatDto {
 		this.signature = signature;
 		this.grade = grade;
 		this.price = price;
+	}
+
+	public SeatDto(Seat seat) {
+		this(seat.getSignature(), seat.getGrade(), seat.getAmount());
 	}
 }

@@ -23,6 +23,7 @@ dependencies {
     implementation project(':user')
     implementation project(':common')
     compileOnly project(':seat')
+    implementation project(':purchase')
     implementation project(':security-aop')
 }
 

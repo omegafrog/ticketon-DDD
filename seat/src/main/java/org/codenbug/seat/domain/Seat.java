@@ -1,17 +1,17 @@
 package org.codenbug.seat.domain;
 
-import com.fasterxml.uuid.Generators;
+import org.codenbug.common.Util;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 
-@Embeddable
+@Entity
 @Getter
 public class Seat {
-	@Embedded
+	@EmbeddedId
 	private SeatId seatId;
 	@Column(name = "signature")
 	private String signature;
@@ -19,6 +19,10 @@ public class Seat {
 	private String grade;
 	@Column(name = "amount")
 	private int amount;
+	private boolean available;
+
+	@ManyToOne
+	private SeatLayout seatLayout;
 
 	protected Seat() {}
 
@@ -29,6 +33,10 @@ public class Seat {
 		this.amount = amount;
 	}
 	private SeatId generateSeatId() {
-		return new SeatId(Generators.timeBasedEpochGenerator().generate().toString());
+		return new SeatId(Util.ID.createUUID());
+	}
+
+	public void setAvailable(boolean b) {
+		this.available = b;
 	}
 }

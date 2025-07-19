@@ -5,12 +5,11 @@ import static org.codenbug.auth.global.PrivacyConstant.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+import org.codenbug.common.Util;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import com.fasterxml.uuid.Generators;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -92,7 +91,7 @@ public class SecurityUser{
 	}
 
 	private SecurityUserId generateSecurityUserId() {
-		return new SecurityUserId(Generators.timeBasedEpochGenerator().generate().toString());
+		return new SecurityUserId(Util.ID.createUUID());
 	}
 
 	public void complete(){}

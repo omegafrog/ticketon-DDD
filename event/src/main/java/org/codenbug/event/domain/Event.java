@@ -2,9 +2,8 @@ package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
 
+import org.codenbug.common.Util;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import com.fasterxml.uuid.Generators;
 
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
@@ -47,7 +46,7 @@ public class Event {
 	}
 
 	private static EventId generateEventId() {
-		return new EventId(Generators.timeBasedEpochGenerator().generate().toString());
+		return new EventId(Util.ID.createUUID());
 	}
 
 	/**

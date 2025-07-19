@@ -1,5 +1,7 @@
 package org.codenbug.categoryid.app;
 
+import java.util.List;
+
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.categoryid.domain.EventCategoryRepository;
@@ -19,4 +21,10 @@ public class EventCategoryService {
 		eventCategoryRepository.findById(new CategoryId(eventCategoryId))
 			.orElseThrow(() -> new EntityNotFoundException("Cannot find event category"));
 	}
+
+
+	public List<EventCategory> findAllByIds(List<Long> ids) {
+		return eventCategoryRepository.findAll(ids);
+	}
+
 }

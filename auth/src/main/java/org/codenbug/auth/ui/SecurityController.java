@@ -80,7 +80,7 @@ public class SecurityController {
 		}
 		created.setPath("/");
 		created.setMaxAge(60 * 60 * 24 * 7);
-		created.setSecure(false);
+		created.setSecure(true);
 		created.setHttpOnly(false);
 		created.setAttribute("SameSite", "None");
 		return created;

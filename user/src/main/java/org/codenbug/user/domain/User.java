@@ -1,6 +1,6 @@
 package org.codenbug.user.domain;
 
-import com.fasterxml.uuid.Generators;
+import org.codenbug.common.Util;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -52,6 +52,6 @@ public class User {
 	}
 
 	private UserId generateUserId() {
-		return new UserId(Generators.timeBasedEpochGenerator().generate().toString());
+		return new UserId(Util.ID.createUUID());
 	}
 }

@@ -6,6 +6,8 @@ import java.util.Map;
 
 import javax.crypto.SecretKey;
 
+import com.fasterxml.uuid.Generators;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -122,7 +124,7 @@ public class Util {
 			.claims(claims)
 			.signWith(secretKey, Jwts.SIG.HS256)
 			.id(java.util.UUID.randomUUID().toString())
-			.expiration(Date.from(Instant.now().plusSeconds(60 * 1)))
+			.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
 			.compact();
 		AccessToken accessToken = new AccessToken(token, "Bearer");
 		Claims payload = (Claims)Jwts.parser()
@@ -132,6 +134,12 @@ public class Util {
 			.getPayload();
 		accessToken.setClaims(payload);
 		return accessToken;
+	}
+	
+	public static class ID{
+		public static String createUUID(){
+			return Generators.timeBasedGenerator().generate().toString();
+		}
 	}
 
 

@@ -95,6 +95,7 @@ public class EventController {
 		));
 	}
 
+
 	@AuthNeeded
 	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PatchMapping("/{eventId}")
