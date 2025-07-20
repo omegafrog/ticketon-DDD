@@ -24,8 +24,9 @@ public class EventQueryService {
 	private final SeatLayoutRepository seatLayoutRepository;
 	private final EventCategoryService eventCategoryService;
 
-	public EventQueryService(EventRepository eventRepository, EventCategoryService eventCategoryService) {
+	public EventQueryService(EventRepository eventRepository, SeatLayoutRepository seatLayoutRepository, EventCategoryService eventCategoryService) {
 		this.eventRepository = eventRepository;
+		this.seatLayoutRepository = seatLayoutRepository;
 		this.eventCategoryService = eventCategoryService;
 	}
 
@@ -35,7 +36,7 @@ public class EventQueryService {
 			eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
 		return eventPage.map(event -> {
 			EventCategory category = categories.stream()
-				.filter(c -> c.getId().equals(event.getEventInformation().getCategoryId()))
+				.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Category not found"));
 			return new EventListResponse(event, category.getName());

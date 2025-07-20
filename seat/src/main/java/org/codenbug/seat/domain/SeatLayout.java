@@ -31,6 +31,8 @@ public class SeatLayout {
 	@OneToMany(mappedBy = "seatLayout")
 	private Set<Seat> seats;
 
+	private String eventId;
+
 	protected SeatLayout() {
 	}
 

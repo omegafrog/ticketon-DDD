@@ -21,4 +21,14 @@ public class FindSeatLayoutService {
 			seatLayout.getLocation().getHallName(),
 			seatLayout.getLocation().getLocationName());
 	}
+
+	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
+		SeatLayout seatLayout = repository.findSeatLayoutByEventId(eventId);
+		return new SeatLayoutResponse(
+			seatLayout.getLayout(),
+			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
+			seatLayout.getLocation().getHallName(),
+			seatLayout.getLocation().getLocationName()
+		);
+	}
 }

@@ -6,8 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@ComponentScan(basePackages = {"org.codenbug.seat"})
-@EntityScan(basePackages = {"org.codenbug.seat"})
+@ComponentScan(basePackages = {"org.codenbug.seat", "org.codenbug.common"})
+@EntityScan(basePackages = {"org.codenbug.seat", "org.codenbug.seat.query.model"})
 @EnableJpaRepositories(basePackages = {"org.codenbug.seat"})
 public class SeatLayoutConfig {
 }

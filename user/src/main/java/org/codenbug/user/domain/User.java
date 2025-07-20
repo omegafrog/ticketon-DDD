@@ -1,11 +1,17 @@
 package org.codenbug.user.domain;
 
+import java.time.LocalDateTime;
+
 import org.codenbug.common.Util;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
@@ -14,6 +20,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "members")
 @Getter
+@EntityListeners(EnableJpaAuditing.class)
 public class User {
 
 	@EmbeddedId
@@ -37,6 +44,12 @@ public class User {
 
 	@Embedded
 	private SecurityUserId securityUserId;
+
+	@CreatedDate
+	private LocalDateTime createdAt;
+
+	@LastModifiedDate
+	private LocalDateTime modifiedAt;
 
 	protected User() {
 	}

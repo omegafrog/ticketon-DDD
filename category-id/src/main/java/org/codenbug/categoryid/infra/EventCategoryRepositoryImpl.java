@@ -1,5 +1,6 @@
 package org.codenbug.categoryid.infra;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.codenbug.categoryid.domain.CategoryId;
@@ -18,5 +19,10 @@ public class EventCategoryRepositoryImpl implements EventCategoryRepository {
 	@Override
 	public Optional<EventCategory> findById(CategoryId categoryId) {
 		return repository.findById(categoryId);
+	}
+
+	@Override
+	public List<EventCategory> findAll(List<Long> ids) {
+		return repository.findAllById(ids.stream().map(id -> new CategoryId(id)).toList());
 	}
 }

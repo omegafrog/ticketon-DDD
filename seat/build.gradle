@@ -9,6 +9,7 @@ dependencies {
 
     implementation project(':message')
     implementation project(':common')
+    implementation project(':security-aop')
 }
 
 tasks.named('test') {

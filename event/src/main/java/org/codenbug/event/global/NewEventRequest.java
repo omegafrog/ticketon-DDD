@@ -21,6 +21,8 @@ public class NewEventRequest {
 	private LocalDateTime bookingEnd;
 	private int ageLimit;
 	private boolean seatSelectable;
+	private int minPrice;
+	private int maxPrice;
 
 
 	protected NewEventRequest() {
@@ -41,5 +43,7 @@ public class NewEventRequest {
 		this.bookingEnd = bookingEnd;
 		this.ageLimit = ageLimit;
 		this.seatSelectable = seatSelectable;
+		this.minPrice = seatLayout.getSeats().stream().map(seat -> seat.getPrice()).min((a, b) -> a - b).orElse(0);
+		this.maxPrice = seatLayout.getSeats().stream().map(seat -> seat.getPrice()).max((a,b) ->a-b).orElse(0);
 	}
 }

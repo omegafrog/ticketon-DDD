@@ -86,9 +86,10 @@ public class Event {
 			this.eventInformation.getEventStart(),
 			this.eventInformation.getEventEnd(),
 			this.eventInformation.getSeatSelectable(),
+			this.eventInformation.getMinPrice(),
+			this.eventInformation.getMaxPrice(),
 			status,
-			this.eventInformation.getCategoryId()
-		);
+			this.eventInformation.getCategoryId());
 	}
 
 	public void delete() {

@@ -1,12 +1,11 @@
 package org.codenbug.seat.infra;
 
-import org.codenbug.message.SeatPurchasedCompleteEvent;
+import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.message.SeatPurchasedEvent;
 import org.codenbug.seat.domain.Seat;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,13 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class SeatPurchasedEventConsumer {
-	private final KafkaTemplate<String, Object> kafkaTemplate;
 	private final SeatLayoutRepository seatLayoutRepository;
+	private final RedisLockService redisLockService;
 
-	public SeatPurchasedEventConsumer(SeatLayoutRepository seatLayoutRepository,
-		KafkaTemplate<String, Object> kafkaTemplate, SeatLayoutRepository seatLayoutRepository1) {
-		this.kafkaTemplate = kafkaTemplate;
+	public SeatPurchasedEventConsumer(SeatLayoutRepository seatLayoutRepository1, RedisLockService redisLockService) {
 		this.seatLayoutRepository = seatLayoutRepository1;
+		this.redisLockService = redisLockService;
 	}
 
 	@KafkaListener(topics = "seat-purchased", groupId = "seat-purchased-seat-group")
@@ -38,8 +36,8 @@ public class SeatPurchasedEventConsumer {
 					}
 				}
 			}
-			kafkaTemplate.send("seat-purchased-complete",
-				new SeatPurchasedCompleteEvent(event.getUserId()));
+			redisLockService.releaseAllLocks(event.getUserId());
+			redisLockService.releaseAllEntryQueueLocks(event.getUserId());
 		} catch (Exception e) {
 			// TODO: 좌석이 변경되었을 시 보상 트랜잭션
 		}

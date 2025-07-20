@@ -12,17 +12,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/api/v1/events")
 public class EventQueryController {
 	private final EventQueryService eventQueryService;
 
 	public EventQueryController(EventQueryService service){
 		this.eventQueryService = service;
 	}
-	@PostMapping("/events")
+	@PostMapping("/list")
 	public ResponseEntity<RsData<Page<EventListResponse>>> getEvents(
 		@RequestParam(name = "keyword", required = false) String keyword,
 		 @RequestBody(required = false) EventListFilter filter, Pageable pageable) {
@@ -31,7 +33,7 @@ public class EventQueryController {
 		return ResponseEntity.ok(new RsData("200","event list 조회 성공.", eventList));
 	}
 
-	@GetMapping("/events/{id}")
+	@GetMapping("/{id}")
 	public ResponseEntity<RsData<EventInfoResponse>> getEvent(@PathVariable(name = "id") String id) {
 		EventInfoResponse event = eventQueryService.getEvent(id);
 

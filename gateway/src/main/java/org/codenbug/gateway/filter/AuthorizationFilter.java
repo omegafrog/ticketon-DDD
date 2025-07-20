@@ -158,7 +158,8 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	private boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
 		ServerHttpRequest request) {
 		if (whitelistProperties.getUrls().stream()
-			.anyMatch(pattern -> new AntPathMatcher().match(pattern, request.getURI().getPath()))) {
+			.anyMatch(pattern -> new AntPathMatcher().match(pattern.getUrl(), request.getURI().getPath()) &&
+				(pattern.getMethod().equals(request.getMethod().name()) || pattern.getMethod().equals("*"))) ) {
 			log.debug("pass authorization filter");
 			return true;
 		}

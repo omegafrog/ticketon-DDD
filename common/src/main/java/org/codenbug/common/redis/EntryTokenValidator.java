@@ -1,4 +1,4 @@
-package org.codenbug.purchase.global;
+package org.codenbug.common.redis;
 
 import org.codenbug.common.exception.AccessDeniedException;
 import org.springframework.data.redis.core.RedisTemplate;

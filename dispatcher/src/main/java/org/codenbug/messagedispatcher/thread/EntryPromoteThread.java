@@ -9,6 +9,10 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -33,12 +37,17 @@ public class EntryPromoteThread {
 	private final ObjectMapper objectMapper;
 	private final DefaultRedisScript<Long> promoteAllScript;
 	private final AtomicLong promotionCounter;
+	private final ExecutorService executorService;
+	
+	private static final String PROMOTION_TASK_LIST_KEY = "PROMOTION_TASK_LIST";
+	private static final int THREAD_POOL_SIZE = 10; // 스레드 풀 크기 설정
 
 	public EntryPromoteThread(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
 		AtomicLong promotionCounter) {
 		this.redisTemplate = redisTemplate;
 		this.objectMapper = objectMapper;
 		this.promotionCounter = promotionCounter;
+		this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 		promoteAllScript = new DefaultRedisScript<>();
 		promoteAllScript.setScriptText(loadLuaScriptFromResource("promote_all_waiting_for_event.lua"));
 		promoteAllScript.setResultType(Long.class);
@@ -56,49 +65,93 @@ public class EntryPromoteThread {
 
 	@Scheduled(cron = "* * * * * *")
 	public void promoteToEntryQueue() {
-		// 1) waiting 스트림의 모든 레코드를 조회
-		List<String> keys = redisTemplate.keys(WAITING_QUEUE_KEY_NAME + ":*").stream().collect(Collectors.toList());
-		if(keys.isEmpty())
-			return;
 		try {
-
-			for (String key : keys) {
+			// 1) waiting 스트림의 모든 레코드를 조회
+			List<String> keys = redisTemplate.keys(WAITING_QUEUE_KEY_NAME + ":*").stream().collect(Collectors.toList());
+			if(keys.isEmpty())
+				return;
+				
+			// 2) Redis에 임시 작업 목록 생성
+			String taskListId = UUID.randomUUID().toString();
+			String taskListKey = PROMOTION_TASK_LIST_KEY + ":" + taskListId;
+			
+			// 각 키를 작업 목록에 추가
+			for (int i = 0; i < keys.size(); i++) {
+				String key = keys.get(i);
 				String eventId = key.split(":")[1];
-				String entryCountHashKey = ENTRY_QUEUE_COUNT_KEY_NAME;                    // ex: "ENTRY_QUEUE_COUNT"
-				String waitingRecordHash =
-					"WAITING_QUEUE_RECORD:"+eventId;           // ex: "WAITING_QUEUE_RECORD:42"
-				String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId;       // ex: "waiting:42"
-				String waitingInUserHash =
-					WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId; // ex: "WAITING_QUEUE_IN_USER_RECORD:42"
-				String entryStreamKey = ENTRY_QUEUE_KEY_NAME;                         // ex: "ENTRY_QUEUE"
-
-				List<String> scriptKeys = List.of(
-					entryCountHashKey,
-					waitingRecordHash,
-					waitingZsetKey,
-					waitingInUserHash,
-					entryStreamKey
-				);
-
-				// ARGV는 [eventId] 하나만 필요
-				// log.info("승격 실행. scriptKeys : {}", scriptKeys);
-				Long cnt = redisTemplate.execute(
-					promoteAllScript,
-					scriptKeys,
-					eventId
-				);
-				// if (result == null) {
-				// 	throw new RuntimeException("promoteToEntryQueue failed");
-				// }
-				// if (result == 0L) {
-				// 	throw new RuntimeException("promoteToEntryQueue failed");
-				// }
-				// log.info("{}", result.toString());
-				promotionCounter.addAndGet(cnt);
+				// 작업 정보를 Redis 리스트에 저장
+				redisTemplate.opsForList().rightPush(taskListKey, eventId);
+			}
+			
+			log.info("Created temporary task list {} with {} tasks", taskListKey, keys.size());
+			
+			// 3) 멀티스레딩으로 작업 처리
+			for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+				executorService.submit(() -> processPromotionTasks(taskListKey));
+			}
+			
+			// 작업 목록 만료 시간 설정 (5분)
+			redisTemplate.expire(taskListKey, 5, TimeUnit.MINUTES);
+			
+		} catch (Exception e) {
+			log.error("Error in promoteToEntryQueue: {}", e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 작업 목록에서 작업을 가져와 처리하는 메서드
+	 * 각 스레드가 이 메서드를 실행하여 작업을 처리함
+	 */
+	private void processPromotionTasks(String taskListKey) {
+		try {
+			while (true) {
+				// 작업 목록에서 작업 가져오기 (LPOP 사용)
+				String eventId = (String) redisTemplate.opsForList().leftPop(taskListKey);
+				if (eventId == null) {
+					// 더 이상 작업이 없으면 종료
+					break;
+				}
+				
+				// 작업 처리 (Lua 스크립트 실행)
+				executePromotionScript(eventId);
 			}
 		} catch (Exception e) {
-			log.info(e.getMessage());
-			log.error(e.getCause().getMessage());
+			log.error("Error processing promotion tasks: {}", e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 주어진 이벤트 ID에 대해 승격 스크립트를 실행하는 메서드
+	 */
+	private void executePromotionScript(String eventId) {
+		try {
+			String entryCountHashKey = ENTRY_QUEUE_COUNT_KEY_NAME;                    // ex: "ENTRY_QUEUE_COUNT"
+			String waitingRecordHash = "WAITING_QUEUE_RECORD:" + eventId;           // ex: "WAITING_QUEUE_RECORD:42"
+			String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId;       // ex: "waiting:42"
+			String waitingInUserHash = WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId; // ex: "WAITING_QUEUE_IN_USER_RECORD:42"
+			String entryStreamKey = ENTRY_QUEUE_KEY_NAME;                         // ex: "ENTRY_QUEUE"
+
+			List<String> scriptKeys = List.of(
+				entryCountHashKey,
+				waitingRecordHash,
+				waitingZsetKey,
+				waitingInUserHash,
+				entryStreamKey
+			);
+
+			// Lua 스크립트 실행
+			Long cnt = redisTemplate.execute(
+				promoteAllScript,
+				scriptKeys,
+				eventId
+			);
+			
+			if (cnt != null && cnt > 0) {
+				promotionCounter.addAndGet(cnt);
+				log.debug("Promoted {} users for event {}", cnt, eventId);
+			}
+		} catch (Exception e) {
+			log.error("Error executing promotion script for event {}: {}", eventId, e.getMessage(), e);
 		}
 	}
 

@@ -6,14 +6,12 @@ import org.codenbug.event.application.FindEventService;
 import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;
 import org.codenbug.event.domain.EventId;
-import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -85,15 +83,6 @@ public class EventController {
 		));
 	}
 
-	@GetMapping("/{eventId}")
-	public ResponseEntity<RsData<EventInfoResponse>> getEvent(@PathVariable String eventId){
-		EventInfoResponse response = findEventService.findEvent(new EventId(eventId));
-		return ResponseEntity.ok(new RsData<>(
-			"200",
-			"이벤트 조회 성공",
-			response
-		));
-	}
 
 
 	@AuthNeeded

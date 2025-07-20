@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
+import org.codenbug.common.redis.EntryTokenValidator;
 import org.codenbug.purchase.app.PurchaseService;
 import org.codenbug.purchase.global.CancelPaymentRequest;
 import org.codenbug.purchase.global.CancelPaymentResponse;
 import org.codenbug.purchase.global.ConfirmPaymentRequest;
 import org.codenbug.purchase.global.ConfirmPaymentResponse;
-import org.codenbug.purchase.global.EntryTokenValidator;
 import org.codenbug.purchase.global.InitiatePaymentRequest;
 import org.codenbug.purchase.global.InitiatePaymentResponse;
 import org.codenbug.securityaop.aop.AuthNeeded;

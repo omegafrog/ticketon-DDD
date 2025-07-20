@@ -1,9 +1,7 @@
 package org.codenbug.user.ui;
 
-import org.codenbug.common.AccessToken;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.common.Util;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
@@ -14,13 +12,8 @@ import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/users/")
@@ -41,7 +34,7 @@ public class UserController {
 	@RoleRequired(value={Role.USER})
 	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
-		UserInfo userinfo = userQueryService.findUser(new UserId(userSecurityToken.getUserId()));
+		UserInfo userinfo = userQueryService.findUser(userSecurityToken, new UserId(userSecurityToken.getUserId()));
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
 	}
 }

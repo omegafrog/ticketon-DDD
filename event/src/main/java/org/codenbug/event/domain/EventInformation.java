@@ -44,6 +44,9 @@ public class EventInformation {
 	@Column(name = "seat_selectable", columnDefinition = "boolean default false", nullable = false)
 	private Boolean seatSelectable;
 
+	private int minPrice;
+	private int maxPrice;
+
 	@Enumerated(EnumType.STRING)
 	private EventStatus status;
 	@Embedded
@@ -55,7 +58,7 @@ public class EventInformation {
 	public EventInformation(String title, String thumbnailUrl, Integer ageLimit, String restrictions,
 		String description,
 		LocalDateTime bookingStart, LocalDateTime bookingEnd, LocalDateTime eventStart, LocalDateTime eventEnd,
-		Boolean seatSelectable, EventStatus status, EventCategoryId categoryId) {
+		Boolean seatSelectable, int minPrice, int maxPrice, EventStatus status, EventCategoryId categoryId) {
 		this.title = title;
 		this.thumbnailUrl = thumbnailUrl;
 		this.restrictions = restrictions;
@@ -65,6 +68,8 @@ public class EventInformation {
 		this.eventStart = eventStart;
 		this.eventEnd = eventEnd;
 		this.ageLimit = ageLimit;
+		this.minPrice = minPrice;
+		this.maxPrice = maxPrice;
 		this.viewCount = 0;
 		this.status = status == null ? EventStatus.CLOSED : status;
 		this.seatSelectable = seatSelectable != null && seatSelectable;
@@ -78,8 +83,10 @@ public class EventInformation {
 			request.getRestriction(),
 			request.getDescription(), request.getBookingStart(), request.getBookingEnd(), request.getStartDate(),
 			request.getEndDate(),
-			request.isSeatSelectable(), EventStatus.CLOSED,
-			request.getCategoryId());
+			request.isSeatSelectable(),
+			request.getMinPrice(),
+			request.getMaxPrice(),
+			EventStatus.CLOSED, request.getCategoryId());
 	}
 
 	// public EventInformation(EventInformation original, UpdateEventRequest request) {

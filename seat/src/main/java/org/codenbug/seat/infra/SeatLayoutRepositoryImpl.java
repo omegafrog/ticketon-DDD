@@ -18,6 +18,11 @@ public class SeatLayoutRepositoryImpl implements SeatLayoutRepository {
 	}
 
 	@Override
+	public SeatLayout findSeatLayoutByEventId(String eventId) {
+		return jpaSeatRepository.findByEventId(eventId);
+	}
+
+	@Override
 	public SeatLayout findSeatLayout(Long id) {
 		return jpaSeatRepository.findSeatLayoutById(id);
 	}

@@ -1,5 +1,6 @@
 package org.codenbug.user.app;
 
+import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.domain.UserRepository;
@@ -15,8 +16,8 @@ public class UserCommandQueryService {
 		this.userRepository = userRepository;
 	}
 
-	public UserInfo findUser(UserId userId){
+	public UserInfo findUser(UserSecurityToken token, UserId userId){
 		User user = userRepository.findUser(userId);
-		return new UserInfo(user);
+		return new UserInfo(user, token.getEmail(), token.getRole());
 	}
 }

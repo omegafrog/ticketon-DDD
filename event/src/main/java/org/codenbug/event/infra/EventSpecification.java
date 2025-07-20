@@ -1,6 +1,6 @@
 package org.codenbug.event.infra;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -17,7 +17,7 @@ public class EventSpecification {
 	 * 기본 조건: 삭제되지 않은 이벤트
 	 */
 	public static Specification<Event> isNotDeleted() {
-		return (root, query, builder) -> builder.isFalse(root.get("isDeleted"));
+		return (root, query, builder) -> builder.isFalse(root.get("metaData").get("deleted"));
 	}
 
 	/**
@@ -27,8 +27,8 @@ public class EventSpecification {
 		if (!StringUtils.hasText(keyword)) {
 			return null; // 조건이 없으면 무시
 		}
-		// 'information' Embeddable 객체 내부의 'title' 필드에 접근
-		return (root, query, builder) -> builder.like(builder.lower(root.get("information").get("title")), "%" + keyword.toLowerCase() + "%");
+		// 'eventInformation' Embeddable 객체 내부의 'title' 필드에 접근
+		return (root, query, builder) -> builder.like(builder.lower(root.get("eventInformation").get("title")), "%" + keyword.toLowerCase() + "%");
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class EventSpecification {
 				locationIn(filter.getLocationList()),
 				categoryIn(filter.getEventCategoryList()),
 				statusIn(filter.getEventStatusList()),
-				dateBetween(filter.getStartDate().toLocalDate(), filter.getEndDate().toLocalDate()),
+				dateBetween(filter.getStartDate(), filter.getEndDate()),
 				costInRange(filter.getCostRange().getMin(), filter.getCostRange().getMax())
 			)
 			.filter(Objects::nonNull)
@@ -57,7 +57,7 @@ public class EventSpecification {
 
 	private static Specification<Event> locationIn(List<String> locations) {
 		if (locations == null || locations.isEmpty()) return null;
-		return (root, query, builder) -> root.get("information").get("location").in(locations);
+		return (root, query, builder) -> root.get("eventInformation").get("location").in(locations);
 	}
 
 	private static Specification<Event> categoryIn(List<Long> categories) {
@@ -71,7 +71,7 @@ public class EventSpecification {
 			.stream().map(status->status.name()).toList());
 	}
 
-	private static Specification<Event> dateBetween(LocalDate start, LocalDate end) {
+	private static Specification<Event> dateBetween(LocalDateTime start, LocalDateTime end) {
 		if (start == null || end == null) return null;
 		return (root, query, builder) -> builder.between(root.get("bookingStart"), start, end);
 	}
@@ -82,8 +82,8 @@ public class EventSpecification {
 		return (root, query, builder) -> {
 			if (minCost != null && maxCost != null) {
 				return builder.and(
-					builder.greaterThanOrEqualTo(root.get("minPrice"), minCost),
-					builder.lessThanOrEqualTo(root.get("maxPrice"), maxCost)
+					builder.greaterThanOrEqualTo(root.get("eventInformation").get("minPrice"), minCost),
+					builder.lessThanOrEqualTo(root.get("eventInformation").get("maxPrice"), maxCost)
 				);
 			}
 			if (minCost != null) {

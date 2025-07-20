@@ -8,30 +8,30 @@
 
  :: Spring Boot ::                (v3.5.0)
 
-2025-07-18T17:03:09.473+09:00  INFO 35424 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Starting BrokerApplication using Java 23.0.2 with PID 35424 (C:\Users\jiwoo\workspace\ticketon-DDD\broker\build\classes\java\main started by jiwoo in C:\Users\jiwoo\workspace\ticketon-DDD)
-2025-07-18T17:03:09.477+09:00  INFO 35424 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : The following 1 profile is active: "secret"
-2025-07-18T17:03:10.427+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2025-07-18T17:03:10.428+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-07-18T17:03:10.448+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 8 ms. Found 0 JPA repository interfaces.
-2025-07-18T17:03:11.026+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2025-07-18T17:03:11.028+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2025-07-18T17:03:11.052+09:00  INFO 35424 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 12 ms. Found 0 Redis repository interfaces.
-2025-07-18T17:03:11.418+09:00  INFO 35424 --- [broker-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=1c5c5378-f662-33f7-9a14-f6f8502e6228
-2025-07-18T17:03:12.346+09:00  INFO 35424 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
-2025-07-18T17:03:12.371+09:00  INFO 35424 --- [broker-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-07-18T17:03:12.371+09:00  INFO 35424 --- [broker-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
-2025-07-18T17:03:12.454+09:00  INFO 35424 --- [broker-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-07-18T17:03:12.455+09:00  INFO 35424 --- [broker-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2905 ms
-2025-07-18T17:03:12.941+09:00  INFO 35424 --- [broker-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-07-18T17:03:13.016+09:00  INFO 35424 --- [broker-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
-2025-07-18T17:03:13.060+09:00  INFO 35424 --- [broker-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-07-18T17:03:13.486+09:00  INFO 35424 --- [broker-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-07-18T17:03:13.533+09:00  INFO 35424 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-07-18T17:03:13.976+09:00  INFO 35424 --- [broker-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./app user=SA
-2025-07-18T17:03:13.979+09:00  INFO 35424 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-07-18T17:03:14.016+09:00  WARN 35424 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-07-18T17:03:14.018+09:00  WARN 35424 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
-2025-07-18T17:03:14.047+09:00  INFO 35424 --- [broker-service] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2025-07-20T16:02:29.684+09:00  INFO 29892 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Starting BrokerApplication using Java 23.0.2 with PID 29892 (C:\Users\jiwoo\workspace\ticketon-DDD\broker\build\classes\java\main started by jiwoo in C:\Users\jiwoo\workspace\ticketon-DDD)
+2025-07-20T16:02:29.690+09:00  INFO 29892 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : The following 1 profile is active: "secret"
+2025-07-20T16:02:31.355+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-07-20T16:02:31.355+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-07-20T16:02:31.385+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 11 ms. Found 0 JPA repository interfaces.
+2025-07-20T16:02:32.384+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-07-20T16:02:32.386+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-07-20T16:02:32.429+09:00  INFO 29892 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 0 Redis repository interfaces.
+2025-07-20T16:02:32.862+09:00  INFO 29892 --- [broker-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=1c5c5378-f662-33f7-9a14-f6f8502e6228
+2025-07-20T16:02:34.544+09:00  INFO 29892 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2025-07-20T16:02:34.598+09:00  INFO 29892 --- [broker-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-07-20T16:02:34.599+09:00  INFO 29892 --- [broker-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-07-20T16:02:34.760+09:00  INFO 29892 --- [broker-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-07-20T16:02:34.761+09:00  INFO 29892 --- [broker-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 4930 ms
+2025-07-20T16:02:35.515+09:00  INFO 29892 --- [broker-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-07-20T16:02:35.629+09:00  INFO 29892 --- [broker-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-07-20T16:02:35.694+09:00  INFO 29892 --- [broker-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-07-20T16:02:36.362+09:00  INFO 29892 --- [broker-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-07-20T16:02:36.433+09:00  INFO 29892 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-07-20T16:02:36.690+09:00  INFO 29892 --- [broker-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./app user=SA
+2025-07-20T16:02:36.695+09:00  INFO 29892 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-07-20T16:02:36.748+09:00  WARN 29892 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-07-20T16:02:36.750+09:00  WARN 29892 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-07-20T16:02:36.790+09:00  INFO 29892 --- [broker-service] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 8.0
@@ -39,297 +39,83 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2025-07-18T17:03:14.584+09:00  INFO 35424 --- [broker-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-07-18T17:03:14.593+09:00  INFO 35424 --- [broker-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-07-18T17:03:15.794+09:00  INFO 35424 --- [broker-service] [           main] o.c.b.redis.EntryStreamMessageListener   : Started listening to Redis Stream 'DISPATCH' with consumer group 'DISPATCH:broker-service:858eabc8c915991a35bbd658f6b69026' and consumer name 'broker-service:858eabc8c915991a35bbd658f6b69026-consumer'
-2025-07-18T17:03:15.967+09:00  WARN 35424 --- [broker-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2025-07-18T17:03:17.017+09:00  INFO 35424 --- [broker-service] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./app'
-2025-07-18T17:03:17.107+09:00  INFO 35424 --- [broker-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
-2025-07-18T17:03:17.165+09:00  WARN 35424 --- [broker-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
-2025-07-18T17:03:17.174+09:00  INFO 35424 --- [broker-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
-2025-07-18T17:03:17.294+09:00  INFO 35424 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 61583 (http) with context path '/'
-2025-07-18T17:03:17.296+09:00  INFO 35424 --- [broker-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 61583
-2025-07-18T17:03:17.302+09:00  INFO 35424 --- [broker-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
-2025-07-18T17:03:17.334+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
-2025-07-18T17:03:17.339+09:00  INFO 35424 --- [broker-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
-2025-07-18T17:03:17.351+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
-2025-07-18T17:03:17.352+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
-2025-07-18T17:03:18.285+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
-2025-07-18T17:03:18.287+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
-2025-07-18T17:03:18.289+09:00  INFO 35424 --- [broker-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
-2025-07-18T17:03:18.291+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1752825798290 with initial instances count: 0
-2025-07-18T17:03:18.296+09:00  INFO 35424 --- [broker-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application BROKER-SERVICE with eureka with status UP
-2025-07-18T17:03:18.297+09:00  INFO 35424 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1752825798297, current=UP, previous=STARTING]
-2025-07-18T17:03:18.300+09:00  INFO 35424 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601: registering service...
-2025-07-18T17:03:18.324+09:00  INFO 35424 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Started BrokerApplication in 9.628 seconds (process running for 10.747)
-2025-07-18T17:03:18.446+09:00  INFO 35424 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601 - registration status: 204
-2025-07-18T17:03:18.887+09:00  INFO 35424 --- [broker-service] [(2)-172.30.1.48] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-07-18T17:03:18.887+09:00  INFO 35424 --- [broker-service] [(2)-172.30.1.48] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-07-18T17:03:18.890+09:00  INFO 35424 --- [broker-service] [(2)-172.30.1.48] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
-2025-07-18T17:03:42.140+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] o.s.c.n.e.s.EurekaServiceRegistry        : Unregistering application BROKER-SERVICE with eureka with status DOWN
-2025-07-18T17:03:42.142+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1752825822142, current=DOWN, previous=UP]
-2025-07-18T17:03:42.142+09:00  INFO 35424 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601: registering service...
-2025-07-18T17:03:42.162+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
-2025-07-18T17:03:42.165+09:00  INFO 35424 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601 - registration status: 204
-2025-07-18T17:03:42.250+09:00  INFO 35424 --- [broker-service] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
-2025-07-18T17:03:42.260+09:00  WARN 35424 --- [broker-service] [cTaskExecutor-1] io.lettuce.core.RedisChannelHandler      : Connection is already closed
-2025-07-18T17:03:42.261+09:00 ERROR 35424 --- [broker-service] [cTaskExecutor-1] ageListenerContainer$LoggingErrorHandler : Unexpected error occurred in scheduled task
-
-org.springframework.data.redis.RedisSystemException: Redis exception
-	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:72) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceExceptionConverter.convert(LettuceExceptionConverter.java:41) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.PassThroughExceptionTranslationStrategy.translate(PassThroughExceptionTranslationStrategy.java:40) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.FallbackExceptionTranslationStrategy.translate(FallbackExceptionTranslationStrategy.java:38) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceConnection.convertLettuceAccessException(LettuceConnection.java:310) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceConnection.await(LettuceConnection.java:1012) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceConnection.lambda$doInvoke$3(LettuceConnection.java:447) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceInvoker$Synchronizer.invoke(LettuceInvoker.java:673) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceInvoker$DefaultManyInvocationSpec.toList(LettuceInvoker.java:618) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.connection.lettuce.LettuceStreamCommands.xReadGroup(LettuceStreamCommands.java:282) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.stream.DefaultStreamMessageListenerContainer.lambda$getReadFunction$3(DefaultStreamMessageListenerContainer.java:234) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:413) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:380) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.core.RedisTemplate.execute(RedisTemplate.java:367) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.stream.DefaultStreamMessageListenerContainer.lambda$getReadFunction$4(DefaultStreamMessageListenerContainer.java:233) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.stream.StreamPollTask.readRecords(StreamPollTask.java:146) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.stream.StreamPollTask.doLoop(StreamPollTask.java:127) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at org.springframework.data.redis.stream.StreamPollTask.run(StreamPollTask.java:112) ~[spring-data-redis-3.5.0.jar:3.5.0]
-	at java.base/java.lang.Thread.run(Thread.java:1575) ~[na:na]
-Caused by: io.lettuce.core.RedisException: Connection closed
-	at io.lettuce.core.protocol.DefaultEndpoint.lambda$notifyDrainQueuedCommands$7(DefaultEndpoint.java:677) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.DefaultEndpoint$Lazy.getNullable(DefaultEndpoint.java:1186) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.DefaultEndpoint$Lazy.get(DefaultEndpoint.java:1171) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.DefaultEndpoint.lambda$notifyDrainQueuedCommands$8(DefaultEndpoint.java:678) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.DefaultEndpoint.cancelCommands(DefaultEndpoint.java:801) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.DefaultEndpoint.notifyDrainQueuedCommands(DefaultEndpoint.java:678) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.lettuce.core.protocol.CommandHandler.channelInactive(CommandHandler.java:366) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.lettuce.core.protocol.RedisHandshakeHandler.channelInactive(RedisHandshakeHandler.java:79) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.ChannelInboundHandlerAdapter.channelInactive(ChannelInboundHandlerAdapter.java:81) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.lettuce.core.ChannelGroupListener.channelInactive(ChannelGroupListener.java:54) ~[lettuce-core-6.5.5.RELEASE.jar:6.5.5.RELEASE/cb02888]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:303) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.fireChannelInactive(AbstractChannelHandlerContext.java:274) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelInactive(DefaultChannelPipeline.java:1352) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:301) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelInactive(AbstractChannelHandlerContext.java:281) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.DefaultChannelPipeline.fireChannelInactive(DefaultChannelPipeline.java:850) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.AbstractChannel$AbstractUnsafe$7.run(AbstractChannel.java:811) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.concurrent.AbstractEventExecutor.runTask(AbstractEventExecutor.java:173) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:166) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:472) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:569) ~[netty-transport-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:998) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.121.Final.jar:4.1.121.Final]
-	... 1 common frames omitted
-
-2025-07-18T17:03:42.407+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] o.c.b.redis.EntryStreamMessageListener   : Stopped listening to Redis Stream.
-2025-07-18T17:03:42.409+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-07-18T17:03:42.414+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2025-07-18T17:03:42.417+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
-2025-07-18T17:03:42.418+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.netflix.discovery.DiscoveryClient    : Shutting down DiscoveryClient ...
-2025-07-18T17:03:45.424+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.netflix.discovery.DiscoveryClient    : Unregistering ...
-2025-07-18T17:03:45.436+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] c.n.d.s.t.d.RedirectingEurekaHttpClient  : Request execution error. endpoint=DefaultEndpoint{ serviceUrl='http://localhost:8761/eureka/} exception=I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt stacktrace=org.springframework.web.client.ResourceAccessException: I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:926)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:906)
-	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:841)
-	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:702)
-	at org.springframework.cloud.netflix.eureka.http.RestTemplateEurekaHttpClient.cancel(RestTemplateEurekaHttpClient.java:100)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient.execute(RedirectingEurekaHttpClient.java:91)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient.execute(RetryableEurekaHttpClient.java:120)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient.execute(SessionedEurekaHttpClient.java:76)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.DiscoveryClient.unregister(DiscoveryClient.java:919)
-	at com.netflix.discovery.DiscoveryClient.shutdown(DiscoveryClient.java:900)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeDestroyMethods(InitDestroyAnnotationBeanPostProcessor.java:415)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeDestruction(InitDestroyAnnotationBeanPostProcessor.java:239)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:202)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.run(DisposableBeanAdapter.java:195)
-	at org.springframework.cloud.context.scope.GenericScope$BeanLifecycleWrapper.destroy(GenericScope.java:387)
-	at org.springframework.cloud.context.scope.GenericScope.destroy(GenericScope.java:134)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:211)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroyBean(DefaultSingletonBeanRegistry.java:798)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingleton(DefaultSingletonBeanRegistry.java:748)
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingleton(DefaultListableBeanFactory.java:1474)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingletons(DefaultSingletonBeanRegistry.java:707)
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingletons(DefaultListableBeanFactory.java:1467)
-	at org.springframework.context.support.AbstractApplicationContext.destroyBeans(AbstractApplicationContext.java:1219)
-	at org.springframework.context.support.AbstractApplicationContext.doClose(AbstractApplicationContext.java:1180)
-	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.doClose(ServletWebServerApplicationContext.java:179)
-	at org.springframework.context.support.AbstractApplicationContext.close(AbstractApplicationContext.java:1126)
-	at org.springframework.boot.SpringApplicationShutdownHook.closeAndWait(SpringApplicationShutdownHook.java:147)
-	at java.base/java.lang.Iterable.forEach(Iterable.java:75)
-	at org.springframework.boot.SpringApplicationShutdownHook.run(SpringApplicationShutdownHook.java:116)
-	at java.base/java.lang.Thread.run(Thread.java:1575)
-Caused by: org.apache.hc.client5.http.HttpHostConnectException: Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
-	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
-	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
-	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
-	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
-	at java.base/java.net.Socket.connect(Socket.java:760)
-	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:216)
-	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:490)
-	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:164)
-	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:174)
-	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:144)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:192)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:150)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:113)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:110)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:183)
-	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:87)
-	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:55)
-	at org.apache.hc.client5.http.classic.HttpClient.executeOpen(HttpClient.java:183)
-	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:99)
-	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:71)
-	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:81)
-	at org.springframework.http.client.InterceptingClientHttpRequest$InterceptingRequestExecution.execute(InterceptingClientHttpRequest.java:117)
-	at org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactory.lambda$restTemplate$2(RestTemplateTransportClientFactory.java:145)
-	at org.springframework.http.client.InterceptingClientHttpRequest$InterceptingRequestExecution.execute(InterceptingClientHttpRequest.java:88)
-	at org.springframework.http.client.InterceptingClientHttpRequest.executeInternal(InterceptingClientHttpRequest.java:72)
-	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
-	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:81)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:900)
-	... 37 more
-
-2025-07-18T17:03:45.437+09:00  WARN 35424 --- [broker-service] [ionShutdownHook] c.n.d.s.t.d.RetryableEurekaHttpClient    : Request execution failed with message: I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-2025-07-18T17:03:45.470+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] c.n.d.s.t.d.RedirectingEurekaHttpClient  : Request execution error. endpoint=DefaultEndpoint{ serviceUrl='http://localhost:8761/eureka/}, exception=I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt stacktrace=org.springframework.web.client.ResourceAccessException: I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-	at org.springframework.web.client.RestTemplate.createResourceAccessException(RestTemplate.java:926)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:906)
-	at org.springframework.web.client.RestTemplate.execute(RestTemplate.java:841)
-	at org.springframework.web.client.RestTemplate.exchange(RestTemplate.java:702)
-	at org.springframework.cloud.netflix.eureka.http.RestTemplateEurekaHttpClient.cancel(RestTemplateEurekaHttpClient.java:100)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient.executeOnNewServer(RedirectingEurekaHttpClient.java:121)
-	at com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient.execute(RedirectingEurekaHttpClient.java:80)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient.execute(RetryableEurekaHttpClient.java:120)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74)
-	at com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient.execute(SessionedEurekaHttpClient.java:76)
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71)
-	at com.netflix.discovery.DiscoveryClient.unregister(DiscoveryClient.java:919)
-	at com.netflix.discovery.DiscoveryClient.shutdown(DiscoveryClient.java:900)
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeDestroyMethods(InitDestroyAnnotationBeanPostProcessor.java:415)
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeDestruction(InitDestroyAnnotationBeanPostProcessor.java:239)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:202)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.run(DisposableBeanAdapter.java:195)
-	at org.springframework.cloud.context.scope.GenericScope$BeanLifecycleWrapper.destroy(GenericScope.java:387)
-	at org.springframework.cloud.context.scope.GenericScope.destroy(GenericScope.java:134)
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:211)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroyBean(DefaultSingletonBeanRegistry.java:798)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingleton(DefaultSingletonBeanRegistry.java:748)
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingleton(DefaultListableBeanFactory.java:1474)
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingletons(DefaultSingletonBeanRegistry.java:707)
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingletons(DefaultListableBeanFactory.java:1467)
-	at org.springframework.context.support.AbstractApplicationContext.destroyBeans(AbstractApplicationContext.java:1219)
-	at org.springframework.context.support.AbstractApplicationContext.doClose(AbstractApplicationContext.java:1180)
-	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.doClose(ServletWebServerApplicationContext.java:179)
-	at org.springframework.context.support.AbstractApplicationContext.close(AbstractApplicationContext.java:1126)
-	at org.springframework.boot.SpringApplicationShutdownHook.closeAndWait(SpringApplicationShutdownHook.java:147)
-	at java.base/java.lang.Iterable.forEach(Iterable.java:75)
-	at org.springframework.boot.SpringApplicationShutdownHook.run(SpringApplicationShutdownHook.java:116)
-	at java.base/java.lang.Thread.run(Thread.java:1575)
-Caused by: org.apache.hc.client5.http.HttpHostConnectException: Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
-	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:682)
-	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:542)
-	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:592)
-	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
-	at java.base/java.net.Socket.connect(Socket.java:760)
-	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:216)
-	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:490)
-	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:164)
-	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:174)
-	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:144)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:192)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:150)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:113)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:110)
-	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
-	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:183)
-	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:87)
-	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:55)
-	at org.apache.hc.client5.http.classic.HttpClient.executeOpen(HttpClient.java:183)
-	at org.springframework.http.client.HttpComponentsClientHttpRequest.executeInternal(HttpComponentsClientHttpRequest.java:99)
-	at org.springframework.http.client.AbstractStreamingClientHttpRequest.executeInternal(AbstractStreamingClientHttpRequest.java:71)
-	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:81)
-	at org.springframework.http.client.InterceptingClientHttpRequest$InterceptingRequestExecution.execute(InterceptingClientHttpRequest.java:117)
-	at org.springframework.cloud.netflix.eureka.http.RestTemplateTransportClientFactory.lambda$restTemplate$2(RestTemplateTransportClientFactory.java:145)
-	at org.springframework.http.client.InterceptingClientHttpRequest$InterceptingRequestExecution.execute(InterceptingClientHttpRequest.java:88)
-	at org.springframework.http.client.InterceptingClientHttpRequest.executeInternal(InterceptingClientHttpRequest.java:72)
-	at org.springframework.http.client.AbstractBufferingClientHttpRequest.executeInternal(AbstractBufferingClientHttpRequest.java:48)
-	at org.springframework.http.client.AbstractClientHttpRequest.execute(AbstractClientHttpRequest.java:81)
-	at org.springframework.web.client.RestTemplate.doExecute(RestTemplate.java:900)
-	... 38 more
-
-2025-07-18T17:03:45.470+09:00  WARN 35424 --- [broker-service] [ionShutdownHook] c.n.d.s.t.d.RetryableEurekaHttpClient    : Request execution failed with message: I/O error on DELETE request for "http://localhost:8761/eureka/apps/BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601": Connect to http://localhost:8761 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused: getsockopt
-2025-07-18T17:03:45.470+09:00 ERROR 35424 --- [broker-service] [ionShutdownHook] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:026bd9c526ef79b531fb029d8ee8c601 - de-registration failedCannot execute request on any known server
-
-com.netflix.discovery.shared.transport.TransportException: Cannot execute request on any known server
-	at com.netflix.discovery.shared.transport.decorator.RetryableEurekaHttpClient.execute(RetryableEurekaHttpClient.java:112) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator$2.execute(EurekaHttpClientDecorator.java:74) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.shared.transport.decorator.SessionedEurekaHttpClient.execute(SessionedEurekaHttpClient.java:76) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.shared.transport.decorator.EurekaHttpClientDecorator.cancel(EurekaHttpClientDecorator.java:71) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.DiscoveryClient.unregister(DiscoveryClient.java:919) ~[eureka-client-2.0.4.jar:2.0.4]
-	at com.netflix.discovery.DiscoveryClient.shutdown(DiscoveryClient.java:900) ~[eureka-client-2.0.4.jar:2.0.4]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeDestroyMethods(InitDestroyAnnotationBeanPostProcessor.java:415) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeDestruction(InitDestroyAnnotationBeanPostProcessor.java:239) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:202) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.run(DisposableBeanAdapter.java:195) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.cloud.context.scope.GenericScope$BeanLifecycleWrapper.destroy(GenericScope.java:387) ~[spring-cloud-context-4.3.0.jar:4.3.0]
-	at org.springframework.cloud.context.scope.GenericScope.destroy(GenericScope.java:134) ~[spring-cloud-context-4.3.0.jar:4.3.0]
-	at org.springframework.beans.factory.support.DisposableBeanAdapter.destroy(DisposableBeanAdapter.java:211) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroyBean(DefaultSingletonBeanRegistry.java:798) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingleton(DefaultSingletonBeanRegistry.java:748) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingleton(DefaultListableBeanFactory.java:1474) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.destroySingletons(DefaultSingletonBeanRegistry.java:707) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.destroySingletons(DefaultListableBeanFactory.java:1467) ~[spring-beans-6.2.7.jar:6.2.7]
-	at org.springframework.context.support.AbstractApplicationContext.destroyBeans(AbstractApplicationContext.java:1219) ~[spring-context-6.2.7.jar:6.2.7]
-	at org.springframework.context.support.AbstractApplicationContext.doClose(AbstractApplicationContext.java:1180) ~[spring-context-6.2.7.jar:6.2.7]
-	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.doClose(ServletWebServerApplicationContext.java:179) ~[spring-boot-3.5.0.jar:3.5.0]
-	at org.springframework.context.support.AbstractApplicationContext.close(AbstractApplicationContext.java:1126) ~[spring-context-6.2.7.jar:6.2.7]
-	at org.springframework.boot.SpringApplicationShutdownHook.closeAndWait(SpringApplicationShutdownHook.java:147) ~[spring-boot-3.5.0.jar:3.5.0]
-	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
-	at org.springframework.boot.SpringApplicationShutdownHook.run(SpringApplicationShutdownHook.java:116) ~[spring-boot-3.5.0.jar:3.5.0]
-	at java.base/java.lang.Thread.run(Thread.java:1575) ~[na:na]
-
-2025-07-18T17:03:45.471+09:00  INFO 35424 --- [broker-service] [ionShutdownHook] com.netflix.discovery.DiscoveryClient    : Completed shut down of DiscoveryClient
+2025-07-20T16:02:37.750+09:00  INFO 29892 --- [broker-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-07-20T16:02:37.762+09:00  INFO 29892 --- [broker-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-07-20T16:02:39.418+09:00  INFO 29892 --- [broker-service] [           main] o.c.b.redis.EntryStreamMessageListener   : Started listening to Redis Stream 'DISPATCH' with consumer group 'DISPATCH:broker-service:eb2556cc91894726e4d17884c7a9bdf6' and consumer name 'broker-service:eb2556cc91894726e4d17884c7a9bdf6-consumer'
+2025-07-20T16:02:39.589+09:00  WARN 29892 --- [broker-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-07-20T16:02:41.353+09:00  INFO 29892 --- [broker-service] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./app'
+2025-07-20T16:02:41.461+09:00  INFO 29892 --- [broker-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2025-07-20T16:02:41.566+09:00  WARN 29892 --- [broker-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-07-20T16:02:41.582+09:00  INFO 29892 --- [broker-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2025-07-20T16:02:41.805+09:00  INFO 29892 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 56101 (http) with context path '/'
+2025-07-20T16:02:41.810+09:00  INFO 29892 --- [broker-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 56101
+2025-07-20T16:02:41.820+09:00  INFO 29892 --- [broker-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2025-07-20T16:02:41.869+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2025-07-20T16:02:41.877+09:00  INFO 29892 --- [broker-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:02:41.896+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2025-07-20T16:02:41.897+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2025-07-20T16:02:41.897+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2025-07-20T16:02:41.897+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2025-07-20T16:02:41.897+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2025-07-20T16:02:41.897+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2025-07-20T16:02:41.898+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2025-07-20T16:02:42.594+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2025-07-20T16:02:42.596+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2025-07-20T16:02:42.598+09:00  INFO 29892 --- [broker-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2025-07-20T16:02:42.601+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1752994962600 with initial instances count: 0
+2025-07-20T16:02:42.606+09:00  INFO 29892 --- [broker-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application BROKER-SERVICE with eureka with status UP
+2025-07-20T16:02:42.607+09:00  INFO 29892 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1752994962607, current=UP, previous=STARTING]
+2025-07-20T16:02:42.610+09:00  INFO 29892 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:a228075f3dc14cf1a2967c49cb55d46b: registering service...
+2025-07-20T16:02:42.638+09:00  INFO 29892 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Started BrokerApplication in 14.9 seconds (process running for 16.683)
+2025-07-20T16:02:42.671+09:00  INFO 29892 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:a228075f3dc14cf1a2967c49cb55d46b - registration status: 204
+2025-07-20T16:02:42.992+09:00  INFO 29892 --- [broker-service] [(2)-172.30.1.16] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-07-20T16:02:42.992+09:00  INFO 29892 --- [broker-service] [(2)-172.30.1.16] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-07-20T16:02:42.996+09:00  INFO 29892 --- [broker-service] [(2)-172.30.1.16] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2025-07-20T16:03:12.605+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2025-07-20T16:03:12.606+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2025-07-20T16:03:12.606+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2025-07-20T16:03:12.606+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2025-07-20T16:03:12.606+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2025-07-20T16:03:12.607+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Application version is -1: false
+2025-07-20T16:03:12.607+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2025-07-20T16:03:12.640+09:00  INFO 29892 --- [broker-service] [reshExecutor-%d] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2025-07-20T16:07:41.901+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:12:41.917+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:17:41.924+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:22:41.926+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:27:41.927+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:32:41.929+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:37:41.930+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:42:41.932+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:47:41.933+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:52:41.939+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T16:57:41.954+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:02:41.956+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:07:41.957+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:12:41.959+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:17:41.961+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:22:41.963+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:27:41.964+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:32:41.966+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:37:41.967+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:42:41.969+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:47:41.970+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:52:41.972+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T17:57:41.973+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:02:41.975+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:07:41.976+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:12:41.977+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:17:41.978+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:22:41.979+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:27:41.981+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:32:41.983+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:37:41.984+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:42:41.985+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:47:41.986+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:52:41.998+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T18:57:42.000+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T19:02:42.002+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T19:07:42.003+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T19:12:42.012+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T19:17:42.014+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-07-20T19:22:42.015+09:00  INFO 29892 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

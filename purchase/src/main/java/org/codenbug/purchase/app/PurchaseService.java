@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import org.codenbug.common.exception.AccessDeniedException;
+import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.purchase.domain.EventId;
 import org.codenbug.purchase.domain.EventProjectionRepository;
 import org.codenbug.purchase.domain.MessagePublisher;

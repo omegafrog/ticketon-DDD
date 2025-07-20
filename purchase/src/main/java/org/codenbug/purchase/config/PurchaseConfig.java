@@ -19,12 +19,7 @@ public class PurchaseConfig {
 	public RestTemplate restTemplate(){
 		return new RestTemplate();
 	}
-	@Bean("simpleRedisTemplate")
-	public RedisTemplate<String, String> simpleRedisTemplate(RedisConnectionFactory factory){
-		RedisTemplate<String, String> template = new RedisTemplate<>();
-		template.setConnectionFactory(factory);
-		return template;
-	}
+
 
 	@Bean("objectRedisTemplate")
 	public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory factory){

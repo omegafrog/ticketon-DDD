@@ -5,6 +5,7 @@ import org.codenbug.common.Util;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 
@@ -22,6 +23,7 @@ public class Seat {
 	private boolean available;
 
 	@ManyToOne
+	@JoinColumn(name ="layout_id")
 	private SeatLayout seatLayout;
 
 	protected Seat() {}
@@ -38,5 +40,13 @@ public class Seat {
 
 	public void setAvailable(boolean b) {
 		this.available = b;
+	}
+
+	public void reserve() {
+		this.available=false;
+	}
+
+	public void cancelReserve() {
+		this.available=true;
 	}
 }

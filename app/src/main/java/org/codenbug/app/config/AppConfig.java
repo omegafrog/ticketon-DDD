@@ -6,6 +6,7 @@ import org.codenbug.securityaop.aop.AopConfig;
 import org.codenbug.user.config.UserConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 
 @Configuration
 @Import({
@@ -13,6 +14,9 @@ import org.springframework.context.annotation.Import;
 	EventConfig.class,
 	PurchaseConfig.class,
 	AopConfig.class})
+@EnableSpringDataWebSupport(
+	pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO
+)
 public class AppConfig {
 
 
