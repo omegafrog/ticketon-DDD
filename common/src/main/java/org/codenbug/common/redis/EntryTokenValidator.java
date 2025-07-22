@@ -15,7 +15,7 @@ public class EntryTokenValidator {
 
 	public void validate(String userId, String token) {
 		String redisKey = ENTRY_TOKEN_STORAGE_KEY_NAME;
-		String storedToken = (String)redisTemplate.opsForHash().get(redisKey, userId.toString());
+		String storedToken = redisTemplate.opsForHash().get(redisKey, userId).toString();
 
 		if (storedToken == null) {
 			throw new AccessDeniedException("유효하지 않은 입장 토큰입니다.");

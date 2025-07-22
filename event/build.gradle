@@ -11,6 +11,7 @@ dependencies {
     implementation project(':category-id')
     implementation project(':common')
     implementation project(':security-aop')
+    implementation project(':message')
 
 }
 

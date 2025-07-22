@@ -16,6 +16,7 @@ import org.codenbug.seat.global.SeatSelectRequest;
 import org.codenbug.seat.global.SeatSelectResponse;
 import org.codenbug.seat.global.exception.ConflictException;
 import org.codenbug.seat.query.model.EventProjection;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateSeatLayoutService {
 	private final SeatLayoutRepository seatLayoutRepository;
+	@Qualifier(value = "seat-event-projection")
 	private final EventProjectionRepository eventProjectionRepository;
 	private final SeatTransactionService seatTransactionService;
 	private final RedisLockService redisLockService;

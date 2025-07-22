@@ -46,7 +46,13 @@ public class EventQueryService {
 	public EventInfoResponse getEvent(String id) {
 		Event event = eventRepository.findEvent(new EventId(id));
 		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId().getValue());
-		return new EventInfoResponse(event, new SeatLayoutResponse(seatLayout.getLayout(),
+		EventCategory category = eventCategoryService.findById(event.getEventInformation().getCategoryId().getValue());
+		return new EventInfoResponse(event, category.getName(),
+			seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).max().orElse(0),
+			seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).min().orElse(0),
+			new SeatLayoutResponse(
+			seatLayout.getId(),
+			seatLayout.getLayout(),
 			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
 			seatLayout.getLocation().getHallName(),
 			seatLayout.getLocation().getLocationName()));

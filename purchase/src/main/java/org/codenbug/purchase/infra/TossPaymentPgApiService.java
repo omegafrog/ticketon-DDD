@@ -34,6 +34,8 @@ public class TossPaymentPgApiService implements PGApiService {
 		String encoded = Base64.getEncoder().encodeToString((secretKey + ":").getBytes());
 		headers.set("Authorization", "Basic " + encoded);
 		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAcceptCharset(java.util.Collections.singletonList(java.nio.charset.StandardCharsets.UTF_8));
+
 		return headers;
 	}
 
@@ -67,10 +69,12 @@ public class TossPaymentPgApiService implements PGApiService {
 	private <T> T postToToss(String url, Map<String, Object> body, Class<T> clazz) {
 		try {
 			HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, createAuthHeaders());
-			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+			ResponseEntity<byte[]> response = restTemplate.exchange(url, HttpMethod.POST, request, byte[].class);
+			
+			String responseBody = new String(response.getBody(), java.nio.charset.StandardCharsets.UTF_8);
 			ObjectMapper objectMapper = new ObjectMapper();
-			objectMapper.findAndRegisterModules();
-			return objectMapper.readValue(response.getBody(), clazz);
+
+			return objectMapper.readValue(responseBody, clazz);
 		} catch (Exception e) {
 			throw new RuntimeException("Toss 응답 파싱 실패: " + e.getMessage(), e);
 		}

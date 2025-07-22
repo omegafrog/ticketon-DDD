@@ -7,15 +7,14 @@ import java.util.List;
 
 import org.codenbug.common.exception.AccessDeniedException;
 import org.codenbug.common.redis.RedisLockService;
-import org.codenbug.purchase.domain.EventId;
-import org.codenbug.purchase.domain.EventProjectionRepository;
 import org.codenbug.purchase.domain.MessagePublisher;
 import org.codenbug.purchase.domain.PaymentMethod;
 import org.codenbug.purchase.domain.PaymentStatus;
+import org.codenbug.purchase.domain.PaymentValidationService;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseCancel;
-import org.codenbug.purchase.domain.SeatLayoutProjectionRepository;
-import org.codenbug.purchase.domain.Ticket;
+import org.codenbug.purchase.domain.PurchaseDomainService;
+import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.TicketRepository;
 import org.codenbug.purchase.domain.UserId;
 import org.codenbug.purchase.global.CancelPaymentRequest;
@@ -30,9 +29,6 @@ import org.codenbug.purchase.infra.CanceledPaymentInfo;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
-import org.codenbug.purchase.query.model.EventProjection;
-import org.codenbug.purchase.query.model.Seat;
-import org.codenbug.purchase.query.model.SeatLayoutProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -50,9 +46,9 @@ public class PurchaseService {
 	private final PurchaseCancelRepository purchaseCancelRepository;
 	private final TicketRepository ticketRepository;
 	private final RedisLockService redisLockService;
-	private final EventProjectionRepository eventProjectionRepository;
-	private final SeatLayoutProjectionRepository seatLayoutProjectionRepository;
 	private final MessagePublisher publisher;
+	private final PurchaseDomainService purchaseDomainService;
+	private final PaymentValidationService paymentValidationService;
 
 	/**
 	 * 결제 사전 등록 처리
@@ -63,18 +59,13 @@ public class PurchaseService {
 	 * @return 결제 UUID 및 상태 정보를 포함한 응답 DTO
 	 */
 	public InitiatePaymentResponse initiatePayment(InitiatePaymentRequest request, String userId) {
-
-		if (!eventProjectionRepository.existById(request.getEventId()))
-			throw new IllegalArgumentException("해당 이벤트가 존재하지 않습니다.");
-
-		if (request.getAmount() <= 0)
-			throw new IllegalArgumentException("결제 금액이 잘못되었습니다.");
+		paymentValidationService.validatePaymentRequest(request.getEventId(), request.getAmount());
 
 		Purchase purchase = new Purchase(request.getEventId(), request.getOrderId(), request.getAmount(),
 			new UserId(userId));
 
 		purchaseRepository.save(purchase);
-		return new InitiatePaymentResponse(purchase.getPurchaseId(), purchase.getPaymentStatus().name());
+		return new InitiatePaymentResponse(purchase.getPurchaseId().getValue(), purchase.getPaymentStatus().name());
 	}
 
 	/**
@@ -88,78 +79,33 @@ public class PurchaseService {
 	@Transactional
 	public ConfirmPaymentResponse confirmPayment(ConfirmPaymentRequest request, String userId) {
 		try {
-			Purchase purchase = purchaseRepository.findById(request.getPurchaseId())
+			Purchase purchase = purchaseRepository.findById(new PurchaseId(request.getPurchaseId()))
 				.orElseThrow(() -> new IllegalArgumentException("[confirm] 구매 정보를 찾을 수 없습니다."));
 
 			purchase.validate(request.getOrderId(), request.getAmount(), userId);
 
-			String eventId = purchase.getEventId();
-			List<String> seatIds = redisLockService.getLockedSeatIdsByUserId(userId);
-
-			EventProjection eventProjection = eventProjectionRepository.findByEventId(eventId);
-
-			// seat가 모두 있는지 확인
-			// 좌석의 동시성은 좌석 선택 api를 통해 락으로 검증됨
-			SeatLayoutProjection seatLayout = seatLayoutProjectionRepository.findById(
-				eventProjection.getSeatLayoutId());
-			List<Seat> seats = seatLayout.getSeats().stream().toList();
-			for (String seatId : seatIds) {
-				if (seats.stream().filter(seat -> seat.getSeatId().equals(seatId)).findFirst().isEmpty()) {
-					throw new IllegalArgumentException("존재하지 않는 좌석을 선택했습니다.");
-				}
-			}
-			if (seats.size() != seatIds.size())
-				throw new IllegalArgumentException("존재하지 않는 좌석을 선택했습니다.");
-
-			List<Ticket> tickets = seats.stream()
-				.map(seat -> {
-					return new Ticket(seatLayout.getLocation(), new EventId(eventProjection.getEventId()),
-						seat.getSeatId(), purchase);
-				})
-				.toList();
-
 			ConfirmedPaymentInfo info = pgApiService.confirmPayment(
-				request.getPaymentUuid(), request.getOrderId(), request.getAmount()
+				request.getPaymentKey(), request.getOrderId(), request.getAmount()
+			);
+
+			PurchaseDomainService.PurchaseConfirmationResult result = 
+				purchaseDomainService.confirmPurchase(purchase, info, userId);
+
+			purchase.markAsCompleted();
+
+			ticketRepository.saveAll(result.getTickets());
+			purchaseRepository.save(purchase);
+			publisher.publishSeatPurchasedEvent(
+				purchase.getEventId(), 
+				result.getSeatLayout().getLayoutId(), 
+				result.getSeatIds(), 
+				userId
 			);
 
 			PaymentMethod methodEnum = PaymentMethod.from(info.getMethod());
-
 			LocalDateTime localDateTime = OffsetDateTime.parse(info.getApprovedAt())
 				.atZoneSameInstant(ZoneId.of("Asia/Seoul"))
 				.toLocalDateTime();
-
-			purchase.updatePaymentInfo(
-				info.getPaymentKey(),
-				info.getOrderId(),
-				info.getTotalAmount(),
-				methodEnum,
-				eventProjection.isSeatSelectable() ? "지정석 %d매".formatted(seatIds.size()) :
-					"미지정석 %d매".formatted(seatIds.size()),
-				localDateTime
-			);
-
-
-
-			// 결제 완료 알림 생성 이벤트 생성
-			// try {
-			// 	String notificationTitle = String.format("[%s] 결제 완료", purchase.getOrderName());
-			// 	String notificationContent = String.format("결제가 완료되었습니다.\n금액: %d원\n결제수단: %s",
-			// 		purchase.getAmount(),
-			// 		methodEnum.name()
-			// 	);
-			// 	String targetUrl = String.format("/my");
-			//
-			// 	notificationService.createNotification(userId, NotificationEnum.PAYMENT, notificationTitle,
-			// 		notificationContent, targetUrl);
-			// } catch (Exception e) {
-			// 	log.error("결제 완료 알림 전송 실패. 사용자ID: {}, 구매ID: {}, 오류: {}",
-			// 		userId, purchase.getId(), e.getMessage(), e);
-			// 	// 알림 발송 실패는 결제 성공에 영향을 주지 않도록 예외를 무시함
-			// }
-
-			ticketRepository.saveAll(tickets);
-			purchaseRepository.save(purchase);
-			publisher.publishSeatPurchasedEvent(eventId, seatLayout.getLayoutId(), seatIds, userId);
 
 			return new ConfirmPaymentResponse(
 				info.getPaymentKey(),
@@ -175,7 +121,6 @@ public class PurchaseService {
 			log.error("[confirmPayment] 결제 처리 중 예외 발생 - userId: {}, 오류: {}", userId, e.getMessage(), e);
 			redisLockService.releaseAllLocks(userId);
 			redisLockService.releaseAllEntryQueueLocks(userId);
-			e.printStackTrace();
 			throw e;
 		}
 	}
@@ -211,7 +156,7 @@ public class PurchaseService {
 	 */
 	@Transactional
 	public PurchaseHistoryDetailResponse getPurchaseHistoryDetail(String userId, String purchaseId) {
-		Purchase purchase = purchaseRepository.findById(purchaseId)
+		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
 			.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
 
 		if (!purchase.getUserId().getValue().equals(userId)) {

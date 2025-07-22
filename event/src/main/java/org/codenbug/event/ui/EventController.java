@@ -45,7 +45,6 @@ public class EventController {
 	@RoleRequired(Role.MANAGER)
 	@PostMapping
 	public ResponseEntity<RsData<EventId>> eventRegister(@RequestBody NewEventRequest request) {
-		// register seat
 
 		// register event
 		EventId eventId = registerEventService.registerNewEvent(request);

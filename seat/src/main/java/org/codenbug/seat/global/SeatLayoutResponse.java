@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class SeatLayoutResponse {
-
+	private Long id;
 	private String seatLayout;
 	private List<SeatDto> seats;
 	private String hallName;
@@ -15,7 +15,8 @@ public class SeatLayoutResponse {
 	protected SeatLayoutResponse() {
 	}
 
-	public SeatLayoutResponse(String seatLayout, List<SeatDto> seats, String hallName, String locationName) {
+	public SeatLayoutResponse(Long id, String seatLayout, List<SeatDto> seats, String hallName, String locationName) {
+		this.id = id;
 		this.seatLayout = seatLayout;
 		this.seats = seats;
 		this.hallName = hallName;

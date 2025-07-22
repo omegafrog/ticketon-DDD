@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 @RestController
-@RequestMapping("/api/v1/event")
+@RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
 public class SeatController {
 	private final FindSeatLayoutService findSeatLayoutService;

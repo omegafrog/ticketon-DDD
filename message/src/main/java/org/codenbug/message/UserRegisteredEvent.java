@@ -5,6 +5,7 @@ import lombok.Getter;
 
 @Getter
 public class UserRegisteredEvent {
+	public static final String TOPIC = "user-registered";
 	private String securityUserId;
 	private String userId;
 

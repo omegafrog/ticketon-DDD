@@ -9,6 +9,8 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      global-filter:
+        response-timeout: 0
       server:
         webflux:
           routes:
@@ -38,7 +40,7 @@ filter:
         url: "/api/v1/auth/register"
       - method: POST
         url: "/api/v1/auth/login"
-      - method: *
+      - method: "*"
         url: "/api/v1/auth/social/**"
       - method: POST
         url: "/api/v1/events"

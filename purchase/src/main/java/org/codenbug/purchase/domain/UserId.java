@@ -7,7 +7,7 @@ import lombok.Getter;
 @Embeddable
 @Getter
 public class UserId {
-	@Column(name = "user_id", unique = true)
+	@Column(name = "user_id")
 	private String value;
 
 	protected UserId(){};

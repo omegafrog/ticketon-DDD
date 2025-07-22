@@ -31,6 +31,13 @@ public class GlobalExceptionHandler {
 			.body(e.getMessage());
 	}
 
+	@ExceptionHandler(RuntimeException.class)
+	public ResponseEntity<String> handleRuntimeExceptions(RuntimeException e){
+		e.printStackTrace();
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+			.body(e.getMessage());
+	}
+
 	// @ExceptionHandler(AccessDeniedException.class)
 	// public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
 	// 	log.error("Access denied: {}", e.getMessage());

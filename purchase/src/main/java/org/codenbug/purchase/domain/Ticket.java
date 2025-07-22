@@ -33,13 +33,17 @@ public class Ticket {
 	private Purchase purchase;
 
 	protected Ticket(){}
+	
 	public Ticket(String location, EventId eventId, String seatId, Purchase purchase){
 		this.seatId = seatId;
 		this.id = new TicketId(Util.ID.createUUID());
 		this.location = location;
 		this.eventId = eventId;
 		this.purchase = purchase;
-		this.purchase.setTicket(this);
+	}
+
+	public void assignToPurchase(Purchase purchase) {
+		this.purchase = purchase;
 	}
 
 }

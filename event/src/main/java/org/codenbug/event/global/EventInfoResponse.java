@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventStatus;
-import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.global.SeatLayoutResponse;
 
 import lombok.Getter;
@@ -19,7 +18,7 @@ public class EventInfoResponse implements Serializable {
 
 	SeatLayoutResponse seatLayout;
 	EventId eventId;
-	Long categoryId;
+	String category;
 	EventInfoDto information;
 	LocalDateTime bookingStart;
 	LocalDateTime bookingEnd;
@@ -29,10 +28,14 @@ public class EventInfoResponse implements Serializable {
 	EventStatus status;
 	Boolean seatSelectable;
 	Boolean isDeleted;
+	int maxPrice;
+	int minPrice;
 
-	public EventInfoResponse(Event event, SeatLayoutResponse seatLayout) {
+	public EventInfoResponse(Event event, String category, int maxPrice, int minPrice, SeatLayoutResponse seatLayout) {
 		this.eventId = event.getEventId();
-		this.categoryId = event.getEventInformation().getCategoryId().getValue();
+		this.category = category;
+		this.maxPrice = maxPrice;
+		this.minPrice = minPrice;
 		this.information = new EventInfoDto(
 			event.getEventInformation().getTitle(),
 			event.getEventInformation().getThumbnailUrl(),

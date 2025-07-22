@@ -61,6 +61,8 @@ public class PurchaseController {
 	 * @return 결제 승인 완료 응답
 	 */
 	@PostMapping("/confirm")
+	@AuthNeeded
+	@RoleRequired(Role.USER)
 	public ResponseEntity<RsData<ConfirmPaymentResponse>> confirmPayment(
 		@RequestBody ConfirmPaymentRequest request,
 		@RequestHeader("entryAuthToken") String entryAuthToken

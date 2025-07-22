@@ -1,5 +1,6 @@
 package org.codenbug.user.app;
 
+import org.codenbug.message.UserRegisteredEvent;
 import org.codenbug.user.domain.Sex;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
@@ -26,6 +27,14 @@ public class UserRegisterService {
 			new User(request.getName(), request.getSex() == null ? null : Sex.valueOf(request.getSex()),
 				request.getPhoneNum(), request.getLocation(),
 				request.getAge(), request.getSecurityUserId()));
+		
+		// Publish event after transaction success
+		UserRegisteredEvent userRegisteredEvent = new UserRegisteredEvent(
+			request.getSecurityUserId().getValue(),
+			userId.getValue()
+		);
+		publisher.publishEvent(userRegisteredEvent);
+		
 		return userId;
 	}
 

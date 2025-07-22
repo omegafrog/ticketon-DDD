@@ -1,5 +1,7 @@
 package org.codenbug.broker.redis;
 
+import static org.codenbug.broker.redis.RedisConfig.*;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
@@ -51,18 +53,18 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 
 	@PostConstruct
 	public void startListening() {
-		String groupName = RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME + ":" + instanceId;
+		String groupName = DISPATCH_QUEUE_CHANNEL_NAME + ":SHARED";
 		String consumerName = instanceId + "-consumer"; // 각 인스턴스마다 고유한 컨슈머 이름
 
 		// 컨슈머 그룹 생성 (이미 RedisConfig의 basicRedisTemplate 빈에서 시도함)
 		try {
 			// 스트림이 존재하지 않으면 BUSYGROUP 에러가 발생할 수 있으므로 확인
-			if (redisTemplate.opsForStream().groups(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME).stream()
+			if (redisTemplate.opsForStream().groups(DISPATCH_QUEUE_CHANNEL_NAME).stream()
 				.noneMatch(xInfoGroup -> xInfoGroup.groupName().equals(groupName))) {
-				redisTemplate.opsForStream().createGroup(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName);
+				redisTemplate.opsForStream().createGroup(DISPATCH_QUEUE_CHANNEL_NAME, groupName);
 			}
 		} catch (RedisSystemException e) {
-			redisTemplate.opsForStream().createGroup(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName);
+			redisTemplate.opsForStream().createGroup(DISPATCH_QUEUE_CHANNEL_NAME, groupName);
 		}
 
 		StreamMessageListenerContainer.StreamMessageListenerContainerOptions<String, MapRecord<String, String, String>> options =
@@ -78,13 +80,13 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 		// ReadOffset.lastConsumed()는 현재 컨슈머 그룹에서 마지막으로 처리(ack)한 메시지 다음부터 읽음
 		streamMessageListenerContainer.receive(
 			Consumer.from(groupName, consumerName),
-			StreamOffset.create(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, ReadOffset.lastConsumed()),
+			StreamOffset.create(DISPATCH_QUEUE_CHANNEL_NAME, ReadOffset.lastConsumed()),
 			this // 리스너로 현재 클래스 인스턴스 지정
 		);
 
 		streamMessageListenerContainer.start();
 		log.info("Started listening to Redis Stream '{}' with consumer group '{}' and consumer name '{}'",
-			RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, consumerName);
+			DISPATCH_QUEUE_CHANNEL_NAME, groupName, consumerName);
 	}
 
 	@PreDestroy
@@ -98,7 +100,7 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 	@Override
 	public void onMessage(MapRecord<String, String, String> message) {
 
-		String groupName = RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME + ":" + instanceId;
+		String groupName = DISPATCH_QUEUE_CHANNEL_NAME + ":" + instanceId;
 		String consumerName = instanceId + "-consumer";
 
 		Map<String, String> body = message.getValue();
@@ -130,13 +132,15 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 					))
 			);
 		} catch (IOException e) {
+			SseEmitterService.closeConn(userId, eventId, redisTemplate);
 			emitter.completeWithError(e);
 			log.error("messageListener:{}", e.getMessage());
 		}
 		catch (IllegalStateException e){
+			SseEmitterService.closeConn(userId, eventId, redisTemplate);
 			log.error("messageListener:{}", e.getMessage());
 		}
 		redisTemplate.opsForStream()
-			.acknowledge(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
+			.acknowledge(DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
 	}
 }

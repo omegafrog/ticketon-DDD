@@ -1,6 +1,7 @@
 package org.codenbug.broker.thread;
 
 import static org.codenbug.broker.redis.RedisConfig.*;
+import static org.codenbug.broker.service.SseEmitterService.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import org.codenbug.broker.entity.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -24,13 +26,17 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class QueueInfoScheduler {
 
+	@Qualifier("simpleRedisTemplate")
 	private final RedisTemplate<String, String> redisTemplate;
+	private final RedisTemplate<String, Object> objectRedisTemplate;
 	private final SseEmitterService emitterService;
 	private final ObjectMapper objectMapper;
 
-	public QueueInfoScheduler(RedisTemplate<String, String> redisTemplate, SseEmitterService emitterService,
+	public QueueInfoScheduler(RedisTemplate<String, String> redisTemplate,
+		RedisTemplate<String, Object> objectRedisTemplate, SseEmitterService emitterService,
 		ObjectMapper objectMapper) {
 		this.redisTemplate = redisTemplate;
+		this.objectRedisTemplate = objectRedisTemplate;
 		this.emitterService = emitterService;
 		this.objectMapper = objectMapper;
 	}
@@ -102,23 +108,27 @@ public class QueueInfoScheduler {
 			SseEmitter emitter = sseConnection.getEmitter();
 			// 대기열 순번을 계산하고 sse 메시지를 전송합니다.
 			try {
+				Long rank = redisTemplate.opsForZSet()
+					.rank(WAITING_QUEUE_KEY_NAME + ":" + eventId,
+						"{\"userId\":\"%s\"}".formatted(userId));
+				if(rank == null)
+					break;
 				emitter.send(
 					SseEmitter.event()
 						.data(Map.of("status", sseConnection.getStatus(),
 							QUEUE_MESSAGE_USER_ID_KEY_NAME, userId,
 							QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId, "order",
-							redisTemplate.opsForZSet()
-								.rank(WAITING_QUEUE_KEY_NAME + ":" + eventId,
-									"{\"userId\":\"%s\"}".formatted(userId))
-								+ 1))
+								rank+ 1))
 				);
 			} catch (IOException e) {
-				emitter.completeWithError(e);
+				// emitter.completeWithError(e);
 				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
 				log.error("messageListener1:{}", e.getMessage());
+				SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
 				// throw new RuntimeException(e);
 			} catch (IllegalStateException e) {
 				log.error("messageListener2:{}", e.getMessage());
+				SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
 				// throw new RuntimeException(e);
 
 			}
@@ -128,7 +138,11 @@ public class QueueInfoScheduler {
 	@Scheduled(cron = "*/5 * * * * *")
 	public void heartBeat() {
 		Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
-		for (SseConnection conn : emitterMap.values()) {
+		for (Map.Entry<String, SseConnection> entry : emitterMap.entrySet()) {
+			log.info("emitterMap size:", emitterMap.size());
+			log.info("key: {}, value: {}", entry.getKey(), entry.getValue());
+			SseConnection conn = entry.getValue();
+			String key = entry.getKey();
 			SseEmitter emitter = conn.getEmitter();
 			try {
 				emitter.send(
@@ -136,10 +150,12 @@ public class QueueInfoScheduler {
 						.comment("heartBeat")
 				);
 			} catch (IOException e) {
-				emitter.completeWithError(e);
+				// emitter.completeWithError(e);
+				closeConn(key, conn.getEventId(), objectRedisTemplate);
 				log.error("messageListener:{}", e.getMessage());
 
 			} catch (IllegalStateException e) {
+				closeConn(key, conn.getEventId(), objectRedisTemplate);
 				log.error("messageListener:{}", e.getMessage());
 			}
 		}

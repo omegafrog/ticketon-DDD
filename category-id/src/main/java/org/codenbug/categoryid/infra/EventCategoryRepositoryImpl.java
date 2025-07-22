@@ -25,4 +25,5 @@ public class EventCategoryRepositoryImpl implements EventCategoryRepository {
 	public List<EventCategory> findAll(List<Long> ids) {
 		return repository.findAllById(ids.stream().map(id -> new CategoryId(id)).toList());
 	}
+
 }

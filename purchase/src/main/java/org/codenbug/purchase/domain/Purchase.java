@@ -67,6 +67,7 @@ public class Purchase {
 		this.eventId = eventId;
 		this.amount = amount;
 		this.userId = userid;
+		this.paymentStatus = PaymentStatus.IN_PROGRESS;
 	}
 
 	public void updatePaymentInfo(
@@ -85,16 +86,50 @@ public class Purchase {
 		this.createdAt = createdDate;
 	}
 
-	public void setTicket(Ticket ticket) {
+	public void addTicket(Ticket ticket) {
 		this.tickets.add(ticket);
+		ticket.assignToPurchase(this);
+	}
+
+	public void addTickets(List<Ticket> tickets) {
+		for (Ticket ticket : tickets) {
+			addTicket(ticket);
+		}
 	}
 
 	public void validate(String orderId, Integer amount, String userId) {
-		if(!this.orderId.equals(orderId))
+		validateOrderId(orderId);
+		validateAmount(amount);
+		validateUserAccess(userId);
+	}
+
+	private void validateOrderId(String orderId) {
+		if(!this.orderId.equals(orderId)) {
 			throw new IllegalArgumentException("주문 번호가 일치하지 않습니다.");
-		if(this.amount != amount)
+		}
+	}
+
+	private void validateAmount(Integer amount) {
+		if(this.amount != amount) {
 			throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
-		if(!this.userId.getValue().equals(userId))
+		}
+	}
+
+	private void validateUserAccess(String userId) {
+		if(!this.userId.getValue().equals(userId)) {
 			throw new AccessDeniedException("해당 구매 정보에 대한 접근 권한이 없습니다.");
+		}
+	}
+
+	public void markAsCompleted() {
+		this.paymentStatus = PaymentStatus.DONE;
+	}
+
+	public boolean isPaymentInProgress() {
+		return this.paymentStatus == PaymentStatus.IN_PROGRESS;
+	}
+
+	public boolean isPaymentCompleted() {
+		return this.paymentStatus == PaymentStatus.DONE;
 	}
 }

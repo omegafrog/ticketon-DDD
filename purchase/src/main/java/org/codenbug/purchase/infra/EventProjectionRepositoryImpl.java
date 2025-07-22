@@ -8,9 +8,9 @@ import jakarta.persistence.EntityNotFoundException;
 
 @Repository
 public class EventProjectionRepositoryImpl implements EventProjectionRepository {
-	private final JpaEventProjectionRepository jpaRepository;
+	private final JpaPurchaseEventProjectionRepository jpaRepository;
 
-	public EventProjectionRepositoryImpl(JpaEventProjectionRepository jpaRepository) {
+	public EventProjectionRepositoryImpl(JpaPurchaseEventProjectionRepository jpaRepository) {
 		this.jpaRepository = jpaRepository;
 	}
 

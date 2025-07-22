@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
 @Component
@@ -41,16 +43,42 @@ public class EntryPromoteThread {
 	
 	private static final String PROMOTION_TASK_LIST_KEY = "PROMOTION_TASK_LIST";
 	private static final int THREAD_POOL_SIZE = 10; // 스레드 풀 크기 설정
+	private static final int QUEUE_CAPACITY = 100; // 작업 큐 용량 설정
 
 	public EntryPromoteThread(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
 		AtomicLong promotionCounter) {
 		this.redisTemplate = redisTemplate;
 		this.objectMapper = objectMapper;
 		this.promotionCounter = promotionCounter;
-		this.executorService = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
+		
+		// ThreadPoolExecutor with CallerRunsPolicy for backpressure
+		this.executorService = new ThreadPoolExecutor(
+			THREAD_POOL_SIZE, // corePoolSize
+			THREAD_POOL_SIZE, // maximumPoolSize
+			0L, TimeUnit.MILLISECONDS, // keepAliveTime
+			new LinkedBlockingQueue<>(QUEUE_CAPACITY), // workQueue with capacity limit
+			new ThreadPoolExecutor.CallerRunsPolicy() // rejection policy for backpressure
+		);
+		
 		promoteAllScript = new DefaultRedisScript<>();
 		promoteAllScript.setScriptText(loadLuaScriptFromResource("promote_all_waiting_for_event.lua"));
 		promoteAllScript.setResultType(Long.class);
+	}
+	
+	@PreDestroy
+	public void shutdown() {
+		log.info("Shutting down EntryPromoteThread executor service...");
+		executorService.shutdown();
+		try {
+			if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+				log.warn("Executor did not terminate within 30 seconds, forcing shutdown...");
+				executorService.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			log.error("Thread was interrupted during shutdown", e);
+			executorService.shutdownNow();
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	private String loadLuaScriptFromResource(String scriptName) {
@@ -85,10 +113,27 @@ public class EntryPromoteThread {
 			
 			log.info("Created temporary task list {} with {} tasks", taskListKey, keys.size());
 			
-			// 3) 멀티스레딩으로 작업 처리
-			for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-				executorService.submit(() -> processPromotionTasks(taskListKey));
+			// 3) 멀티스레딩으로 작업 처리 with backpressure monitoring
+			ThreadPoolExecutor tpe = (ThreadPoolExecutor) executorService;
+			
+			// Log thread pool status for monitoring
+			if (tpe.getQueue().size() > QUEUE_CAPACITY * 0.8) {
+				log.warn("Thread pool queue is {}% full ({}/{}). Backpressure may be triggered.", 
+					(tpe.getQueue().size() * 100 / QUEUE_CAPACITY), tpe.getQueue().size(), QUEUE_CAPACITY);
 			}
+			
+			for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+				try {
+					executorService.submit(() -> processPromotionTasks(taskListKey));
+				} catch (Exception e) {
+					log.warn("Failed to submit promotion task, likely due to backpressure. Caller thread will handle it.", e);
+					// CallerRunsPolicy will handle this by running in the caller thread (scheduler thread)
+				}
+			}
+			
+			// Log final thread pool status
+			log.debug("Thread pool status - Active: {}, Queue: {}, Completed: {}", 
+				tpe.getActiveCount(), tpe.getQueue().size(), tpe.getCompletedTaskCount());
 			
 			// 작업 목록 만료 시간 설정 (5분)
 			redisTemplate.expire(taskListKey, 5, TimeUnit.MINUTES);

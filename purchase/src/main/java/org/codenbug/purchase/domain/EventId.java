@@ -7,7 +7,7 @@ import lombok.Getter;
 @Embeddable
 @Getter
 public class EventId {
-	@Column(name = "event_id", unique = true)
+	@Column(name = "event_id")
 	private String value;
 
 	protected EventId(){}

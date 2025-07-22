@@ -6,19 +6,23 @@ import lombok.Getter;
 
 @Getter
 public class SeatDto {
+	private String id;
 	private String signature;
 	private String grade;
 	private Integer price;
+	private boolean available;
 
 	protected SeatDto() {}
 
-	public SeatDto(String signature, String grade, Integer price) {
+	public SeatDto(String id, String signature, String grade, Integer price, boolean available) {
+		this.id = id;
 		this.signature = signature;
 		this.grade = grade;
 		this.price = price;
+		this.available = available;
 	}
 
 	public SeatDto(Seat seat) {
-		this(seat.getSignature(), seat.getGrade(), seat.getAmount());
+		this(seat.getSeatId().getValue(), seat.getSignature(), seat.getGrade(), seat.getAmount(), seat.isAvailable());
 	}
 }

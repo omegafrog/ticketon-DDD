@@ -16,8 +16,12 @@ public class FindSeatLayoutService {
 
 	public SeatLayoutResponse findSeatLayout(Long seatLayoutId) {
 		SeatLayout seatLayout = repository.findSeatLayout(seatLayoutId);
-		return new SeatLayoutResponse(seatLayout.getLayout(), seatLayout.getSeats().stream()
-			.map(item -> new SeatDto(item.getSignature(), item.getGrade(), item.getAmount())).toList(),
+		return new SeatLayoutResponse(
+			seatLayout.getId(),
+			seatLayout.getLayout(), seatLayout.getSeats().stream()
+			.map(
+				item -> new SeatDto(item.getSeatId().getValue(), item.getSignature(), item.getGrade(), item.getAmount(),
+					item.isAvailable())).toList(),
 			seatLayout.getLocation().getHallName(),
 			seatLayout.getLocation().getLocationName());
 	}
@@ -25,6 +29,7 @@ public class FindSeatLayoutService {
 	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
 		SeatLayout seatLayout = repository.findSeatLayoutByEventId(eventId);
 		return new SeatLayoutResponse(
+			seatLayout.getId(),
 			seatLayout.getLayout(),
 			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
 			seatLayout.getLocation().getHallName(),

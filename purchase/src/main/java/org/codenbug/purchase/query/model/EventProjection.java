@@ -26,4 +26,11 @@ public class EventProjection {
 		this.userId = userId;
 		this.seatSelectable = seatSelectable;
 	}
+	
+	public void updateFrom(String title, String userId, boolean seatSelectable, Long seatLayoutId) {
+		this.title = title;
+		this.userId = userId;
+		this.seatSelectable = seatSelectable;
+		this.seatLayoutId = seatLayoutId;
+	}
 }

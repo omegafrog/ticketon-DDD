@@ -27,4 +27,8 @@ public class EventCategoryService {
 		return eventCategoryRepository.findAll(ids);
 	}
 
+	public EventCategory findById(Long id) {
+		return eventCategoryRepository.findById(new CategoryId(id))
+			.orElseThrow(() -> new EntityNotFoundException());
+	}
 }

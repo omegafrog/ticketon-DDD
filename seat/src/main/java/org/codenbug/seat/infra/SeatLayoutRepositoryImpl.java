@@ -13,8 +13,8 @@ public class SeatLayoutRepositoryImpl implements SeatLayoutRepository {
 	}
 
 	@Override
-	public Long save(SeatLayout seatLayout) {
-		return jpaSeatRepository.save(seatLayout).getId();
+	public SeatLayout save(SeatLayout seatLayout) {
+		return jpaSeatRepository.save(seatLayout);
 	}
 
 	@Override
