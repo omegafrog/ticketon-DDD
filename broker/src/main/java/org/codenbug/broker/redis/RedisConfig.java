@@ -29,7 +29,7 @@ public class RedisConfig {
 	public static final String QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME = "instanceId";
 	// 메시지 내부의 idx 속성의 키 값
 	public static final String QUEUE_MESSAGE_IDX_KEY_NAME = "idx";
-	public static final String DISPATCH_QUEUE_CHANNEL_NAME = "DISPATCH";
+	public static final String DISPATCH_QUEUE_CHANNEL_PREFIX = "DISPATCH:";
 	public static final String WAITING_QUEUE_IN_USER_RECORD_KEY_NAME = "WAITING_USER_ID";
 	public static final String ENTRY_TOKEN_STORAGE_KEY_NAME = "ENTRY_TOKEN";
 	public static final String WAITING_QUEUE_START_IDX_KEY = "WAITING_QUEUE_START_IDX";
@@ -65,5 +65,19 @@ public class RedisConfig {
 		redisTemplate.afterPropertiesSet();
 
 		return redisTemplate;
+	}
+
+	/**
+	 * 현재 인스턴스의 전용 DISPATCH 스트림명 반환
+	 */
+	public String getInstanceDispatchStreamName() {
+		return DISPATCH_QUEUE_CHANNEL_PREFIX + instanceId;
+	}
+
+	/**
+	 * 현재 인스턴스 ID 반환
+	 */
+	public String getInstanceId() {
+		return instanceId;
 	}
 }
