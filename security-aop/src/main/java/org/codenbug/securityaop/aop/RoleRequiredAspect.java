@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Aspect
 @Component
@@ -21,15 +20,12 @@ public class RoleRequiredAspect {
 
 	public RoleRequiredAspect(
 		@Value("${custom.jwt.secret}") String key,
-		HttpServletRequest request,
-		HttpServletResponse response) {
+		HttpServletRequest request) {
 		this.request = request;
-		this.response = response;
 		this.secretKey = key;
 	}
 
 	private final HttpServletRequest request;
-	private final HttpServletResponse response;
 	private final String secretKey;
 
 	@Around("@annotation(roleRequired)")

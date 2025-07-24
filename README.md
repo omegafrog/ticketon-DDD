@@ -351,6 +351,107 @@ docker-compose -f docker/docker-compose.yml ps
 - PII data handling compliance
 - Audit logging for all financial transactions
 
+## 🔄 최근 변경사항
+
+### v1.3.0 - 인스턴스별 전용 DISPATCH 스트림 구조 구현
+- **인스턴스별 스트림 분리**: 각 디스패처 인스턴스가 전용 DISPATCH 스트림을 가지도록 개선
+- **성능 향상**: 스트림 분산을 통한 처리량 증가 및 부하 분산
+- **확장성 개선**: 수평 확장 시 스트림 격리로 안정성 향상
+- **동시성 최적화**: 인스턴스 간 메시지 처리 충돌 방지
+
+### v1.2.0 - 프런트엔드 연동 및 이벤트 조회 기능
+- **프런트엔드 통합**: React 기반 클라이언트와 API 연동 완료
+- **이벤트 조회 API**: 필터링 및 페이지네이션 지원
+- **실시간 대기열**: SSE를 통한 실시간 위치 업데이트
+- **UI/UX 개선**: 대기열 상태 시각화 및 사용자 경험 향상
+
+## 🛠️ 빌드 및 실행 방법
+
+### 1. 사전 요구사항
+```bash
+# Java 21 설치 확인
+java --version
+
+# Docker 및 Docker Compose 설치 확인
+docker --version
+docker-compose --version
+```
+
+### 2. 인프라 서비스 시작
+```bash
+# MySQL, Redis, Kafka 등 인프라 서비스 실행
+docker-compose -f docker/docker-compose.yml up -d
+
+# 서비스 상태 확인
+docker-compose -f docker/docker-compose.yml ps
+```
+
+### 3. 애플리케이션 빌드
+```bash
+# 전체 모듈 빌드
+./gradlew clean build
+
+# 특정 모듈만 빌드
+./gradlew :auth:build
+./gradlew :broker:build
+```
+
+### 4. 서비스 실행 순서
+```bash
+# 1. 서비스 디스커버리 시작
+./gradlew :eureka:bootRun
+
+# 2. API 게이트웨이 시작 (새 터미널)
+./gradlew :gateway:bootRun
+
+# 3. 핵심 서비스들 시작 (각각 새 터미널에서)
+./gradlew :auth:bootRun          # 인증 서비스
+./gradlew :broker:bootRun        # 대기열 관리 (SSE)
+./gradlew :dispatcher:bootRun    # 대기열 처리 엔진
+./gradlew :event:bootRun         # 이벤트 관리
+./gradlew :seat:bootRun          # 좌석 관리
+./gradlew :purchase:bootRun      # 결제 처리
+./gradlew :user:bootRun          # 사용자 관리
+```
+
+### 5. 서비스 접근 포트
+- **메인 API**: http://localhost:8080 (Gateway)
+- **유레카 대시보드**: http://localhost:8761
+- **브로커 서비스**: http://localhost:9000
+- **디스패처 서비스**: http://localhost:9002
+- **인증 서비스**: http://localhost:9001
+
+### 6. Docker를 이용한 실행 (선택사항)
+```bash
+# Docker 이미지 빌드
+./gradlew bootBuildImage
+
+# 전체 스택 실행
+docker-compose up -d
+```
+
+### 7. 개발 환경 설정
+```bash
+# 테스트 실행
+./gradlew test
+
+# 특정 모듈 테스트
+./gradlew :purchase:test
+
+# 라이브 리로드 모드 (개발용)
+./gradlew :gateway:bootRun --continuous
+```
+
+### 8. 환경별 설정
+- **개발환경**: `application-dev.yml`
+- **운영환경**: `application-prod.yml`
+- **테스트환경**: `application-test.yml`
+
+```bash
+# 특정 프로파일로 실행
+./gradlew :auth:bootRun -Dspring.profiles.active=dev
+```
+
 ## 📝 Contributing
 
 1. Follow the existing code style and conventions

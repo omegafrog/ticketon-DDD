@@ -72,13 +72,11 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 				accessToken = getAccessToken(request);
 				refreshToken = getRefreshToken(request);
 
-				refreshTokenStorage.checkBlackList(refreshToken);
-
-				Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
-				Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
-				refreshTokenStorage.checkBlackList(refreshToken);
+				validateToken(accessToken, refreshToken);
 			} catch (ExpiredJwtException e) {
+				// refresh token
 				log.debug("access token is expired");
+
 				TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
 				accessToken = tokenInfo.getAccessToken();
 				refreshToken = tokenInfo.getRefreshToken();
@@ -86,29 +84,46 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			} catch (JwtException  e) {
 				return errorResponse(e, response);
 			} catch (RuntimeException e){
-				response.setStatusCode(HttpStatus.UNAUTHORIZED);
-				response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
-				try {
-					return response.writeWith(Mono.just(response.bufferFactory().wrap(
-						objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
-				} catch (JsonProcessingException ex) {
-					throw new RuntimeException(ex);
-				}
+				return sendUnauthorizedError(e, response);
 			}
 
-			accessToken.decode(jwtSecret);
-			ServerHttpRequest mutatedRequest = request.mutate()
-				.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
-				.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
-					60 * 60 * 24 * 7, "/", false, false, "lat"))
-				.header("User-Id", accessToken.getUserId())
-				.header("Role", accessToken.getRole())
-				.header("Email", accessToken.getEmail())
-				.build();
+			ServerHttpRequest mutatedRequest = applyAuthorizationHeaders(accessToken, request,
+				refreshToken);
 
 			return chain.filter(exchange.mutate().request(mutatedRequest).build()).then(Mono.fromRunnable(() -> {
 			}));
 		};
+	}
+
+	private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request,
+		RefreshToken refreshToken) {
+		accessToken.decode(jwtSecret);
+		ServerHttpRequest mutatedRequest = request.mutate()
+			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
+			.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
+				60 * 60 * 24 * 7, "/", false, false, "lat"))
+			.header("User-Id", accessToken.getUserId())
+			.header("Role", accessToken.getRole())
+			.header("Email", accessToken.getEmail())
+			.build();
+		return mutatedRequest;
+	}
+
+	private Mono<Void> sendUnauthorizedError(RuntimeException e, ServerHttpResponse response) {
+		response.setStatusCode(HttpStatus.UNAUTHORIZED);
+		response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+		try {
+			return response.writeWith(Mono.just(response.bufferFactory().wrap(
+				objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
+		} catch (JsonProcessingException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	private void validateToken(AccessToken accessToken, RefreshToken refreshToken) {
+		Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
+		Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
+		refreshTokenStorage.checkBlackList(refreshToken);
 	}
 
 	private Mono<Void> errorResponse(JwtException e, ServerHttpResponse response) {

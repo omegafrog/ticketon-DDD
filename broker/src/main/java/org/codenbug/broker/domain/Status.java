@@ -1,4 +1,4 @@
-package org.codenbug.broker.entity;
+package org.codenbug.broker.domain;
 
 public enum Status {
 	// 대기열에 진입해 대기하고 있는 상태

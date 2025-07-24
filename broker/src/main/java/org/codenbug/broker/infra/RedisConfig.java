@@ -1,4 +1,4 @@
-package org.codenbug.broker.redis;
+package org.codenbug.broker.infra;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

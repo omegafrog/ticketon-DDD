@@ -1,6 +1,6 @@
-package org.codenbug.broker.service;
+package org.codenbug.broker.app;
 
-import static org.codenbug.broker.redis.RedisConfig.*;
+import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.util.Map;
 

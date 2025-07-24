@@ -1,9 +1,9 @@
-package org.codenbug.broker.controller;
+package org.codenbug.broker.ui;
 
 import java.util.Map;
 
-import org.codenbug.broker.service.SseEmitterService;
-import org.codenbug.broker.service.WaitingQueueEntryService;
+import org.codenbug.broker.app.SseEmitterService;
+import org.codenbug.broker.app.WaitingQueueEntryService;
 import org.codenbug.common.Role;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;

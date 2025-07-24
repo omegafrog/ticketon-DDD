@@ -1,4 +1,4 @@
-package org.codenbug.broker.global;
+package org.codenbug.broker.infra;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

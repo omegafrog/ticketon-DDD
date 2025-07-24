@@ -1,7 +1,7 @@
-package org.codenbug.broker.thread;
+package org.codenbug.broker.infra;
 
-import static org.codenbug.broker.redis.RedisConfig.*;
-import static org.codenbug.broker.service.SseEmitterService.*;
+import static org.codenbug.broker.app.SseEmitterService.*;
+import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codenbug.broker.entity.SseConnection;
-import org.codenbug.broker.service.SseEmitterService;
+import org.codenbug.broker.app.SseEmitterService;
+import org.codenbug.broker.domain.SseConnection;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;

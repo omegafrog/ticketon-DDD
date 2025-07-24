@@ -1,4 +1,4 @@
-package org.codenbug.broker.service;
+package org.codenbug.broker.app;
 
 import java.time.Instant;
 import java.util.Date;

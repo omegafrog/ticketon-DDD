@@ -1,13 +1,13 @@
-package org.codenbug.broker.service;
+package org.codenbug.broker.app;
 
-import static org.codenbug.broker.redis.RedisConfig.*;
+import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.codenbug.broker.entity.SseConnection;
-import org.codenbug.broker.entity.Status;
+import org.codenbug.broker.domain.SseConnection;
+import org.codenbug.broker.domain.Status;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

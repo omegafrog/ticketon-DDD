@@ -1,4 +1,4 @@
-package org.codenbug.broker.entity;
+package org.codenbug.broker.domain;
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
