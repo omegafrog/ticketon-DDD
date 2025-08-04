@@ -15,8 +15,12 @@ import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseCancel;
 import org.codenbug.purchase.domain.PurchaseDomainService;
 import org.codenbug.purchase.domain.PurchaseId;
+import org.codenbug.purchase.domain.Refund;
+import org.codenbug.purchase.domain.RefundDomainService;
+import org.codenbug.purchase.domain.RefundRepository;
 import org.codenbug.purchase.domain.TicketRepository;
 import org.codenbug.purchase.domain.UserId;
+import org.codenbug.purchase.event.RefundCompletedEvent;
 import org.codenbug.purchase.global.CancelPaymentRequest;
 import org.codenbug.purchase.global.CancelPaymentResponse;
 import org.codenbug.purchase.global.ConfirmPaymentRequest;
@@ -27,6 +31,7 @@ import org.codenbug.purchase.global.PurchaseHistoryDetailResponse;
 import org.codenbug.purchase.global.PurchaseHistoryListResponse;
 import org.codenbug.purchase.infra.CanceledPaymentInfo;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
+import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.springframework.data.domain.Page;
@@ -49,6 +54,9 @@ public class PurchaseService {
 	private final MessagePublisher publisher;
 	private final PurchaseDomainService purchaseDomainService;
 	private final PaymentValidationService paymentValidationService;
+	private final NotificationEventPublisher notificationEventPublisher;
+	private final RefundDomainService refundDomainService;
+	private final RefundRepository refundRepository;
 
 	/**
 	 * 결제 사전 등록 처리
@@ -77,6 +85,12 @@ public class PurchaseService {
 	 * @return 결제 UUID, 금액, 결제 수단, 승인 시각 등을 포함한 응답 DTO
 	 */
 	@Transactional
+	@org.codenbug.notification.aop.NotifyUser(
+		type = org.codenbug.notification.domain.notification.entity.NotificationType.PAYMENT,
+		title = "결제 완료",
+		content = "티켓 결제가 성공적으로 완료되었습니다.",
+		userIdExpression = "#userId"
+	)
 	public ConfirmPaymentResponse confirmPayment(ConfirmPaymentRequest request, String userId) {
 		try {
 			Purchase purchase = purchaseRepository.findById(new PurchaseId(request.getPurchaseId()))
@@ -173,8 +187,8 @@ public class PurchaseService {
 	}
 
 	/**
-	 * 유저 측 티켓 결제 취소
-	 * - 전액 또는 부분 취소 요청 시 Toss 결제 취소 API 호출
+	 * 유저 측 티켓 결제 취소 (DDD 리팩토링)
+	 * - 도메인 서비스를 사용한 환불 처리
 	 * - 결제 취소 결과 정보를 반환
 	 *
 	 * @param paymentKey 결제 uuid 키
@@ -183,20 +197,69 @@ public class PurchaseService {
 	 * @return 결제 UUID 및 취소 상태 정보를 포함한 응답 DTO
 	 */
 	@Transactional
+	@org.codenbug.notification.aop.NotifyUser(
+		type = org.codenbug.notification.domain.notification.entity.NotificationType.PAYMENT,
+		title = "환불 완료",
+		content = "티켓 환불이 성공적으로 처리되었습니다.",
+		userIdExpression = "#userId"
+	)
 	public CancelPaymentResponse cancelPayment(CancelPaymentRequest request, String paymentKey, String userId) {
-		Purchase purchase = purchaseRepository.findByPid(paymentKey)
-			.orElseThrow(() -> new IllegalArgumentException("[cancel] 해당 결제 정보를 찾을 수 없습니다."));
+		try {
+			// 1. 구매 정보 조회
+			Purchase purchase = purchaseRepository.findByPid(paymentKey)
+				.orElseThrow(() -> new IllegalArgumentException("[cancel] 해당 결제 정보를 찾을 수 없습니다."));
 
-		if (!purchase.getUserId().getValue().equals(userId))
-			throw new AccessDeniedException("해당 구매 정보에 대한 접근 권한이 없습니다.");
+			// 2. 외부 결제 시스템 취소 요청
+			CanceledPaymentInfo canceledPaymentInfo = pgApiService.cancelPayment(paymentKey, request.getCancelReason());
+			
+			// 3. 환불 금액 계산
+			int refundAmount = canceledPaymentInfo.getCancels().stream()
+				.mapToInt(CanceledPaymentInfo.CancelDetail::getCancelAmount)
+				.sum();
 
-		CanceledPaymentInfo canceledPaymentInfo = pgApiService.cancelPayment(paymentKey,
-			request.getCancelReason());
+			// 4. 도메인 서비스를 통한 환불 처리
+			RefundDomainService.RefundResult refundResult = refundDomainService.processUserRefund(
+				purchase, 
+				refundAmount, 
+				request.getCancelReason(), 
+				new UserId(userId)
+			);
 
-		// TODO : 취소시 seat available을 true로 돌리는 이벤트 발행
-		List<String> seatIds = purchase.getTickets().stream().map(ticket -> ticket.getSeatId()).toList();
-		purchase.getTickets().clear();
+			// 5. 환불 엔티티 저장
+			Refund savedRefund = refundRepository.save(refundResult.getRefund());
+			
+			// 6. 외부 결제 시스템 정보로 환불 완료 처리
+			refundDomainService.completeRefundWithPaymentInfo(savedRefund, canceledPaymentInfo);
+			refundRepository.save(savedRefund);
 
+			// 7. 구매 정보 저장 (상태 변경)
+			purchaseRepository.save(purchase);
+
+			// 8. 레거시 PurchaseCancel 엔티티도 함께 저장 (호환성 유지)
+			saveLegacyPurchaseCancel(purchase, canceledPaymentInfo);
+
+			// 9. 환불 완료 알림 이벤트 발행
+			publishRefundCompletedEvent(purchase, refundAmount, request.getCancelReason(), canceledPaymentInfo);
+
+			// 10. 좌석 취소 이벤트 발행
+			publisher.publishSeatPurchaseCanceledEvent(refundResult.getSeatIds(), purchase.getPurchaseId().getValue());
+
+			return CancelPaymentResponse.of(canceledPaymentInfo);
+			
+		} catch (Exception e) {
+			log.error("[cancelPayment] 결제 취소 처리 중 예외 발생 - userId: {}, paymentKey: {}, 오류: {}", 
+				userId, paymentKey, e.getMessage(), e);
+			// Redis 락 해제
+			redisLockService.releaseAllLocks(userId);
+			redisLockService.releaseAllEntryQueueLocks(userId);
+			throw e;
+		}
+	}
+
+	/**
+	 * 레거시 호환성을 위한 PurchaseCancel 저장
+	 */
+	private void saveLegacyPurchaseCancel(Purchase purchase, CanceledPaymentInfo canceledPaymentInfo) {
 		for (CanceledPaymentInfo.CancelDetail cancelDetail : canceledPaymentInfo.getCancels()) {
 			PurchaseCancel purchaseCancel = PurchaseCancel.builder()
 				.purchase(purchase)
@@ -208,31 +271,30 @@ public class PurchaseService {
 
 			purchaseCancelRepository.save(purchaseCancel);
 		}
+	}
 
-		// 환불 완료 알림 생성
-		// try {
-		// 	int refundAmount = canceledPaymentInfo.getCancels().stream()
-		// 		.mapToInt(CanceledPaymentInfo.CancelDetail::getCancelAmount)
-		// 		.sum();
-		//
-		// 	String notificationTitle = String.format("[%s] 환불 완료", purchase.getOrderName());
-		// 	String notificationContent = String.format(
-		// 		"환불 처리가 완료되었습니다.\n환불 금액: %d원",
-		// 		refundAmount
-		// 	);
-		// 	String targetUrl = String.format("/my");
-		//
-		// 	notificationService.createNotification(userId, NotificationEnum.PAYMENT, notificationTitle,
-		// 		notificationContent, targetUrl);
-		// } catch (Exception e) {
-		// 	log.error("환불 완료 알림 전송 실패. 사용자ID: {}, 구매ID: {}, 오류: {}",
-		// 		userId, purchase.getId(), e.getMessage(), e);
-		// 	// 알림 발송 실패는 환불 처리에 영향을 주지 않도록 예외를 무시함
-		// }
+	/**
+	 * 환불 완료 알림 이벤트 발행
+	 */
+	private void publishRefundCompletedEvent(Purchase purchase, int refundAmount, String cancelReason, 
+											CanceledPaymentInfo canceledPaymentInfo) {
+		try {
+			RefundCompletedEvent refundEvent = RefundCompletedEvent.of(
+				purchase.getUserId().getValue(),
+				purchase.getPurchaseId().getValue(),
+				purchase.getOrderId(),
+				purchase.getOrderName(),
+				refundAmount,
+				cancelReason,
+				canceledPaymentInfo.getCancels().get(0).getCanceledAt(),
+				purchase.getOrderName()
+			);
 
-		publisher.publishSeatPurchaseCanceledEvent(seatIds, purchase.getPurchaseId().getValue());
-
-		return CancelPaymentResponse.of(canceledPaymentInfo);
+			notificationEventPublisher.publishRefundCompletedEvent(refundEvent);
+		} catch (Exception e) {
+			log.error("환불 완료 알림 이벤트 발행 실패. 사용자ID: {}, 구매ID: {}, 오류: {}",
+				purchase.getUserId().getValue(), purchase.getPurchaseId().getValue(), e.getMessage(), e);
+		}
 	}
 
 	// @Transactional

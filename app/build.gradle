@@ -25,6 +25,7 @@ dependencies {
     compileOnly project(':seat')
     implementation project(':purchase')
     implementation project(':security-aop')
+    implementation project(':notification')
 }
 
 tasks.named('test') {

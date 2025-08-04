@@ -13,9 +13,17 @@ dependencies {
     implementation project(':common')
     implementation project(':security-aop')
     implementation project(':message')
+    implementation project(':notification')
 
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+tasks.named('bootJar'){
+    enabled=false
+}
+tasks.named('jar'){
+    enabled=true
+}
+

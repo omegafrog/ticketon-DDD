@@ -63,6 +63,7 @@ The system follows a multi-module Gradle project structure with these core servi
 - `category-id` - Event category management
 
 ### Domain Architecture
+Every Domain module's app package does not contain any class of web(ServletRequet, resp, etc...)
 Based on DDD principles with clear aggregate boundaries:
 - **Event Domain**: Events, seats, layouts, pricing
 - **Payment Domain**: Purchases, tickets, payment integration
@@ -109,3 +110,4 @@ The dispatcher module implements a sophisticated multithreaded promotion system:
 - Worker module (if implemented) handles payment confirmations
 - Event-driven updates across services
 - Redis locks prevent overselling
+

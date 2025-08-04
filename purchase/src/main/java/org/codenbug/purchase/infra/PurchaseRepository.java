@@ -28,4 +28,7 @@ public interface PurchaseRepository extends JpaRepository<Purchase, PurchaseId> 
 """)
 	List<Purchase> findAllByEventId(@Param("eventId") Long eventId);
 
+	// 환불 관련 메서드 추가
+	List<Purchase> findByEventIdAndPaymentStatus(String eventId, PaymentStatus paymentStatus);
+
 }

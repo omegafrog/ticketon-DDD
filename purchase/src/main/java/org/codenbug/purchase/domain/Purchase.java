@@ -132,4 +132,40 @@ public class Purchase {
 	public boolean isPaymentCompleted() {
 		return this.paymentStatus == PaymentStatus.DONE;
 	}
+	
+	// 환불 관련 비즈니스 로직
+	public boolean canRefund() {
+		return isPaymentCompleted();
+	}
+	
+	public void validateRefundAmount(Integer refundAmount) {
+		if (refundAmount == null || refundAmount <= 0) {
+			throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
+		}
+		if (refundAmount > this.amount) {
+			throw new IllegalArgumentException("환불 금액이 구매 금액을 초과할 수 없습니다.");
+		}
+	}
+	
+	public void markAsRefunded() {
+		if (!canRefund()) {
+			throw new IllegalStateException("완료된 결제만 환불할 수 있습니다.");
+		}
+		this.paymentStatus = PaymentStatus.REFUNDED;
+	}
+	
+	public void markAsPartialRefunded() {
+		if (!canRefund()) {
+			throw new IllegalStateException("완료된 결제만 부분 환불할 수 있습니다.");
+		}
+		this.paymentStatus = PaymentStatus.PARTIAL_REFUNDED;
+	}
+	
+	public int getTotalAmount() {
+		return this.amount;
+	}
+	
+	public String getPaymentKey() {
+		return this.pid;
+	}
 }

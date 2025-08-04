@@ -12,6 +12,7 @@ dependencies {
     implementation project(':common')
     implementation project(':security-aop')
     implementation project(':message')
+    implementation project(':notification')
 
 }
 
