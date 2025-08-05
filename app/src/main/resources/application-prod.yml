@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 1000
+    url: jdbc:mysql://mysql.app.ticketone.site:3306?serverTimeZone=Asia/Seoul
+    username: jiwoo
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 100
+  h2:
+    console:
+      enabled: true
+  kafka:
+    bootstrap-servers: 10.0.1.47:9092
+    consumer:
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: org.codenbug.message
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        # 멱등성(Idempotence) 활성화 (트랜잭션의 필수 조건)
+        enable.idempotence: true
+server:
+  port: 9000
+  tomcat:
+    threads:
+      max: 1100
+

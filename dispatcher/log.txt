@@ -1,0 +1,98 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2025-08-05T21:01:46.223+09:00  INFO 32668 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Starting BrokerApplication using Java 23.0.2 with PID 32668 (C:\Users\jiwoo\workspace\ticketon-DDD\broker\build\classes\java\main started by jiwoo in C:\Users\jiwoo\workspace\ticketon-DDD)
+2025-08-05T21:01:46.226+09:00  INFO 32668 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : The following 1 profile is active: "secret"
+2025-08-05T21:01:47.123+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-05T21:01:47.124+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-05T21:01:47.140+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 5 ms. Found 0 JPA repository interfaces.
+2025-08-05T21:01:47.570+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-05T21:01:47.571+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-05T21:01:47.592+09:00  INFO 32668 --- [broker-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 10 ms. Found 0 Redis repository interfaces.
+2025-08-05T21:01:47.843+09:00  INFO 32668 --- [broker-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=1c5c5378-f662-33f7-9a14-f6f8502e6228
+2025-08-05T21:01:48.564+09:00  INFO 32668 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2025-08-05T21:01:48.582+09:00  INFO 32668 --- [broker-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-05T21:01:48.582+09:00  INFO 32668 --- [broker-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-08-05T21:01:48.650+09:00  INFO 32668 --- [broker-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-05T21:01:48.650+09:00  INFO 32668 --- [broker-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2359 ms
+2025-08-05T21:01:48.984+09:00  INFO 32668 --- [broker-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-05T21:01:49.050+09:00  INFO 32668 --- [broker-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-08-05T21:01:49.089+09:00  INFO 32668 --- [broker-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-05T21:01:49.437+09:00  INFO 32668 --- [broker-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-05T21:01:49.474+09:00  INFO 32668 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-05T21:01:49.602+09:00  INFO 32668 --- [broker-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:./app user=SA
+2025-08-05T21:01:49.604+09:00  INFO 32668 --- [broker-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-05T21:01:49.632+09:00  WARN 32668 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-05T21:01:49.633+09:00  WARN 32668 --- [broker-service] [           main] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-08-05T21:01:49.658+09:00  INFO 32668 --- [broker-service] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-08-05T21:01:50.036+09:00  INFO 32668 --- [broker-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-05T21:01:50.043+09:00  INFO 32668 --- [broker-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-05T21:01:50.904+09:00  INFO 32668 --- [broker-service] [           main] o.c.b.redis.EntryStreamMessageListener   : Started listening to Redis Stream 'DISPATCH' with consumer group 'DISPATCH:broker-service:5a7476063ca1b21f9703e8ff1e14bb74' and consumer name 'broker-service:5a7476063ca1b21f9703e8ff1e14bb74-consumer'
+2025-08-05T21:01:51.011+09:00  WARN 32668 --- [broker-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-05T21:01:52.178+09:00  INFO 32668 --- [broker-service] [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:file:./app'
+2025-08-05T21:01:52.233+09:00  INFO 32668 --- [broker-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2025-08-05T21:01:52.281+09:00  WARN 32668 --- [broker-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2025-08-05T21:01:52.290+09:00  INFO 32668 --- [broker-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2025-08-05T21:01:52.384+09:00  INFO 32668 --- [broker-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 49860 (http) with context path '/'
+2025-08-05T21:01:52.385+09:00  INFO 32668 --- [broker-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 49860
+2025-08-05T21:01:52.390+09:00  INFO 32668 --- [broker-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2025-08-05T21:01:52.418+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2025-08-05T21:01:52.422+09:00  INFO 32668 --- [broker-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2025-08-05T21:01:52.433+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2025-08-05T21:01:52.434+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2025-08-05T21:01:52.811+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2025-08-05T21:01:52.813+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2025-08-05T21:01:52.827+09:00  INFO 32668 --- [broker-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2025-08-05T21:01:52.828+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1754395312827 with initial instances count: 2
+2025-08-05T21:01:52.832+09:00  INFO 32668 --- [broker-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application BROKER-SERVICE with eureka with status UP
+2025-08-05T21:01:52.832+09:00  INFO 32668 --- [broker-service] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1754395312832, current=UP, previous=STARTING]
+2025-08-05T21:01:52.834+09:00  INFO 32668 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:a1e7daaf560762dd9ac879849ef1b909: registering service...
+2025-08-05T21:01:52.852+09:00  INFO 32668 --- [broker-service] [           main] org.codenbug.broker.BrokerApplication    : Started BrokerApplication in 7.454 seconds (process running for 8.996)
+2025-08-05T21:01:52.874+09:00  INFO 32668 --- [broker-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_BROKER-SERVICE/broker-service:a1e7daaf560762dd9ac879849ef1b909 - registration status: 204
+2025-08-05T21:01:53.070+09:00  INFO 32668 --- [broker-service] [(2)-172.30.1.26] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-05T21:01:53.070+09:00  INFO 32668 --- [broker-service] [(2)-172.30.1.26] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-08-05T21:01:53.073+09:00  INFO 32668 --- [broker-service] [(2)-172.30.1.26] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+org.springframework.web.context.request.async.AsyncRequestNotUsableException: Response not usable after response errors.
+	at org.springframework.web.context.request.async.StandardServletAsyncWebRequest$LifecycleHttpServletResponse.obtainLockOrRaiseException(StandardServletAsyncWebRequest.java:338)
+	at org.springframework.web.context.request.async.StandardServletAsyncWebRequest$LifecycleHttpServletResponse.flushBuffer(StandardServletAsyncWebRequest.java:320)
+	at org.springframework.http.server.ServletServerHttpResponse.flush(ServletServerHttpResponse.java:105)
+	at org.springframework.http.server.DelegatingServerHttpResponse.flush(DelegatingServerHttpResponse.java:61)
+	at org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitterReturnValueHandler$DefaultSseEmitterHandler.complete(ResponseBodyEmitterReturnValueHandler.java:320)
+	at org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter.complete(ResponseBodyEmitter.java:251)
+	at org.codenbug.broker.thread.QueueInfoScheduler.heartBeat(QueueInfoScheduler.java:132)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.runInternal(ScheduledMethodRunnable.java:130)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.lambda$run$2(ScheduledMethodRunnable.java:124)
+	at io.micrometer.observation.Observation.observe(Observation.java:498)
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:124)
+	at org.springframework.scheduling.config.Task$OutcomeTrackingRunnable.run(Task.java:85)
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54)
+	at org.springframework.scheduling.concurrent.ReschedulingRunnable.run(ReschedulingRunnable.java:96)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:304)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1575)
+2025-08-05T21:03:40.024+09:00  INFO 32668 --- [broker-service] [o-auto-1-exec-3] o.c.broker.service.SseEmitterService     : emitter completed
+2025-08-05T21:06:52.448+09:00  INFO 32668 --- [broker-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

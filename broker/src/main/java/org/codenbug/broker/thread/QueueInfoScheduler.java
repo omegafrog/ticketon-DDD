@@ -73,6 +73,8 @@ public class QueueInfoScheduler {
 		}
 		// 대기열 큐에 있는 모든 유저들에게 대기열 순번과 userId, eventId를 전송합니다.
 		for (Object record : waitingList) {
+			if(record==null)
+				return;
 			// 대기열 큐 메시지로부터 데이터를 파싱합니다.
 			String userId =
 				objectMapper.readTree(record.toString())

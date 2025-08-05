@@ -1,0 +1,144 @@
+Starting a Gradle Daemon, 2 busy Daemons could not be reused, use --status for details
+> Task :common:compileJava UP-TO-DATE
+> Task :category-id:compileJava
+> Task :seat:compileJava
+> Task :security-aop:compileJava UP-TO-DATE
+> Task :event:compileJava
+> Task :message:compileJava UP-TO-DATE
+> Task :user:compileJava
+> Task :app:compileJava
+> Task :app:processResources
+> Task :app:classes
+> Task :app:resolveMainClassName
+> Task :category-id:processResources NO-SOURCE
+> Task :category-id:classes
+> Task :category-id:jar
+> Task :common:processResources UP-TO-DATE
+> Task :common:classes UP-TO-DATE
+> Task :common:jar UP-TO-DATE
+> Task :event:processResources
+> Task :event:classes
+> Task :event:jar
+> Task :message:processResources NO-SOURCE
+> Task :message:classes UP-TO-DATE
+> Task :message:jar UP-TO-DATE
+> Task :seat:processResources UP-TO-DATE
+> Task :seat:classes
+> Task :seat:jar
+> Task :security-aop:processResources UP-TO-DATE
+> Task :security-aop:classes UP-TO-DATE
+> Task :security-aop:jar UP-TO-DATE
+> Task :user:processResources
+> Task :user:classes
+> Task :user:jar
+
+> Task :app:bootRun
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+[32m :: Spring Boot :: [39m              [2m (v3.5.0)[0;39m
+
+[2m2025-08-05T17:48:09.688+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.codenbug.app.AppApplication         [0;39m [2m:[0;39m Starting AppApplication using Java 23.0.2 with PID 26825 (/mnt/c/Users/jiwoo/workspace/ticketon-DDD/app/build/classes/java/main started by jiwoo in /mnt/c/Users/jiwoo/workspace/ticketon-DDD/app)
+[2m2025-08-05T17:48:09.698+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.codenbug.app.AppApplication         [0;39m [2m:[0;39m The following 2 profiles are active: "secret", "dev"
+[2m2025-08-05T17:48:09.982+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.e.DevToolsPropertyDefaultsPostProcessor[0;39m [2m:[0;39m Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+[2m2025-08-05T17:48:09.982+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.e.DevToolsPropertyDefaultsPostProcessor[0;39m [2m:[0;39m For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+[2m2025-08-05T17:48:18.910+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2025-08-05T17:48:19.285+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 299 ms. Found 1 JPA repository interface.
+[2m2025-08-05T17:48:19.303+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2025-08-05T17:48:19.442+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 135 ms. Found 2 JPA repository interfaces.
+[2m2025-08-05T17:48:19.443+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2025-08-05T17:48:19.522+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 74 ms. Found 1 JPA repository interface.
+[2m2025-08-05T17:48:19.540+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+[2m2025-08-05T17:48:19.615+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.d.r.c.RepositoryConfigurationDelegate[0;39m [2m:[0;39m Finished Spring Data repository scanning in 69 ms. Found 1 JPA repository interface.
+[2m2025-08-05T17:48:28.982+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.s.b.w.embedded.tomcat.TomcatWebServer [0;39m [2m:[0;39m Tomcat initialized with port 9000 (http)
+[2m2025-08-05T17:48:29.084+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Starting service [Tomcat]
+[2m2025-08-05T17:48:29.084+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.apache.catalina.core.StandardEngine   [0;39m [2m:[0;39m Starting Servlet engine: [Apache Tomcat/10.1.41]
+[2m2025-08-05T17:48:29.289+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.a.c.c.C.[Tomcat].[localhost].[/]      [0;39m [2m:[0;39m Initializing Spring embedded WebApplicationContext
+[2m2025-08-05T17:48:29.293+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mw.s.c.ServletWebServerApplicationContext[0;39m [2m:[0;39m Root WebApplicationContext: initialization completed in 19306 ms
+[2m2025-08-05T17:48:31.636+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.hibernate.jpa.internal.util.LogHelper [0;39m [2m:[0;39m HHH000204: Processing PersistenceUnitInfo [name: default]
+[2m2025-08-05T17:48:32.516+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.Version                   [0;39m [2m:[0;39m HHH000412: Hibernate ORM core version 6.6.15.Final
+[2m2025-08-05T17:48:33.016+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.h.c.internal.RegionFactoryInitiator   [0;39m [2m:[0;39m HHH000026: Second-level cache disabled
+[2m2025-08-05T17:48:36.859+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.s.o.j.p.SpringPersistenceUnitInfo     [0;39m [2m:[0;39m No LoadTimeWeaver setup: ignoring JPA class transformer
+[2m2025-08-05T17:48:37.304+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Starting...
+[2m2025-08-05T17:48:39.621+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mcom.zaxxer.hikari.pool.HikariPool       [0;39m [2m:[0;39m HikariPool-1 - Added connection conn1: url=jdbc:h2:file:./app user=SA
+[2m2025-08-05T17:48:39.633+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Start completed.
+[2m2025-08-05T17:48:39.834+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.orm.deprecation           [0;39m [2m:[0;39m HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+[2m2025-08-05T17:48:39.847+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.orm.deprecation           [0;39m [2m:[0;39m HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+[2m2025-08-05T17:48:40.001+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.orm.connections.pooling   [0;39m [2m:[0;39m HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+[2m2025-08-05T17:48:43.708+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.mapping.RootClass         [0;39m [2m:[0;39m HHH000038: Composite-id class does not override equals(): org.codenbug.event.domain.EventId
+[2m2025-08-05T17:48:43.708+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.mapping.RootClass         [0;39m [2m:[0;39m HHH000039: Composite-id class does not override hashCode(): org.codenbug.event.domain.EventId
+[2m2025-08-05T17:48:43.708+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.mapping.RootClass         [0;39m [2m:[0;39m HHH000038: Composite-id class does not override equals(): org.codenbug.categoryid.domain.CategoryId
+[2m2025-08-05T17:48:43.708+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.mapping.RootClass         [0;39m [2m:[0;39m HHH000039: Composite-id class does not override hashCode(): org.codenbug.categoryid.domain.CategoryId
+[2m2025-08-05T17:48:48.887+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.h.e.t.j.p.i.JtaPlatformInitiator      [0;39m [2m:[0;39m HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+[2m2025-08-05T17:48:49.228+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table event (id varchar(255) not null, age_limit integer, booking_end datetime(6) not null, booking_start datetime(6) not null, event_category_id bigint, description tinytext not null, event_end datetime(6) not null, event_start datetime(6) not null, restrictions tinytext, seat_selectable boolean default false not null, status enum ('CANCELLED','CLOSED','OPEN'), thumbnail_url varchar(255) not null, title varchar(255) not null, view_count integer default 0 not null, manager_id varchar(255), created_at datetime(6), deleted bit, modified_at datetime(6), seat_layout_id bigint, primary key (id)) engine=InnoDB
+[2m2025-08-05T17:48:49.239+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table event_category (id bigint not null, name varchar(255), thumbnail_url varchar(255), primary key (id)) engine=InnoDB
+[2m2025-08-05T17:48:49.240+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table event_category_projection (id bigint not null, name varchar(255), thumbnail_url varchar(255), primary key (id)) engine=InnoDB
+[2m2025-08-05T17:48:49.242+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table members (user_id varchar(255) not null, age integer not null, addresses varchar(255), name varchar(255), phone_num varchar(255), security_user_id varchar(255), sex enum ('ETC','FEMALE','MALE') not null, primary key (user_id)) engine=InnoDB
+[2m2025-08-05T17:48:49.243+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table seat (layout_id bigint not null, amount integer, grade varchar(255), seat_id varchar(255), signature varchar(255)) engine=InnoDB
+[2m2025-08-05T17:48:49.244+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table `seat-event-projection` (event_id varchar(255) not null, seat_selectable bit, primary key (event_id)) engine=InnoDB
+[2m2025-08-05T17:48:49.245+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m create table seat_layout (id bigint not null auto_increment, layout varchar(255), primary key (id)) engine=InnoDB
+[2m2025-08-05T17:48:49.259+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36morg.hibernate.SQL                       [0;39m [2m:[0;39m alter table seat add constraint FKgydpdkivl2a55vyf6rse0c55g foreign key (layout_id) references seat_layout (id)
+[2m2025-08-05T17:48:49.342+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mj.LocalContainerEntityManagerFactoryBean[0;39m [2m:[0;39m Initialized JPA EntityManagerFactory for persistence unit 'default'
+[2m2025-08-05T17:48:50.298+09:00[0;39m [32mDEBUG[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.h.stat.internal.StatisticsInitiator   [0;39m [2m:[0;39m Statistics initialized [enabled=false]
+[2m2025-08-05T17:48:52.077+09:00[0;39m [33m WARN[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mConfigServletWebServerApplicationContext[0;39m [2m:[0;39m Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'eventNotificationService': Resolution of declared constructors on bean Class [org.codenbug.event.service.EventNotificationService] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@2f6cfdf6] failed
+[2m2025-08-05T17:48:52.078+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mj.LocalContainerEntityManagerFactoryBean[0;39m [2m:[0;39m Closing JPA EntityManagerFactory for persistence unit 'default'
+[2m2025-08-05T17:48:52.092+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Shutdown initiated...
+[2m2025-08-05T17:48:52.100+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mcom.zaxxer.hikari.HikariDataSource      [0;39m [2m:[0;39m HikariPool-1 - Shutdown completed.
+[2m2025-08-05T17:48:52.102+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.apache.catalina.core.StandardService  [0;39m [2m:[0;39m Stopping service [Tomcat]
+[2m2025-08-05T17:48:52.142+09:00[0;39m [32m INFO[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36m.s.b.a.l.ConditionEvaluationReportLogger[0;39m [2m:[0;39m 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+[2m2025-08-05T17:48:52.393+09:00[0;39m [31mERROR[0;39m [35m26825[0;39m [2m--- [seat] [  restartedMain] [0;39m[36mo.s.boot.SpringApplication              [0;39m [2m:[0;39m Application run failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'eventNotificationService': Resolution of declared constructors on bean Class [org.codenbug.event.service.EventNotificationService] from ClassLoader [jdk.internal.loader.ClassLoaders$AppClassLoader@2f6cfdf6] failed
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.determineCandidateConstructors(AutowiredAnnotationBeanPostProcessor.java:384) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineConstructorsFromBeanPostProcessors(AbstractAutowireCapableBeanFactory.java:1334) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1229) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1222) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1188) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1123) ~[spring-beans-6.2.7.jar:6.2.7]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:987) ~[spring-context-6.2.7.jar:6.2.7]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627) ~[spring-context-6.2.7.jar:6.2.7]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1362) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1351) ~[spring-boot-3.5.0.jar:3.5.0]
+	at org.codenbug.app.AppApplication.main(AppApplication.java:12) ~[main/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.boot.devtools.restart.RestartLauncher.run(RestartLauncher.java:50) ~[spring-boot-devtools-3.5.0.jar:3.5.0]
+Caused by: java.lang.NoClassDefFoundError: org/codenbug/notification/application/service/NotificationApplicationService
+	at java.base/java.lang.Class.getDeclaredConstructors0(Native Method) ~[na:na]
+	at java.base/java.lang.Class.privateGetDeclaredConstructors(Class.java:3621) ~[na:na]
+	at java.base/java.lang.Class.getDeclaredConstructors(Class.java:2786) ~[na:na]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.determineCandidateConstructors(AutowiredAnnotationBeanPostProcessor.java:379) ~[spring-beans-6.2.7.jar:6.2.7]
+	... 23 common frames omitted
+Caused by: java.lang.ClassNotFoundException: org.codenbug.notification.application.service.NotificationApplicationService
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641) ~[na:na]
+	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188) ~[na:na]
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:528) ~[na:na]
+	... 27 common frames omitted
+
+
+BUILD SUCCESSFUL in 1m 35s
+23 actionable tasks: 14 executed, 9 up-to-date
