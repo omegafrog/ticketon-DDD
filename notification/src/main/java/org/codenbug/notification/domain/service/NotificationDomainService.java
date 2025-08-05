@@ -1,9 +1,9 @@
-package org.codenbug.notification.domain.notification.service;
+package org.codenbug.notification.domain.service;
 
-import org.codenbug.notification.domain.notification.entity.Notification;
-import org.codenbug.notification.domain.notification.entity.NotificationContent;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
-import org.codenbug.notification.domain.notification.entity.UserId;
+import org.codenbug.notification.domain.entity.Notification;
+import org.codenbug.notification.domain.entity.NotificationContent;
+import org.codenbug.notification.domain.entity.NotificationType;
+import org.codenbug.notification.domain.entity.UserId;
 import org.springframework.stereotype.Service;
 
 @Service

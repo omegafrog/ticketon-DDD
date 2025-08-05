@@ -4,6 +4,7 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.util.Map;
 
+import org.codenbug.broker.config.InstanceConfig;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -22,19 +23,19 @@ public class WaitingQueueEntryService {
 	private final RedisTemplate<String, Object> simpleRedisTemplate;
 	private final ObjectMapper objectMapper;
 	private final RedisTemplate<Object, Object> redisTemplate;
+	private final InstanceConfig instanceConfig;
+	
 	@Value("${custom.events.url}")
 	private String url;
 
-	@Value("${custom.instance-id}")
-	private String instanceId;
-
 	public WaitingQueueEntryService(SseEmitterService sseEmitterService,
 		RedisTemplate<String, Object> simpleRedisTemplate, ObjectMapper objectMapper,
-		RedisTemplate<Object, Object> redisTemplate) {
+		RedisTemplate<Object, Object> redisTemplate, InstanceConfig instanceConfig) {
 		this.sseEmitterService = sseEmitterService;
 		this.simpleRedisTemplate = simpleRedisTemplate;
 		this.objectMapper = objectMapper;
 		this.redisTemplate = redisTemplate;
+		this.instanceConfig = instanceConfig;
 	}
 
 	public SseEmitter entry(String eventId) throws JsonProcessingException {
@@ -114,7 +115,7 @@ public class WaitingQueueEntryService {
 				Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId.toString(),
 					QUEUE_MESSAGE_IDX_KEY_NAME, idx.toString(),
 					QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId.toString(),
-					QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME, instanceId.toString()
+					QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME, instanceConfig.getInstanceId()
 			));
 		// 유저가 대기열에 있는지 확인하기 위한 hash 값 업데이트
 		simpleRedisTemplate.opsForHash()

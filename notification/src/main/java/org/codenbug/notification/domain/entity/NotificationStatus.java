@@ -1,4 +1,4 @@
-package org.codenbug.notification.domain.notification.entity;
+package org.codenbug.notification.domain.entity;
 
 public enum NotificationStatus {
     PENDING("생성됐지만 아직 전송되지 않음"),

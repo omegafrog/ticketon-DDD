@@ -1,7 +1,7 @@
 package org.codenbug.notification.service;
 
 import org.codenbug.notification.application.service.NotificationApplicationService;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;

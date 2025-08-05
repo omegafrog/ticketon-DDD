@@ -7,10 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import org.codenbug.notification.domain.notification.entity.NotificationSseConnection;
-import org.codenbug.notification.domain.notification.entity.UserId;
+import org.codenbug.notification.domain.entity.NotificationSseConnection;
+import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.dto.NotificationDto;
-import org.codenbug.notification.repository.NotificationRepository;
+import org.codenbug.notification.infrastructure.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

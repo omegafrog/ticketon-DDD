@@ -1,6 +1,6 @@
 package org.codenbug.app;
 
-import org.codenbug.notification.NotificationConfig;
+import org.codenbug.notification.config.NotificationConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
@@ -12,7 +12,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
     "org.codenbug.event",
     "org.codenbug.purchase",
     "org.codenbug.notification",
-    "org.codeNbug.mainserver.global"
 })
 @EnableJpaAuditing
 @Import(NotificationConfig.class)

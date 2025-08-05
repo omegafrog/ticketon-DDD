@@ -95,8 +95,8 @@ public class SseEmitterService {
 			log.info("count incremented");
 			redisTemplate.opsForHash()
 				.increment(ENTRY_QUEUE_COUNT_KEY_NAME, parsedEventId, 1);
-			// redisTemplate.opsForHash()
-			// 	.delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+			redisTemplate.opsForHash()
+				.delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
 		} else if (status.equals(Status.IN_ENTRY)) {
 
 			redisTemplate.opsForZSet()

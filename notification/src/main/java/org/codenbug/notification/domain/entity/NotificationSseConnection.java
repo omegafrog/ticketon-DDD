@@ -1,4 +1,4 @@
-package org.codenbug.notification.domain.notification.entity;
+package org.codenbug.notification.domain.entity;
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

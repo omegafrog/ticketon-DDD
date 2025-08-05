@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.NotificationType;
 
 /**
  * 메서드 실행 후 사용자에게 알림을 전송하는 AOP 어노테이션

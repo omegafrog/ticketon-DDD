@@ -1,4 +1,4 @@
-package org.codenbug.notification.config;
+package org.codenbug.app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
-public class KafkaConfig {
+public class JacksonConfig {
 
     @Bean
     public ObjectMapper objectMapper() {

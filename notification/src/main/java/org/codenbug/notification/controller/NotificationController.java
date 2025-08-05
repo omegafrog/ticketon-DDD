@@ -3,7 +3,7 @@ package org.codenbug.notification.controller;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.notification.application.service.NotificationApplicationService;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.dto.NotificationCreateRequestDto;
 import org.codenbug.notification.dto.NotificationDeleteRequestDto;
 import org.codenbug.notification.dto.NotificationDto;

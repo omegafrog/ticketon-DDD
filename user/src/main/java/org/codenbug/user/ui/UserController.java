@@ -12,6 +12,8 @@ import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,5 +38,14 @@ public class UserController {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		UserInfo userinfo = userQueryService.findUser(userSecurityToken, new UserId(userSecurityToken.getUserId()));
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
+	}
+
+	@PutMapping("/me")
+	@AuthNeeded
+	@RoleRequired(value={Role.USER})
+	public ResponseEntity<RsData<UserInfo>> updateMe(@RequestBody UpdateUserRequest request) {
+		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
+		UserInfo updatedUserInfo = userQueryService.updateUser(userSecurityToken, new UserId(userSecurityToken.getUserId()), request);
+		return ResponseEntity.ok(new RsData<>("200", "User updated successfully", updatedUserInfo));
 	}
 }

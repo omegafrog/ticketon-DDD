@@ -56,6 +56,7 @@ public class Event {
 	 */
 	public void update( EventInformation information) {
 		verifyBookingNotEnded();
+		information.validate();
 		this.eventInformation = information;
 	}
 

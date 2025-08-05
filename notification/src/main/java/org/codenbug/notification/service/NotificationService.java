@@ -2,14 +2,14 @@ package org.codenbug.notification.service;
 
 import java.util.List;
 
-import org.codenbug.notification.domain.notification.entity.Notification;
-import org.codenbug.notification.domain.notification.entity.NotificationStatus;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
-import org.codenbug.notification.domain.notification.entity.UserId;
-import org.codenbug.notification.domain.notification.service.NotificationDomainService;
+import org.codenbug.notification.domain.entity.Notification;
+import org.codenbug.notification.domain.entity.NotificationStatus;
+import org.codenbug.notification.domain.entity.NotificationType;
+import org.codenbug.notification.domain.entity.UserId;
+import org.codenbug.notification.domain.service.NotificationDomainService;
 import org.codenbug.notification.dto.NotificationDto;
 import org.codenbug.notification.dto.NotificationEventDto;
-import org.codenbug.notification.repository.NotificationRepository;
+import org.codenbug.notification.infrastructure.NotificationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

@@ -1,4 +1,4 @@
-package org.codenbug.notification;
+package org.codenbug.notification.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
@@ -14,8 +14,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackages = {
     "org.codenbug.notification"
 })
-@EnableJpaRepositories(basePackages = "org.codenbug.notification.infrastructure.persistence")
-@EntityScan(basePackages = "org.codenbug.notification.domain.notification.entity")
+@EntityScan(basePackages = "org.codenbug.notification.domain.entity")
+@EnableJpaRepositories(basePackages = "org.codenbug.notification.infrastructure")
 @EnableAspectJAutoProxy
 public class NotificationConfig {
     // Bean 설정이 필요한 경우 여기에 추가

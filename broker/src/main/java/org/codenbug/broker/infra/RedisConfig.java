@@ -1,5 +1,6 @@
 package org.codenbug.broker.infra;
 
+import org.codenbug.broker.config.InstanceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -35,8 +36,11 @@ public class RedisConfig {
 	public static final String WAITING_QUEUE_START_IDX_KEY = "WAITING_QUEUE_START_IDX";
 	private static final String ENTRY_USER_STREAM_GROUP = "ENTRY_CONSUMER_GROUP";
 
-	@Value("${custom.instance-id}")
-	private String instanceId;
+	private final InstanceConfig instanceConfig;
+
+	public RedisConfig(InstanceConfig instanceConfig) {
+		this.instanceConfig = instanceConfig;
+	}
 
 	@Bean
 	@Qualifier("pubSubConnectionFactory")
@@ -71,13 +75,13 @@ public class RedisConfig {
 	 * 현재 인스턴스의 전용 DISPATCH 스트림명 반환
 	 */
 	public String getInstanceDispatchStreamName() {
-		return DISPATCH_QUEUE_CHANNEL_PREFIX + instanceId;
+		return DISPATCH_QUEUE_CHANNEL_PREFIX + instanceConfig.getInstanceId();
 	}
 
 	/**
 	 * 현재 인스턴스 ID 반환
 	 */
 	public String getInstanceId() {
-		return instanceId;
+		return instanceConfig.getInstanceId();
 	}
 }

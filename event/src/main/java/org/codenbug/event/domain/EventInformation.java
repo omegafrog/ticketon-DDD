@@ -11,6 +11,8 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 /**
@@ -19,11 +21,13 @@ import lombok.Getter;
 @Embeddable
 @Getter
 public class EventInformation {
-	@Column(name = "title", nullable = false)
+	@Column(name = "title", nullable = false, length = 255)
+	@Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
 	private String title;
 	@Column(name = "thumbnail_url", nullable = false)
 	private String thumbnailUrl;
 	@Column(name = "ageLimit")
+	@Min(value = 0, message = "Age limit must be at least 0")
 	private Integer ageLimit;
 	@Lob
 	@Column(name = "restrictions")
@@ -107,6 +111,7 @@ public class EventInformation {
 		this.bookingEnd	= request.getBookingEnd() == null ? this.bookingEnd : request.getBookingEnd();
 		this.status = request.getStatus() == null ? this.status : request.getStatus();
 		this.seatSelectable = request.getSeatSelectable() == null ? this.seatSelectable : request.getSeatSelectable();
+		validate();
 		return this;
 	}
 
@@ -122,7 +127,7 @@ public class EventInformation {
 
 	private void validateNumericColumn() {
 		if (ageLimit != null && ageLimit < 0)
-			throw new IllegalStateException("age limit must be greater than 0");
+			throw new IllegalStateException("age limit must be at least 0");
 	}
 
 	private void validateStringColumn() {
@@ -130,20 +135,23 @@ public class EventInformation {
 			thumbnailUrl == null || thumbnailUrl.isEmpty() ||
 			description == null || description.isEmpty())
 			throw new IllegalStateException("value must not be null or empty");
+		
+		if (title.length() < 3)
+			throw new IllegalStateException("title must be at least 3 characters");
 	}
 
 	private void validateBookingNEventDate() {
 		if (bookingStart == null || bookingEnd == null || eventStart == null || eventEnd == null)
 			throw new IllegalStateException("datetime must not be null or empty");
 
-		if (bookingStart.isAfter(bookingEnd) || LocalDateTime.now().isAfter(bookingStart))
-			throw new IllegalStateException("bookingStart must be after bookingEnd or now");
+		if (bookingStart.isAfter(bookingEnd))
+			throw new IllegalStateException("booking start date must be before booking end date");
 
-		if (eventStart.isAfter(eventEnd) || LocalDateTime.now().isAfter(eventStart))
-			throw new IllegalStateException("eventStart must be after eventEnd or now");
+		if (eventStart.isAfter(eventEnd))
+			throw new IllegalStateException("event start date must be before event end date");
 
 		if (bookingEnd.isAfter(eventStart))
-			throw new IllegalStateException("booking date must be before than event date");
+			throw new IllegalStateException("booking end date must be before event start date");
 	}
 
 }

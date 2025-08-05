@@ -1,6 +1,6 @@
 package org.codenbug.notification.dto;
 
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.NotificationType;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

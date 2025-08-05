@@ -1,7 +1,6 @@
-package org.codenbug.user.consumer;
+package org.codenbug.user.infra.consumer;
 
 import org.codenbug.message.SecurityUserRegisteredEvent;
-import org.codenbug.message.SnsUserRegisteredEvent;
 import org.codenbug.message.UserRegisteredEvent;
 import org.codenbug.message.UserRegisteredFailedEvent;
 import org.codenbug.user.app.UserRegisterService;

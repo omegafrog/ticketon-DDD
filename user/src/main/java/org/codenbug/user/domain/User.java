@@ -67,4 +67,19 @@ public class User {
 	private UserId generateUserId() {
 		return new UserId(Util.ID.createUUID());
 	}
+
+	public void updateUser(String name, Integer age, String location, String phoneNum) {
+		if (name != null) {
+			this.name = name;
+		}
+		if (age != null) {
+			this.age = age;
+		}
+		if (location != null) {
+			this.location = location;
+		}
+		if (phoneNum != null) {
+			this.phoneNum = phoneNum;
+		}
+	}
 }

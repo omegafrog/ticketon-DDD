@@ -1,4 +1,4 @@
-package org.codenbug.notification.domain.notification.entity;
+package org.codenbug.notification.domain.entity;
 
 public enum NotificationType {
     SYSTEM("시스템 공지 관련 알림"),

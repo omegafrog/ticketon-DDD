@@ -1,5 +1,7 @@
 package org.codenbug.broker.infra;
 
+import static org.codenbug.broker.infra.RedisConfig.*;
+
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
@@ -8,9 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.codenbug.broker.app.EntryAuthService;
 import org.codenbug.broker.app.SseEmitterService;
+import org.codenbug.broker.config.InstanceConfig;
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.stream.Consumer;
@@ -37,27 +39,26 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 	private final SseEmitterService sseEmitterService;
 	private final EntryAuthService entryAuthService;
 	private final RedisConfig redisConfig;
-
-	@Value("${custom.instance-id}")
-	private String instanceId;
+	private final InstanceConfig instanceConfig;
 
 	private StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer;
 
 	public EntryStreamMessageListener(RedisTemplate<String, Object> redisTemplate,
 		RedisConnectionFactory redisConnectionFactory, SseEmitterService sseEmitterService,
-		EntryAuthService entryAuthService, RedisConfig redisConfig) {
+		EntryAuthService entryAuthService, RedisConfig redisConfig, InstanceConfig instanceConfig) {
 		this.redisTemplate = redisTemplate;
 		this.redisConnectionFactory = redisConnectionFactory;
 		this.sseEmitterService = sseEmitterService;
 		this.entryAuthService = entryAuthService;
 		this.redisConfig = redisConfig;
+		this.instanceConfig = instanceConfig;
 	}
 
 	@PostConstruct
 	public void startListening() {
 		String instanceStreamName = redisConfig.getInstanceDispatchStreamName();
 		String groupName = instanceStreamName + ":GROUP";
-		String consumerName = instanceId + "-consumer"; // 각 인스턴스마다 고유한 컨슈머 이름
+		String consumerName = instanceConfig.getInstanceId() + "-consumer"; // 각 인스턴스마다 고유한 컨슈머 이름
 
 		log.info("Starting to listen on instance-specific stream: {}", instanceStreamName);
 
@@ -83,7 +84,6 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 
 		streamMessageListenerContainer = StreamMessageListenerContainer.create(redisConnectionFactory, options);
 
-		// '>'는 아직 처리되지 않은 새로운 메시지만 읽겠다는 의미
 		// ReadOffset.lastConsumed()는 현재 컨슈머 그룹에서 마지막으로 처리(ack)한 메시지 다음부터 읽음
 		streamMessageListenerContainer.receive(
 			Consumer.from(groupName, consumerName),
@@ -135,15 +135,22 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 
 		String instanceStreamName = redisConfig.getInstanceDispatchStreamName();
 		String groupName = instanceStreamName + ":GROUP";
-		String consumerName = instanceId + "-consumer";
+		String consumerName = instanceConfig.getInstanceId() + "-consumer";
 
 		Map<String, String> body = message.getValue();
 
 		String userId = body.get("userId").replaceAll("\"", "");
 		String eventId = body.get("eventId").replaceAll("\"", "");
 		SseConnection sseConnection = sseEmitterService.getEmitterMap().get(userId);
-
-		if (sseConnection == null || !sseConnection.getEventId().equals(eventId)) {
+		// dispatcher가 유저 승급했는데, 유저는 정작 연결 끊은 상태
+		if(sseConnection == null){
+			log.info("count incremented");
+			redisTemplate.opsForHash()
+				.increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId, 1);
+			redisTemplate.opsForHash()
+				.delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+		}
+		if (!sseConnection.getEventId().equals(eventId)) {
 			return;
 		}
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.codenbug.common.exception.AccessDeniedException;
 import org.codenbug.common.redis.RedisLockService;
+import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.purchase.domain.MessagePublisher;
 import org.codenbug.purchase.domain.PaymentMethod;
 import org.codenbug.purchase.domain.PaymentStatus;
@@ -86,7 +87,7 @@ public class PurchaseService {
 	 */
 	@Transactional
 	@org.codenbug.notification.aop.NotifyUser(
-		type = org.codenbug.notification.domain.notification.entity.NotificationType.PAYMENT,
+		type = NotificationType.PAYMENT,
 		title = "결제 완료",
 		content = "티켓 결제가 성공적으로 완료되었습니다.",
 		userIdExpression = "#userId"
@@ -198,7 +199,7 @@ public class PurchaseService {
 	 */
 	@Transactional
 	@org.codenbug.notification.aop.NotifyUser(
-		type = org.codenbug.notification.domain.notification.entity.NotificationType.PAYMENT,
+		type = NotificationType.PAYMENT,
 		title = "환불 완료",
 		content = "티켓 환불이 성공적으로 처리되었습니다.",
 		userIdExpression = "#userId"

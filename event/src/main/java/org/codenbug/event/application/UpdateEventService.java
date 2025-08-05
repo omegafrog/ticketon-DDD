@@ -25,6 +25,7 @@ public class UpdateEventService {
 		this.updateSeatLayoutService = updateSeatLayoutService;
 	}
 
+
 	@Transactional
 	public void updateEvent(EventId id, UpdateEventRequest request) {
 		Event event = eventRepository.findEvent(id);

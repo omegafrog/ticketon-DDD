@@ -2,9 +2,9 @@ package org.codenbug.notification.dto;
 
 import java.time.LocalDateTime;
 
-import org.codenbug.notification.domain.notification.entity.Notification;
-import org.codenbug.notification.domain.notification.entity.NotificationStatus;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.Notification;
+import org.codenbug.notification.domain.entity.NotificationStatus;
+import org.codenbug.notification.domain.entity.NotificationType;
 
 import lombok.Getter;
 

@@ -1,10 +1,10 @@
-package org.codenbug.notification.repository;
+package org.codenbug.notification.infrastructure;
 
 import java.util.List;
 
-import org.codenbug.notification.domain.notification.entity.Notification;
-import org.codenbug.notification.domain.notification.entity.NotificationStatus;
-import org.codenbug.notification.domain.notification.entity.UserId;
+import org.codenbug.notification.domain.entity.Notification;
+import org.codenbug.notification.domain.entity.NotificationStatus;
+import org.codenbug.notification.domain.entity.UserId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

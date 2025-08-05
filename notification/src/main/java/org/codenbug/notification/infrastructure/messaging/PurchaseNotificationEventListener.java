@@ -1,7 +1,7 @@
 package org.codenbug.notification.infrastructure.messaging;
 
 import org.codenbug.notification.application.service.NotificationApplicationService;
-import org.codenbug.notification.domain.notification.entity.NotificationType;
+import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
