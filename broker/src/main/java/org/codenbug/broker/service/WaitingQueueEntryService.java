@@ -123,6 +123,22 @@ public class WaitingQueueEntryService {
 
 	}
 
+	/**
+	 * 현재 로그인한 사용자의 대기열 연결을 명시적으로 해제합니다.
+	 * IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게 승급할 수 있도록 돕니다.
+	 *
+	 * @param eventId 행사의 id
+	 * @return 성공 시 200 OK 응답
+	 */
+	public ResponseEntity<Void> disconnect(String eventId) {
+		String userId = getLoggedInUserId();
+		
+		// SSE 연결 해제 및 리소스 정리
+		sseEmitterService.closeConnection(userId, eventId);
+		
+		return ResponseEntity.ok().build();
+	}
+
 	private String getLoggedInUserId() {
 		return LoggedInUserContext.get().getUserId();
 	}

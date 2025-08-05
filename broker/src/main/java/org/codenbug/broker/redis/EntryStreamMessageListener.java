@@ -1,7 +1,11 @@
 package org.codenbug.broker.redis;
 
+import static org.codenbug.broker.service.SseEmitterService.*;
+
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.codenbug.broker.entity.SseConnection;
@@ -33,9 +37,13 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 	private final RedisConnectionFactory redisConnectionFactory;
 	private final SseEmitterService sseEmitterService;
 	private final EntryAuthService entryAuthService;
+	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
 	@Value("${custom.instance-id}")
 	private String instanceId;
+	
+	@Value("${queue.in-progress-timeout:10}")
+	private int inProgressTimeoutSeconds;
 
 	private StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer;
 
@@ -92,6 +100,10 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 			streamMessageListenerContainer.stop();
 			log.info("Stopped listening to Redis Stream.");
 		}
+		if (scheduler != null && !scheduler.isShutdown()) {
+			scheduler.shutdown();
+			log.info("Shutdown IN_PROGRESS timeout scheduler.");
+		}
 	}
 
 	@Override
@@ -118,8 +130,21 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 		redisTemplate.opsForHash()
 			.put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(), token);
 		redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5, TimeUnit.MINUTES);
+		
+		// IN_PROGRESS 상태 자동 타임아웃 스케줄링
+		scheduler.schedule(() -> {
+			try {
+				SseConnection connection = sseEmitterService.getEmitterMap().get(userId);
+				if (connection != null && connection.getStatus().equals(Status.IN_PROGRESS)) {
+					log.warn("User {} timed out in IN_PROGRESS state for event {}, auto-disconnecting", userId, eventId);
+					closeConn(userId, eventId, redisTemplate);
+				}
+			} catch (Exception ex) {
+				log.error("Error during auto-timeout cleanup for user {}: {}", userId, ex.getMessage());
+			}
+		}, inProgressTimeoutSeconds, TimeUnit.SECONDS);
+		
 		try {
-
 			emitter.send(
 				SseEmitter.event()
 					.data(Map.of(
@@ -132,7 +157,7 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 			redisTemplate.opsForStream()
 				.acknowledge(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
 		} catch (Exception e) {
-			emitter.complete();
+			closeConn(userId, eventId, redisTemplate);
 		}
 	}
 }

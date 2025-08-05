@@ -8,8 +8,10 @@ import org.codenbug.common.Role;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -53,5 +55,17 @@ public class WaitingQueueController {
 		+ ";charset=UTF-8")
 	public SseEmitter entryWaiting(@PathVariable("id") String eventId) throws JsonProcessingException {
 		return waitingQueueEntryService.entry(eventId);
+	}
+
+	/**
+	 * 로그인한 유저가 행사 id가 {@code event-id}인 행사의 티켓 대기열에서 명시적으로 연결을 해제합니다.
+	 * IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게 승급할 수 있도록 돕습니다.
+	 * @param eventId
+	 */
+	@AuthNeeded
+	@RoleRequired({Role.USER})
+	@PostMapping("/events/{id}/tickets/disconnect")
+	public ResponseEntity<Void> disconnectFromQueue(@PathVariable("id") String eventId) {
+		return waitingQueueEntryService.disconnect(eventId);
 	}
 }
