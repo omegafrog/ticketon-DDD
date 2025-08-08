@@ -37,7 +37,6 @@ public class SseEmitterService {
 
 		SseConnection sseConnection = emitterMap.remove(userId);
 		if(sseConnection == null){
-			closeConn(userId, eventId, redisTemplate);
 			log.warn("Attempted to close connection for user '{}', but it was already closed.", userId);
 			return;
 		}

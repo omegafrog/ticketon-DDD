@@ -3,7 +3,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    implementation 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    // implementation 'com.h2database:h2' // temporarily enabled for data export
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

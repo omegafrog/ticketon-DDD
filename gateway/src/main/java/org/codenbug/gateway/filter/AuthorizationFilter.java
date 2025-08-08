@@ -1,6 +1,5 @@
 package org.codenbug.gateway.filter;
 
-import java.sql.Ref;
 import java.util.List;
 
 import org.codenbug.common.AccessToken;
@@ -65,8 +64,12 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			AccessToken accessToken;
 			RefreshToken refreshToken = null;
 
-			if (checkWhiteList(config, exchange, chain, request))
+			if (checkWhiteList(config, exchange, chain, request)) {
+				log.info("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
 				return chain.filter(exchange);
+			}
+			
+			log.info("=== PROCESSING REQUEST: {} ===", request.getURI().getPath());
 
 			// check token validation
 			try {

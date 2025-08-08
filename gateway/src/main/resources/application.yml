@@ -1,5 +1,13 @@
 server:
   port: 8080 # 게이트웨이는 8080 포트에서 실행됩니다.
+  netty:
+    connection-timeout: 30s
+    max-connections: 2000
+  reactor:
+    netty:
+      pool:
+        max-connections: 2000
+        max-idle-time: 30s
 
 
 spring:
@@ -9,6 +17,12 @@ spring:
     name: api-gateway
   cloud:
     gateway:
+      httpclient:
+        max-header-size: 16KB
+        max-initial-line-length: 4KB
+        pool:
+          max-connections: 2000
+          acquire-timeout: 30000
       server:
         webflux:
           routes:
@@ -35,3 +49,21 @@ filter:
       - "/api/v1/auth/register"
       - "/api/v1/auth/login"
       - "/api/v1/auth/social/**"
+
+logging:
+  level:
+    org.codenbug: DEBUG
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
+    reactor.netty.resources: INFO
+    org.springframework.scheduling: INFO
+    org.springframework.cloud.gateway.filter: DEBUG
+    org.springframework.cloud.gateway.handler.predicate: DEBUG
+  file:
+    name: logs/gateway.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 10

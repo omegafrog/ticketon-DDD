@@ -22,7 +22,7 @@ dependencies {
 
     implementation project(':common')
     implementation project(':security-aop')
-    runtimeOnly 'com.h2database:h2'
+    // runtimeOnly 'com.h2database:h2'
 
 }
 

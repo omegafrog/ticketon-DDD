@@ -5,7 +5,6 @@ import static org.codenbug.broker.service.SseEmitterService.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codenbug.broker.entity.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
@@ -139,43 +138,43 @@ public class QueueInfoScheduler {
 		}
 	}
 
-	/**
-	 * 좀비 커넥션 정리 스케줄러
-	 * 30초마다 실행되어 Redis와 동기화되지 않은 커넥션을 정리합니다.
-	 */
-	@Scheduled(cron = "0,30 * * * * *")
-	public void cleanupZombieConnections() {
-		Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
-		AtomicInteger cleanedCount = new AtomicInteger(0);
-		
-		log.debug("Starting zombie connection cleanup. Current connections: {}", emitterMap.size());
-		
-		emitterMap.entrySet().removeIf(entry -> {
-			String userId = entry.getKey();
-			SseConnection connection = entry.getValue();
-			String eventId = connection.getEventId();
-			
-			// Redis에서 해당 사용자가 실제로 대기열에 있는지 확인
-			boolean existsInRedis = objectRedisTemplate.opsForHash()
-				.hasKey(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId);
-			
-			if (!existsInRedis) {
-				log.warn("Found zombie connection for user {} in event {}, cleaning up", userId, eventId);
-				try {
-					connection.getEmitter().complete();
-				} catch (Exception e) {
-					log.debug("Error completing emitter for zombie connection: {}", e.getMessage());
-				}
-				cleanedCount.incrementAndGet();
-				return true; // 맵에서 제거
-			}
-			return false; // 유지
-		});
-		
-		if (cleanedCount.get() > 0) {
-			log.info("Cleaned up {} zombie connections. Remaining connections: {}", 
-				cleanedCount.get(), emitterMap.size());
-		}
-	}
+	// /**
+	//  * 좀비 커넥션 정리 스케줄러
+	//  * 30초마다 실행되어 Redis와 동기화되지 않은 커넥션을 정리합니다.
+	//  */
+	// @Scheduled(cron = "0,30 * * * * *")
+	// public void cleanupZombieConnections() {
+	// 	Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
+	// 	AtomicInteger cleanedCount = new AtomicInteger(0);
+	//
+	// 	log.debug("Starting zombie connection cleanup. Current connections: {}", emitterMap.size());
+	//
+	// 	emitterMap.entrySet().removeIf(entry -> {
+	// 		String userId = entry.getKey();
+	// 		SseConnection connection = entry.getValue();
+	// 		String eventId = connection.getEventId();
+	//
+	// 		// Redis에서 해당 사용자가 실제로 대기열에 있는지 확인
+	// 		boolean existsInRedis = objectRedisTemplate.opsForHash()
+	// 			.hasKey(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId);
+	//
+	// 		if (!existsInRedis) {
+	// 			log.warn("Found zombie connection for user {} in event {}, cleaning up", userId, eventId);
+	// 			try {
+	// 				connection.getEmitter().complete();
+	// 			} catch (Exception e) {
+	// 				log.debug("Error completing emitter for zombie connection: {}", e.getMessage());
+	// 			}
+	// 			cleanedCount.incrementAndGet();
+	// 			return true; // 맵에서 제거
+	// 		}
+	// 		return false; // 유지
+	// 	});
+	//
+	// 	if (cleanedCount.get() > 0) {
+	// 		log.info("Cleaned up {} zombie connections. Remaining connections: {}",
+	// 			cleanedCount.get(), emitterMap.size());
+	// 	}
+	// }
 }
 

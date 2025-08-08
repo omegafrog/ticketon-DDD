@@ -2,7 +2,6 @@ package org.codenbug.broker.service;
 
 import static org.codenbug.broker.redis.RedisConfig.*;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.codenbug.broker.entity.SseConnection;
@@ -60,16 +59,16 @@ public class WaitingQueueEntryService {
 	private void enter(String userId, String eventId) throws JsonProcessingException {
 
 		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
-		emitterMap.forEach((id, emitterConnection) -> {
-			try {
-				emitterConnection.getEmitter().send(SseEmitter.event()
-					.comment("heartBeat")
-					.build());
-			} catch (IOException e) {
-				System.out.println("error");
-				emitterConnection.getEmitter().complete();
-			}
-		});
+		// emitterMap.forEach((id, emitterConnection) -> {
+		// 	try {
+		// 		emitterConnection.getEmitter().send(SseEmitter.event()
+		// 			.comment("heartBeat")
+		// 			.build());
+		// 	} catch (IOException e) {
+		// 		System.out.println("error");
+		// 		emitterConnection.getEmitter().complete();
+		// 	}
+		// });
 		// 총 좌석수 얻기
 		RestTemplate restTemplate = new RestTemplate();
 

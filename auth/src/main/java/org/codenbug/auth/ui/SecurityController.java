@@ -8,11 +8,10 @@ import org.codenbug.auth.app.AuthService;
 import org.codenbug.auth.app.OAuthService;
 import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUserId;
-import org.codenbug.auth.domain.UserId;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
-import org.codenbug.common.TokenInfo;
 import org.codenbug.common.RsData;
+import org.codenbug.common.TokenInfo;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -53,19 +52,33 @@ public class SecurityController {
 
 	@PostMapping("/login")
 	public ResponseEntity<RsData<String>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
+		long startTime = System.currentTimeMillis();
+		log.info("Login request started for email: {}", request.getEmail());
 
-		TokenInfo tokenInfo = authService.loginEmail(request);
+		try {
+			TokenInfo tokenInfo = authService.loginEmail(request);
 
-		resp.setHeader(HttpHeaders.AUTHORIZATION,
-			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
+			resp.setHeader(HttpHeaders.AUTHORIZATION,
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
 
-		Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
-		refreshToken.setPath("/");
-		refreshToken.setMaxAge(60 * 60 * 24 * 7);
-		resp.addCookie(refreshToken);
+			Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
+			refreshToken.setPath("/");
+			refreshToken.setMaxAge(60 * 60 * 24 * 7);
+			resp.addCookie(refreshToken);
 
-		return ResponseEntity.ok(new RsData<>("200", "login success.",
-			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			log.info("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
+
+			return ResponseEntity.ok(new RsData<>("200", "login success.",
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+		} catch (Exception e) {
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			log.error("Login FAILED for email: {} - Duration: {}ms - Error: {}", 
+				request.getEmail(), duration, e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	@AuthNeeded
