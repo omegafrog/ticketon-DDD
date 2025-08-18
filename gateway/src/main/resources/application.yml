@@ -59,11 +59,3 @@ logging:
     org.springframework.scheduling: INFO
     org.springframework.cloud.gateway.filter: DEBUG
     org.springframework.cloud.gateway.handler.predicate: DEBUG
-  file:
-    name: logs/gateway.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      max-history: 10

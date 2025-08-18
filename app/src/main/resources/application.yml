@@ -50,11 +50,3 @@ logging:
   level:
     org.codenbug: DEBUG
     org.springframework.web: DEBUG
-  file:
-    name: logs/app.log
-  pattern:
-    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      max-history: 10

@@ -108,6 +108,10 @@ out/
 /monitor-threadpool.js
 /mysql-import-guide.md
 /res.txt
+logs/
+*.log
+log_*.txt
+*_log.txt
 /.claude/settings.local.json
 /sse-connection-limit-test.js
 /sse-connection-optimized.js
