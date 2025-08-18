@@ -64,31 +64,14 @@ public class User {
 		this.age = age;
 		this.securityUserId = securityUserId;
 	}
-
-<<<<<<< HEAD
 	private UserId generateUserId() {
 		return new UserId(Util.ID.createUUID());
 	}
 
-	public void updateUser(String name, Integer age, String location, String phoneNum) {
-		if (name != null) {
-			this.name = name;
-		}
-		if (age != null) {
-			this.age = age;
-		}
-		if (location != null) {
-			this.location = location;
-		}
-		if (phoneNum != null) {
-			this.phoneNum = phoneNum;
-		}
-=======
 	public void update(String name, Integer age, String location, String phoneNum) {
 		this.name = name != null ? name : this.name;
 		this.age = age != null ? age : this.age;
 		this.location = location != null ? location : this.location;
 		this.phoneNum = phoneNum != null ? phoneNum : this.phoneNum;
->>>>>>> tmp
 	}
 }

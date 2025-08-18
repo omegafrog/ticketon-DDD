@@ -27,7 +27,7 @@ public class UserQueryService {
 	@Transactional
 	public UserInfo updateUser(UserSecurityToken token, UserId userId, UpdateUserRequest request) {
 		User user = userRepository.findUser(userId);
-		user.updateUser(request.getName(), request.getAge(), request.getLocation(), request.getPhoneNum());
+		user.update(request.getName(), request.getAge(), request.getLocation(), request.getPhoneNum());
 		userRepository.save(user);
 		return new UserInfo(user, token.getEmail(), token.getRole());
 	}

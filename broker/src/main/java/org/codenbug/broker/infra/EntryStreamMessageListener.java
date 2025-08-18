@@ -1,27 +1,18 @@
 package org.codenbug.broker.infra;
 
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/EntryStreamMessageListener.java
 import static org.codenbug.broker.infra.RedisConfig.*;
+import static org.codenbug.broker.service.SseEmitterService.*;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-=======
-import static org.codenbug.broker.service.SseEmitterService.*;
-
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/redis/EntryStreamMessageListener.java
 import java.util.concurrent.TimeUnit;
 
 import org.codenbug.broker.app.EntryAuthService;
-import org.codenbug.broker.app.SseEmitterService;
 import org.codenbug.broker.config.InstanceConfig;
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
+import org.codenbug.broker.service.SseEmitterService;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.stream.Consumer;
@@ -31,12 +22,10 @@ import org.springframework.data.redis.connection.stream.StreamOffset;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.stream.StreamListener;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -47,18 +36,9 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 	private final RedisConnectionFactory redisConnectionFactory;
 	private final SseEmitterService sseEmitterService;
 	private final EntryAuthService entryAuthService;
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/EntryStreamMessageListener.java
 	private final RedisConfig redisConfig;
 	private final InstanceConfig instanceConfig;
-=======
-	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(5);
 
-	@Value("${custom.instance-id}")
-	private String instanceId;
-	
-	@Value("${queue.in-progress-timeout:10}")
-	private int inProgressTimeoutSeconds;
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/redis/EntryStreamMessageListener.java
 
 	private StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer;
 
@@ -114,43 +94,6 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 		log.info("Started listening to Redis Stream '{}' with consumer group '{}' and consumer name '{}'",
 			instanceStreamName, groupName, consumerName);
 
-		// 애플리케이션 시작 시 pending 메시지 재처리 (간단하고 안전한 방법)
-		processPendingMessagesAsync(instanceStreamName, groupName, consumerName);
-	}
-
-	@PreDestroy
-	public void stopListening() {
-		if (streamMessageListenerContainer != null) {
-			streamMessageListenerContainer.stop();
-			log.info("Stopped listening to Redis Stream.");
-		}
-		if (scheduler != null && !scheduler.isShutdown()) {
-			scheduler.shutdown();
-			log.info("Shutdown IN_PROGRESS timeout scheduler.");
-		}
-	}
-
-
-	/**
-	 * Redis 재시작 시 ACK되지 않은 pending 메시지들을 비동기로 재처리
-	 */
-	@Async
-	public CompletableFuture<Void> processPendingMessagesAsync(String streamName, String groupName, String consumerName) {
-		processPendingMessages(streamName, groupName, consumerName);
-		return CompletableFuture.completedFuture(null);
-	}
-
-	/**
-	 * Redis 재시작 시 ACK되지 않은 pending 메시지들을 재처리
-	 */
-	private void processPendingMessages(String streamName, String groupName, String consumerName) {
-		try {
-			// Simplified pending message processing - just log for now
-			log.info("Checking for pending messages for consumer '{}'", consumerName);
-			// TODO: Implement proper pending message handling when Spring Data Redis API is clarified
-		} catch (Exception e) {
-			log.error("Failed to process pending messages: {}", e.getMessage());
-		}
 	}
 
 	@Override
@@ -166,7 +109,7 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 		String eventId = body.get("eventId").replaceAll("\"", "");
 		SseConnection sseConnection = sseEmitterService.getEmitterMap().get(userId);
 		// dispatcher가 유저 승급했는데, 유저는 정작 연결 끊은 상태
-		if(sseConnection == null){
+		if (sseConnection == null) {
 			log.info("count incremented");
 			redisTemplate.opsForHash()
 				.increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId, 1);
@@ -185,20 +128,7 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 		redisTemplate.opsForHash()
 			.put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(), token);
 		redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5, TimeUnit.MINUTES);
-		
-		// // IN_PROGRESS 상태 자동 타임아웃 스케줄링
-		// scheduler.schedule(() -> {
-		// 	try {
-		// 		SseConnection connection = sseEmitterService.getEmitterMap().get(userId);
-		// 		if (connection != null && connection.getStatus().equals(Status.IN_PROGRESS)) {
-		// 			log.warn("User {} timed out in IN_PROGRESS state for event {}, auto-disconnecting", userId, eventId);
-		// 			closeConn(userId, eventId, redisTemplate);
-		// 		}
-		// 	} catch (Exception ex) {
-		// 		log.error("Error during auto-timeout cleanup for user {}: {}", userId, ex.getMessage());
-		// 	}
-		// }, inProgressTimeoutSeconds, TimeUnit.SECONDS);
-		
+
 		try {
 			emitter.send(
 				SseEmitter.event()
@@ -209,23 +139,12 @@ public class EntryStreamMessageListener implements StreamListener<String, MapRec
 						"token", token
 					))
 			);
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/EntryStreamMessageListener.java
 		} catch (IOException e) {
-			SseEmitterService.closeConn(userId, eventId, redisTemplate);
-			emitter.completeWithError(e);
-			log.error("messageListener:{}", e.getMessage());
-=======
-			redisTemplate.opsForStream()
-				.acknowledge(RedisConfig.DISPATCH_QUEUE_CHANNEL_NAME, groupName, message.getId());
-		} catch (Exception e) {
 			closeConn(userId, eventId, redisTemplate);
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/redis/EntryStreamMessageListener.java
+		} catch (
+			Exception e) {
+			closeConn(userId, eventId, redisTemplate);
 		}
-		catch (IllegalStateException e){
-			SseEmitterService.closeConn(userId, eventId, redisTemplate);
-			log.error("messageListener:{}", e.getMessage());
-		}
-		redisTemplate.opsForStream()
-			.acknowledge(instanceStreamName, groupName, message.getId());
+		redisTemplate.opsForStream().acknowledge(instanceStreamName, groupName, message.getId());
 	}
 }

@@ -1,23 +1,16 @@
 package org.codenbug.gateway.config;
 
-<<<<<<< HEAD
-import java.util.Arrays;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-=======
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
->>>>>>> tmp
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
@@ -30,7 +23,6 @@ import reactor.netty.resources.ConnectionProvider;
 @Configuration
 @EnableScheduling
 public class GatewayConfig {
-<<<<<<< HEAD
 	@Bean
 	public CorsWebFilter corsWebFilter() {
 		CorsConfiguration config = new CorsConfiguration();
@@ -51,8 +43,7 @@ public class GatewayConfig {
 
 		return new CorsWebFilter(source);
 	}
-=======
-    
+
     private ConnectionProvider connectionProvider;
     
     @Bean
@@ -80,22 +71,5 @@ public class GatewayConfig {
     public ReactorClientHttpConnector reactorClientHttpConnector(HttpClient httpClient) {
         return new ReactorClientHttpConnector(httpClient);
     }
-    
-    @Scheduled(fixedRate = 30000)
-    public void logConnectionPoolStats() {
-        if (connectionProvider != null) {
-            try {
-                log.info("=== Gateway Connection Pool Status ===");
-                log.info("Connection Provider: {}", connectionProvider.getClass().getSimpleName());
-                log.info("Pool Name: gateway-connection-pool");
-                log.info("Max Connections: 2000");
-                log.info("Max Idle Time: 30s");
-                log.info("======================================");
-            } catch (Exception e) {
-                log.debug("Unable to get detailed connection pool metrics: {}", e.getMessage());
-            }
-        }
-    }
->>>>>>> tmp
 }
 

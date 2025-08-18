@@ -2,11 +2,7 @@ package org.codenbug.user.infra.consumer;
 
 import org.codenbug.message.SnsUserRegisteredEvent;
 import org.codenbug.message.UserRegisteredEvent;
-<<<<<<< HEAD
-import org.codenbug.user.app.UserRegisterService;
-=======
 import org.codenbug.user.app.UserCommandService;
->>>>>>> tmp
 import org.codenbug.user.domain.SecurityUserId;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.ui.RegisterRequest;

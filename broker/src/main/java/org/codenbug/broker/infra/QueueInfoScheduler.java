@@ -1,21 +1,14 @@
 package org.codenbug.broker.infra;
 
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
-import static org.codenbug.broker.app.SseEmitterService.*;
 import static org.codenbug.broker.infra.RedisConfig.*;
-=======
-import static org.codenbug.broker.redis.RedisConfig.*;
-import static org.codenbug.broker.service.SseEmitterService.*;
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.codenbug.broker.app.SseEmitterService;
 import org.codenbug.broker.domain.SseConnection;
+import org.codenbug.broker.service.SseEmitterService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -127,22 +120,9 @@ public class QueueInfoScheduler {
 							QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId, "order",
 								rank+ 1))
 				);
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
-			} catch (IOException e) {
-				// emitter.completeWithError(e);
-=======
 			} catch (Exception e) {
-				closeConn(userId, eventId, objectRedisTemplate);
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
-				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
-				log.error("messageListener1:{}", e.getMessage());
 				SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
 				// throw new RuntimeException(e);
-			} catch (IllegalStateException e) {
-				log.error("messageListener2:{}", e.getMessage());
-				SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
-				// throw new RuntimeException(e);
-
 			}
 		}
 	}
@@ -161,20 +141,9 @@ public class QueueInfoScheduler {
 					SseEmitter.event()
 						.comment("heartBeat")
 				);
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
-			} catch (IOException e) {
-				// emitter.completeWithError(e);
-				closeConn(key, conn.getEventId(), objectRedisTemplate);
-				log.error("messageListener:{}", e.getMessage());
-
-			} catch (IllegalStateException e) {
-				closeConn(key, conn.getEventId(), objectRedisTemplate);
-				log.error("messageListener:{}", e.getMessage());
-=======
 			} catch (Exception e) {
 				log.info("heartbeat error");
-				closeConn(conn.getUserId(), conn.getEventId(), objectRedisTemplate);
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
+				SseEmitterService.closeConn(conn.getUserId(), conn.getEventId(), objectRedisTemplate);
 			}
 		}
 	}

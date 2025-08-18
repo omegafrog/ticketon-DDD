@@ -1,0 +1,1150 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.0)
+
+2025-08-18T12:41:41.306+09:00  INFO 22752 --- [seat] [  restartedMain] org.codenbug.app.AppApplication          : Starting AppApplication using Java 23.0.2 with PID 22752 (C:\Users\jiwoo\workspace\ticketon-DDD\app\build\classes\java\main started by jiwoo in C:\Users\jiwoo\workspace\ticketon-DDD)
+2025-08-18T12:41:41.310+09:00 DEBUG 22752 --- [seat] [  restartedMain] org.codenbug.app.AppApplication          : Running with Spring Boot v3.5.0, Spring v6.2.7
+2025-08-18T12:41:41.311+09:00  INFO 22752 --- [seat] [  restartedMain] org.codenbug.app.AppApplication          : The following 2 profiles are active: "secret", "dev"
+2025-08-18T12:41:41.452+09:00  INFO 22752 --- [seat] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-08-18T12:41:41.452+09:00  INFO 22752 --- [seat] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-08-18T12:41:44.406+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:44.406+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:44.881+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 456 ms. Found 2 JPA repository interfaces.
+2025-08-18T12:41:44.887+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:44.887+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:44.912+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 1 JPA repository interface.
+2025-08-18T12:41:44.914+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:44.914+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:44.941+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 22 ms. Found 1 JPA repository interface.
+2025-08-18T12:41:44.942+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:44.942+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:44.984+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 39 ms. Found 1 JPA repository interface.
+2025-08-18T12:41:44.987+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:44.989+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:45.088+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 91 ms. Found 6 JPA repository interfaces.
+2025-08-18T12:41:45.088+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:45.090+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-18T12:41:45.113+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 20 ms. Found 1 JPA repository interface.
+2025-08-18T12:41:46.501+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-08-18T12:41:46.506+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-08-18T12:41:46.553+09:00  INFO 22752 --- [seat] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 0 Redis repository interfaces.
+2025-08-18T12:41:48.563+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 9000 (http)
+2025-08-18T12:41:48.617+09:00  INFO 22752 --- [seat] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-18T12:41:48.617+09:00  INFO 22752 --- [seat] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-08-18T12:41:48.803+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-18T12:41:48.803+09:00  INFO 22752 --- [seat] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 7350 ms
+2025-08-18T12:41:49.241+09:00 DEBUG 22752 --- [seat] [  restartedMain] o.s.w.f.ServerHttpObservationFilter      : Filter 'webMvcObservationFilter' configured for use
+2025-08-18T12:41:49.535+09:00  INFO 22752 --- [seat] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-18T12:41:49.674+09:00  INFO 22752 --- [seat] [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-08-18T12:41:49.754+09:00  INFO 22752 --- [seat] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-18T12:41:50.492+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-18T12:41:50.567+09:00  INFO 22752 --- [seat] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-18T12:41:50.867+09:00  INFO 22752 --- [seat] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@a8fd8f
+2025-08-18T12:41:50.870+09:00  INFO 22752 --- [seat] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-18T12:41:50.952+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-18T12:41:50.954+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-08-18T12:41:50.989+09:00  INFO 22752 --- [seat] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-08-18T12:41:52.006+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): org.codenbug.purchase.domain.PurchaseId
+2025-08-18T12:41:52.006+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): org.codenbug.purchase.domain.PurchaseId
+2025-08-18T12:41:52.006+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): org.codenbug.event.domain.EventId
+2025-08-18T12:41:52.006+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): org.codenbug.event.domain.EventId
+2025-08-18T12:41:52.007+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): org.codenbug.categoryid.domain.CategoryId
+2025-08-18T12:41:52.007+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): org.codenbug.categoryid.domain.CategoryId
+2025-08-18T12:41:52.007+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000038: Composite-id class does not override equals(): org.codenbug.purchase.domain.TicketId
+2025-08-18T12:41:52.007+09:00  WARN 22752 --- [seat] [  restartedMain] org.hibernate.mapping.RootClass          : HHH000039: Composite-id class does not override hashCode(): org.codenbug.purchase.domain.TicketId
+2025-08-18T12:41:53.204+09:00  INFO 22752 --- [seat] [  restartedMain] o.h.m.internal.PojoInstantiatorImpl      : HHH000182: No default (no-argument) constructor for class: org.codenbug.notification.domain.entity.NotificationContent (class must be instantiated by Interceptor)
+2025-08-18T12:41:53.205+09:00  INFO 22752 --- [seat] [  restartedMain] o.h.m.internal.PojoInstantiatorImpl      : HHH000182: No default (no-argument) constructor for class: org.codenbug.notification.domain.entity.UserId (class must be instantiated by Interceptor)
+2025-08-18T12:41:53.743+09:00  INFO 22752 --- [seat] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-18T12:41:53.834+09:00 DEBUG 22752 --- [seat] [  restartedMain] org.hibernate.SQL                        : alter table purchase modify column payment_status enum ('CANCELED','DONE','EXPIRED','IN_PROGRESS','PARTIAL_REFUNDED','REFUNDED')
+2025-08-18T12:41:53.902+09:00  INFO 22752 --- [seat] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-18T12:41:54.184+09:00 DEBUG 22752 --- [seat] [  restartedMain] o.h.stat.internal.StatisticsInitiator    : Statistics initialized [enabled=false]
+2025-08-18T12:41:55.442+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-18T12:41:56.862+09:00  WARN 22752 --- [seat] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-18T12:41:57.060+09:00 DEBUG 22752 --- [seat] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerMapping : 31 mappings in 'requestMappingHandlerMapping'
+2025-08-18T12:41:57.129+09:00 DEBUG 22752 --- [seat] [  restartedMain] o.s.w.s.handler.SimpleUrlHandlerMapping  : Patterns [/webjars/**, /**] in 'resourceHandlerMapping'
+2025-08-18T12:41:57.159+09:00 DEBUG 22752 --- [seat] [  restartedMain] s.w.s.m.m.a.RequestMappingHandlerAdapter : ControllerAdvice beans: 0 @ModelAttribute, 0 @InitBinder, 1 RequestBodyAdvice, 1 ResponseBodyAdvice
+2025-08-18T12:41:57.249+09:00 DEBUG 22752 --- [seat] [  restartedMain] .m.m.a.ExceptionHandlerExceptionResolver : ControllerAdvice beans: 0 @ExceptionHandler, 1 ResponseBodyAdvice
+2025-08-18T12:41:58.040+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true'
+2025-08-18T12:41:58.218+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-08-18T12:41:58.230+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2025-08-18T12:41:58.427+09:00  INFO 22752 --- [seat] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 9000 (http) with context path '/'
+2025-08-18T12:41:58.489+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-app-notification-service-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = app-notification-service
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.574+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.727+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.728+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.728+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518725
+2025-08-18T12:41:58.743+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Subscribed to topic(s): notification.refund.completed
+2025-08-18T12:41:58.757+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-app-notification-service-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = app-notification-service
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.758+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.767+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.767+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.767+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518767
+2025-08-18T12:41:58.774+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Subscribed to topic(s): notification.manager.refund.completed
+2025-08-18T12:41:58.776+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-seat-purchased-seat-group-3
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = seat-purchased-seat-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.777+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.785+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.785+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.785+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518785
+2025-08-18T12:41:58.791+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Subscribed to topic(s): seat-purchased
+2025-08-18T12:41:58.793+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-purchase-event-projection-group-4
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = purchase-event-projection-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.793+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.799+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.799+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.799+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518798
+2025-08-18T12:41:58.804+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Subscribed to topic(s): event-updated
+2025-08-18T12:41:58.805+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-purchase-event-projection-group-5
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = purchase-event-projection-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.806+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.811+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.812+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.812+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518811
+2025-08-18T12:41:58.814+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Subscribed to topic(s): event-created
+2025-08-18T12:41:58.817+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-notification-service-6
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = notification-service
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.817+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.822+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.822+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.822+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518822
+2025-08-18T12:41:58.825+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Subscribed to topic(s): refund.completed
+2025-08-18T12:41:58.826+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-notification-service-7
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = notification-service
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.826+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.830+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.830+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.830+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518830
+2025-08-18T12:41:58.834+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Subscribed to topic(s): payment.completed
+2025-08-18T12:41:58.836+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-security-user-registered-group-8
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = security-user-registered-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.837+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.842+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.842+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.842+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518842
+2025-08-18T12:41:58.847+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Subscribed to topic(s): security-user-registered
+2025-08-18T12:41:58.849+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-sns-user-registered-9
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = sns-user-registered
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.strategy = none
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2025-08-18T12:41:58.849+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2025-08-18T12:41:58.854+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 3.9.1
+2025-08-18T12:41:58.856+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: f745dfdcee2b9851
+2025-08-18T12:41:58.856+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1755488518854
+2025-08-18T12:41:58.861+09:00  INFO 22752 --- [seat] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Subscribed to topic(s): sns-user-registered
+2025-08-18T12:41:58.876+09:00  INFO 22752 --- [seat] [  restartedMain] org.codenbug.app.AppApplication          : Started AppApplication in 19.338 seconds (process running for 20.879)
+2025-08-18T12:41:59.167+09:00  INFO 22752 --- [seat] [(4)-172.30.1.79] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-18T12:41:59.167+09:00  INFO 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-08-18T12:41:59.168+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Detected StandardServletMultipartResolver
+2025-08-18T12:41:59.168+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Detected AcceptHeaderLocaleResolver
+2025-08-18T12:41:59.168+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Detected FixedThemeResolver
+2025-08-18T12:41:59.170+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator@3d1c0fc4
+2025-08-18T12:41:59.170+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Detected org.springframework.web.servlet.support.SessionFlashMapManager@42b64900
+2025-08-18T12:41:59.171+09:00 DEBUG 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : enableLoggingRequestDetails='false': request parameters and headers will be masked to prevent unsafe logging of potentially sensitive data
+2025-08-18T12:41:59.171+09:00  INFO 22752 --- [seat] [(4)-172.30.1.79] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Cluster ID: vVxx2dITTtmMnNFB_z-B5A
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.498+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Discovered group coordinator localhost:29092 (id: 2147483647 rack: null)
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] (Re-)joining group
+2025-08-18T12:41:59.503+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Request joining group due to: need to re-join with the given member-id: consumer-app-notification-service-2-a2c3a11b-ad05-4b4d-a67f-6760a3a98c70
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Request joining group due to: need to re-join with the given member-id: consumer-notification-service-7-f1da1499-2bc6-4abe-8f9d-5198282995a0
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Request joining group due to: need to re-join with the given member-id: consumer-sns-user-registered-9-2917f085-f367-4e53-ac0a-8b34fced42d1
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Request joining group due to: need to re-join with the given member-id: consumer-security-user-registered-group-8-d1673b93-4621-4cd2-8804-1d68eacbc627
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Request joining group due to: need to re-join with the given member-id: consumer-seat-purchased-seat-group-3-eee71b57-ac6b-486c-8971-3f7d7ca3994e
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Request joining group due to: need to re-join with the given member-id: consumer-notification-service-6-07c9ddd5-f311-4b3d-a6c3-5a4b1b73140c
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] (Re-)joining group
+2025-08-18T12:41:59.536+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Request joining group due to: need to re-join with the given member-id: consumer-purchase-event-projection-group-5-c04c06e2-19ad-4ae3-854d-01ba9c3ed263
+2025-08-18T12:41:59.536+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] (Re-)joining group
+2025-08-18T12:41:59.535+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Request joining group due to: need to re-join with the given member-id: consumer-app-notification-service-1-357e5a50-6c88-4bd5-a41f-3c598332bc4e
+2025-08-18T12:41:59.537+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] (Re-)joining group
+2025-08-18T12:41:59.538+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Request joining group due to: need to re-join with the given member-id: consumer-purchase-event-projection-group-4-91ff817d-5b64-4568-aa35-7b5864275623
+2025-08-18T12:41:59.538+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] (Re-)joining group
+2025-08-18T12:42:02.540+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Successfully joined group with generation Generation{generationId=53, memberId='consumer-security-user-registered-group-8-d1673b93-4621-4cd2-8804-1d68eacbc627', protocol='range'}
+2025-08-18T12:42:02.540+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Successfully joined group with generation Generation{generationId=51, memberId='consumer-sns-user-registered-9-2917f085-f367-4e53-ac0a-8b34fced42d1', protocol='range'}
+2025-08-18T12:42:02.541+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Successfully joined group with generation Generation{generationId=3, memberId='consumer-seat-purchased-seat-group-3-eee71b57-ac6b-486c-8971-3f7d7ca3994e', protocol='range'}
+2025-08-18T12:42:02.548+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Finished assignment for group at generation 53: {consumer-security-user-registered-group-8-d1673b93-4621-4cd2-8804-1d68eacbc627=Assignment(partitions=[security-user-registered-0])}
+2025-08-18T12:42:02.548+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Finished assignment for group at generation 51: {consumer-sns-user-registered-9-2917f085-f367-4e53-ac0a-8b34fced42d1=Assignment(partitions=[sns-user-registered-0])}
+2025-08-18T12:42:02.548+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Finished assignment for group at generation 3: {consumer-seat-purchased-seat-group-3-eee71b57-ac6b-486c-8971-3f7d7ca3994e=Assignment(partitions=[seat-purchased-0])}
+2025-08-18T12:42:02.560+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Successfully synced group in generation Generation{generationId=51, memberId='consumer-sns-user-registered-9-2917f085-f367-4e53-ac0a-8b34fced42d1', protocol='range'}
+2025-08-18T12:42:02.560+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Successfully synced group in generation Generation{generationId=3, memberId='consumer-seat-purchased-seat-group-3-eee71b57-ac6b-486c-8971-3f7d7ca3994e', protocol='range'}
+2025-08-18T12:42:02.560+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Successfully synced group in generation Generation{generationId=53, memberId='consumer-security-user-registered-group-8-d1673b93-4621-4cd2-8804-1d68eacbc627', protocol='range'}
+2025-08-18T12:42:02.561+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Notifying assignor about the new Assignment(partitions=[security-user-registered-0])
+2025-08-18T12:42:02.561+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Notifying assignor about the new Assignment(partitions=[sns-user-registered-0])
+2025-08-18T12:42:02.561+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Notifying assignor about the new Assignment(partitions=[seat-purchased-0])
+2025-08-18T12:42:02.565+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Adding newly assigned partitions: seat-purchased-0
+2025-08-18T12:42:02.565+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-security-user-registered-group-8, groupId=security-user-registered-group] Adding newly assigned partitions: security-user-registered-0
+2025-08-18T12:42:02.565+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-sns-user-registered-9, groupId=sns-user-registered] Adding newly assigned partitions: sns-user-registered-0
+2025-08-18T12:42:02.572+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Found no committed offset for partition seat-purchased-0
+2025-08-18T12:42:02.574+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition sns-user-registered-0 to the committed offset FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=26}}
+2025-08-18T12:42:02.574+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerUtils        : Setting offset for partition security-user-registered-0 to the committed offset FetchPosition{offset=20022, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=26}}
+2025-08-18T12:42:02.575+09:00  INFO 22752 --- [seat] [ntainer#1-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : sns-user-registered: partitions assigned: [sns-user-registered-0]
+2025-08-18T12:42:02.575+09:00  INFO 22752 --- [seat] [ntainer#0-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : security-user-registered-group: partitions assigned: [security-user-registered-0]
+2025-08-18T12:42:02.583+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-seat-purchased-seat-group-3, groupId=seat-purchased-seat-group] Resetting offset for partition seat-purchased-0 to position FetchPosition{offset=2, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=20}}.
+2025-08-18T12:42:02.583+09:00  INFO 22752 --- [seat] [ntainer#8-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : seat-purchased-seat-group: partitions assigned: [seat-purchased-0]
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Successfully joined group with generation Generation{generationId=3, memberId='consumer-purchase-event-projection-group-4-91ff817d-5b64-4568-aa35-7b5864275623', protocol='range'}
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Successfully joined group with generation Generation{generationId=3, memberId='consumer-purchase-event-projection-group-5-c04c06e2-19ad-4ae3-854d-01ba9c3ed263', protocol='range'}
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Successfully joined group with generation Generation{generationId=3, memberId='consumer-app-notification-service-1-357e5a50-6c88-4bd5-a41f-3c598332bc4e', protocol='range'}
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Successfully joined group with generation Generation{generationId=3, memberId='consumer-notification-service-6-07c9ddd5-f311-4b3d-a6c3-5a4b1b73140c', protocol='range'}
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Successfully joined group with generation Generation{generationId=3, memberId='consumer-app-notification-service-2-a2c3a11b-ad05-4b4d-a67f-6760a3a98c70', protocol='range'}
+2025-08-18T12:42:05.540+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Successfully joined group with generation Generation{generationId=3, memberId='consumer-notification-service-7-f1da1499-2bc6-4abe-8f9d-5198282995a0', protocol='range'}
+2025-08-18T12:42:05.546+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Finished assignment for group at generation 3: {consumer-purchase-event-projection-group-4-91ff817d-5b64-4568-aa35-7b5864275623=Assignment(partitions=[event-updated-0]), consumer-purchase-event-projection-group-5-c04c06e2-19ad-4ae3-854d-01ba9c3ed263=Assignment(partitions=[event-created-0])}
+2025-08-18T12:42:05.546+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Finished assignment for group at generation 3: {consumer-notification-service-6-07c9ddd5-f311-4b3d-a6c3-5a4b1b73140c=Assignment(partitions=[refund.completed-0]), consumer-notification-service-7-f1da1499-2bc6-4abe-8f9d-5198282995a0=Assignment(partitions=[payment.completed-0])}
+2025-08-18T12:42:05.546+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Finished assignment for group at generation 3: {consumer-app-notification-service-1-357e5a50-6c88-4bd5-a41f-3c598332bc4e=Assignment(partitions=[notification.refund.completed-0]), consumer-app-notification-service-2-a2c3a11b-ad05-4b4d-a67f-6760a3a98c70=Assignment(partitions=[notification.manager.refund.completed-0])}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Successfully synced group in generation Generation{generationId=3, memberId='consumer-notification-service-6-07c9ddd5-f311-4b3d-a6c3-5a4b1b73140c', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Successfully synced group in generation Generation{generationId=3, memberId='consumer-purchase-event-projection-group-5-c04c06e2-19ad-4ae3-854d-01ba9c3ed263', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Successfully synced group in generation Generation{generationId=3, memberId='consumer-notification-service-7-f1da1499-2bc6-4abe-8f9d-5198282995a0', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Successfully synced group in generation Generation{generationId=3, memberId='consumer-app-notification-service-2-a2c3a11b-ad05-4b4d-a67f-6760a3a98c70', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Successfully synced group in generation Generation{generationId=3, memberId='consumer-purchase-event-projection-group-4-91ff817d-5b64-4568-aa35-7b5864275623', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Successfully synced group in generation Generation{generationId=3, memberId='consumer-app-notification-service-1-357e5a50-6c88-4bd5-a41f-3c598332bc4e', protocol='range'}
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Notifying assignor about the new Assignment(partitions=[payment.completed-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Notifying assignor about the new Assignment(partitions=[notification.refund.completed-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Notifying assignor about the new Assignment(partitions=[event-created-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Notifying assignor about the new Assignment(partitions=[refund.completed-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Notifying assignor about the new Assignment(partitions=[event-updated-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Adding newly assigned partitions: payment.completed-0
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Notifying assignor about the new Assignment(partitions=[notification.manager.refund.completed-0])
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Adding newly assigned partitions: notification.refund.completed-0
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Adding newly assigned partitions: event-created-0
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Adding newly assigned partitions: refund.completed-0
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Adding newly assigned partitions: notification.manager.refund.completed-0
+2025-08-18T12:42:05.554+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Adding newly assigned partitions: event-updated-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Found no committed offset for partition notification.refund.completed-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Found no committed offset for partition refund.completed-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Found no committed offset for partition event-updated-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Found no committed offset for partition payment.completed-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Found no committed offset for partition notification.manager.refund.completed-0
+2025-08-18T12:42:05.556+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Found no committed offset for partition event-created-0
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-purchase-event-projection-group-5, groupId=purchase-event-projection-group] Resetting offset for partition event-created-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=12}}.
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-notification-service-7, groupId=notification-service] Resetting offset for partition payment.completed-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=8}}.
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-app-notification-service-2, groupId=app-notification-service] Resetting offset for partition notification.manager.refund.completed-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=8}}.
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#5-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : notification-service: partitions assigned: [payment.completed-0]
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#3-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : purchase-event-projection-group: partitions assigned: [event-created-0]
+2025-08-18T12:42:05.558+09:00  INFO 22752 --- [seat] [ntainer#7-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : app-notification-service: partitions assigned: [notification.manager.refund.completed-0]
+2025-08-18T12:42:05.561+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-notification-service-6, groupId=notification-service] Resetting offset for partition refund.completed-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=8}}.
+2025-08-18T12:42:05.561+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-app-notification-service-1, groupId=app-notification-service] Resetting offset for partition notification.refund.completed-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=8}}.
+2025-08-18T12:42:05.561+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-purchase-event-projection-group-4, groupId=purchase-event-projection-group] Resetting offset for partition event-updated-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:29092 (id: 0 rack: null)], epoch=12}}.
+2025-08-18T12:42:05.562+09:00  INFO 22752 --- [seat] [ntainer#6-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : app-notification-service: partitions assigned: [notification.refund.completed-0]
+2025-08-18T12:42:05.562+09:00  INFO 22752 --- [seat] [ntainer#4-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : notification-service: partitions assigned: [refund.completed-0]
+2025-08-18T12:42:05.562+09:00  INFO 22752 --- [seat] [ntainer#2-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : purchase-event-projection-group: partitions assigned: [event-updated-0]

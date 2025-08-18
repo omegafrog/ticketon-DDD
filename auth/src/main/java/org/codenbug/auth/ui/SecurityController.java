@@ -10,10 +10,7 @@ import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
-<<<<<<< HEAD
 import org.codenbug.common.RefreshToken;
-=======
->>>>>>> tmp
 import org.codenbug.common.RsData;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.securityaop.aop.AuthNeeded;
@@ -72,15 +69,8 @@ public class SecurityController {
 			resp.setHeader(HttpHeaders.AUTHORIZATION,
 				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
 
-<<<<<<< HEAD
-		Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
-		resp.addCookie(refreshToken);
-=======
-			Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
-			refreshToken.setPath("/");
-			refreshToken.setMaxAge(60 * 60 * 24 * 7);
+			Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
 			resp.addCookie(refreshToken);
->>>>>>> tmp
 
 			long endTime = System.currentTimeMillis();
 			long duration = endTime - startTime;

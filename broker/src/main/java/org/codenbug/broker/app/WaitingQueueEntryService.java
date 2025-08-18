@@ -5,6 +5,8 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 import java.util.Map;
 
 import org.codenbug.broker.config.InstanceConfig;
+import org.codenbug.broker.domain.SseConnection;
+import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -58,27 +60,8 @@ public class WaitingQueueEntryService {
 	 */
 	private void enter(String userId, String eventId) throws JsonProcessingException {
 
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/app/WaitingQueueEntryService.java
-		// Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
-=======
-		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/service/WaitingQueueEntryService.java
-		// emitterMap.forEach((id, emitterConnection) -> {
-		// 	try {
-		// 		emitterConnection.getEmitter().send(SseEmitter.event()
-		// 			.comment("heartBeat")
-		// 			.build());
-		// 	} catch (IOException e) {
-		// 		System.out.println("error");
-		// 		emitterConnection.getEmitter().complete();
-		// 	}
-		// });
-<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/app/WaitingQueueEntryService.java
-=======
-		// 총 좌석수 얻기
-		RestTemplate restTemplate = new RestTemplate();
->>>>>>> tmp:broker/src/main/java/org/codenbug/broker/service/WaitingQueueEntryService.java
 
+		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
 
 		if (!simpleRedisTemplate.opsForHash().hasKey(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString())) {
 			// 총 좌석수 얻기
@@ -143,7 +126,7 @@ public class WaitingQueueEntryService {
 		String userId = getLoggedInUserId();
 		
 		// SSE 연결 해제 및 리소스 정리
-		sseEmitterService.closeConnection(userId, eventId);
+		sseEmitterService.closeConn(userId, eventId, simpleRedisTemplate);
 		
 		return ResponseEntity.ok().build();
 	}
