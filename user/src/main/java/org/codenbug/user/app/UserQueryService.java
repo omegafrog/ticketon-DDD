@@ -7,11 +7,11 @@ import org.codenbug.user.global.dto.UserInfo;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserCommandQueryService {
+public class UserQueryService {
 
 	private final UserRepository userRepository;
 
-	public UserCommandQueryService(UserRepository userRepository) {
+	public UserQueryService(UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
 

@@ -133,6 +133,7 @@ public class QueueInfoScheduler {
 						.comment("heartBeat")
 				);
 			} catch (Exception e) {
+				log.info("heartbeat error");
 				closeConn(conn.getUserId(), conn.getEventId(), objectRedisTemplate);
 			}
 		}

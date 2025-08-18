@@ -1,36 +1,26 @@
 package org.codenbug.user.ui;
 
-import org.codenbug.common.AccessToken;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.common.Util;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.codenbug.securityaop.aop.UserSecurityToken;
-import org.codenbug.user.app.UserCommandQueryService;
-import org.codenbug.user.app.UserRegisterService;
+import org.codenbug.user.app.UserQueryService;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/v1/users/")
 public class UserController {
 
-	private final UserRegisterService userRegisterService;
-	private final UserCommandQueryService userQueryService;
+	private final UserQueryService userQueryService;
 
-	public UserController(UserRegisterService userRegisterService, UserCommandQueryService userQueryService) {
-		this.userRegisterService = userRegisterService;
+	public UserController( UserQueryService userQueryService) {
 		this.userQueryService = userQueryService;
 	}
 
