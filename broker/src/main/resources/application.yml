@@ -8,10 +8,10 @@ spring:
   application:
     name: broker-service # Eureka에 등록될 서비스의 고유 이름
   datasource:
-    url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+    url: jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -20,9 +20,16 @@ spring:
       hibernate:
         jdbc:
           batch_size: 100
-  h2:
-    console:
-      enabled: true
+  # H2 Database Configuration (commented out)
+  # h2:
+  #   console:
+  #     enabled: true
+  # Previous H2 configuration:
+  # datasource:
+  #   url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
+  #   username: sa
+  #   password:
+  #   driver-class-name: org.h2.Driver
 
 eureka:
   client:
@@ -39,14 +46,24 @@ server:
   port: 0
   tomcat:
     threads:
-      # 동시에 처리할 수 있는 최대 스레드 수. 기본값 200.
-      # DB 커넥션 풀과 마찬가지로 400 ~ 500 정도로 증설을 고려합니다.
-      max: 500
-    # 연결 요청을 대기열에 쌓아둘 수 있는 최대 수
-    accept-count: 100
+      max: 2000
+      min-spare: 100
+    max-connections: 10000
+    accept-count: 1000
+    connection-timeout: 60000
 
 management:
   endpoints:
     web:
       exposure:
-        include: "health,info,metrics"
+        include: health,info,metrics,threaddump,env,configprops,tomcat
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true

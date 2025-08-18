@@ -54,8 +54,9 @@ public class User {
 	protected User() {
 	}
 
-	public User(String name, Sex sex, String phoneNum, String location, Integer age, SecurityUserId securityUserId) {
-		this.userId = generateUserId();
+	public User(GenerateUserIdService idSrv, String name, Sex sex, String phoneNum, String location, Integer age,
+		SecurityUserId securityUserId) {
+		this.userId = idSrv.generateUserId();
 		this.name = name;
 		this.sex = sex;
 		this.phoneNum = phoneNum;
@@ -64,6 +65,7 @@ public class User {
 		this.securityUserId = securityUserId;
 	}
 
+<<<<<<< HEAD
 	private UserId generateUserId() {
 		return new UserId(Util.ID.createUUID());
 	}
@@ -81,5 +83,12 @@ public class User {
 		if (phoneNum != null) {
 			this.phoneNum = phoneNum;
 		}
+=======
+	public void update(String name, Integer age, String location, String phoneNum) {
+		this.name = name != null ? name : this.name;
+		this.age = age != null ? age : this.age;
+		this.location = location != null ? location : this.location;
+		this.phoneNum = phoneNum != null ? phoneNum : this.phoneNum;
+>>>>>>> tmp
 	}
 }

@@ -4,12 +4,17 @@ spring:
     include: secret
 
   datasource:
+    url: jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
-      maximum-pool-size: 1000
-    url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
+      maximum-pool-size: 50
+      minimum-idle: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
@@ -18,12 +23,19 @@ spring:
       hibernate:
         jdbc:
           batch_size: 100
-  h2:
-    console:
-      enabled: true
+  # H2 Database Configuration (commented out)
+  # h2:
+  #   console:
+  #     enabled: true
+  # Previous H2 configuration:
+  # datasource:
+  #   url: jdbc:h2:file:./app;AUTO_SERVER=TRUE;MODE=MySQL
+  #   username: sa
+  #   password:
+  #   driver-class-name: org.h2.Driver
   config:
     import: "user.yml"
-    
+
   # Kafka Configuration for notification events
   kafka:
     bootstrap-servers: localhost:29092
@@ -41,6 +53,15 @@ server:
   tomcat:
     threads:
       max: 1100
+      min-spare: 50
+    connection-timeout: 20000
+    max-connections: 2000
+    accept-count: 500
+
+logging:
+  level:
+    org.codenbug: DEBUG
+    org.springframework.web: DEBUG
 
 management:
   endpoints:

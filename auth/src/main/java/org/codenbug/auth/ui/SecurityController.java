@@ -10,7 +10,10 @@ import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUserId;
 import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
+<<<<<<< HEAD
 import org.codenbug.common.RefreshToken;
+=======
+>>>>>>> tmp
 import org.codenbug.common.RsData;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.securityaop.aop.AuthNeeded;
@@ -60,17 +63,38 @@ public class SecurityController {
 
 	@PostMapping("/login")
 	public ResponseEntity<RsData<String>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
+		long startTime = System.currentTimeMillis();
+		log.info("Login request started for email: {}", request.getEmail());
 
-		TokenInfo tokenInfo = authService.loginEmail(request);
+		try {
+			TokenInfo tokenInfo = authService.loginEmail(request);
 
-		resp.setHeader(HttpHeaders.AUTHORIZATION,
-			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
+			resp.setHeader(HttpHeaders.AUTHORIZATION,
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
 
+<<<<<<< HEAD
 		Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
 		resp.addCookie(refreshToken);
+=======
+			Cookie refreshToken = new Cookie("refreshToken", tokenInfo.getRefreshToken().getValue());
+			refreshToken.setPath("/");
+			refreshToken.setMaxAge(60 * 60 * 24 * 7);
+			resp.addCookie(refreshToken);
+>>>>>>> tmp
 
-		return ResponseEntity.ok(new RsData<>("200", "login success.",
-			tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			log.info("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
+
+			return ResponseEntity.ok(new RsData<>("200", "login success.",
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+		} catch (Exception e) {
+			long endTime = System.currentTimeMillis();
+			long duration = endTime - startTime;
+			log.error("Login FAILED for email: {} - Duration: {}ms - Error: {}", 
+				request.getEmail(), duration, e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	private Cookie createRefreshTokenCookie(RefreshToken refreshToken) {

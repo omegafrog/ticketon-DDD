@@ -1,7 +1,12 @@
 package org.codenbug.broker.infra;
 
+<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
 import static org.codenbug.broker.app.SseEmitterService.*;
 import static org.codenbug.broker.infra.RedisConfig.*;
+=======
+import static org.codenbug.broker.redis.RedisConfig.*;
+import static org.codenbug.broker.service.SseEmitterService.*;
+>>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -81,6 +86,8 @@ public class QueueInfoScheduler {
 		}
 		// 대기열 큐에 있는 모든 유저들에게 대기열 순번과 userId, eventId를 전송합니다.
 		for (Object record : waitingList) {
+			if(record==null)
+				return;
 			// 대기열 큐 메시지로부터 데이터를 파싱합니다.
 			String userId =
 				objectMapper.readTree(record.toString())
@@ -120,8 +127,13 @@ public class QueueInfoScheduler {
 							QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId, "order",
 								rank+ 1))
 				);
+<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
 			} catch (IOException e) {
 				// emitter.completeWithError(e);
+=======
+			} catch (Exception e) {
+				closeConn(userId, eventId, objectRedisTemplate);
+>>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
 				log.debug("user %s가 연결이 끊어진 상태입니다.".formatted(userId));
 				log.error("messageListener1:{}", e.getMessage());
 				SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
@@ -135,7 +147,7 @@ public class QueueInfoScheduler {
 		}
 	}
 
-	@Scheduled(cron = "*/5 * * * * *")
+	@Scheduled(cron = "*/3 * * * * *")
 	public void heartBeat() {
 		Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
 		for (Map.Entry<String, SseConnection> entry : emitterMap.entrySet()) {
@@ -149,6 +161,7 @@ public class QueueInfoScheduler {
 					SseEmitter.event()
 						.comment("heartBeat")
 				);
+<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/infra/QueueInfoScheduler.java
 			} catch (IOException e) {
 				// emitter.completeWithError(e);
 				closeConn(key, conn.getEventId(), objectRedisTemplate);
@@ -157,8 +170,52 @@ public class QueueInfoScheduler {
 			} catch (IllegalStateException e) {
 				closeConn(key, conn.getEventId(), objectRedisTemplate);
 				log.error("messageListener:{}", e.getMessage());
+=======
+			} catch (Exception e) {
+				log.info("heartbeat error");
+				closeConn(conn.getUserId(), conn.getEventId(), objectRedisTemplate);
+>>>>>>> tmp:broker/src/main/java/org/codenbug/broker/thread/QueueInfoScheduler.java
 			}
 		}
 	}
+
+	// /**
+	//  * 좀비 커넥션 정리 스케줄러
+	//  * 30초마다 실행되어 Redis와 동기화되지 않은 커넥션을 정리합니다.
+	//  */
+	// @Scheduled(cron = "0,30 * * * * *")
+	// public void cleanupZombieConnections() {
+	// 	Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
+	// 	AtomicInteger cleanedCount = new AtomicInteger(0);
+	//
+	// 	log.debug("Starting zombie connection cleanup. Current connections: {}", emitterMap.size());
+	//
+	// 	emitterMap.entrySet().removeIf(entry -> {
+	// 		String userId = entry.getKey();
+	// 		SseConnection connection = entry.getValue();
+	// 		String eventId = connection.getEventId();
+	//
+	// 		// Redis에서 해당 사용자가 실제로 대기열에 있는지 확인
+	// 		boolean existsInRedis = objectRedisTemplate.opsForHash()
+	// 			.hasKey(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId);
+	//
+	// 		if (!existsInRedis) {
+	// 			log.warn("Found zombie connection for user {} in event {}, cleaning up", userId, eventId);
+	// 			try {
+	// 				connection.getEmitter().complete();
+	// 			} catch (Exception e) {
+	// 				log.debug("Error completing emitter for zombie connection: {}", e.getMessage());
+	// 			}
+	// 			cleanedCount.incrementAndGet();
+	// 			return true; // 맵에서 제거
+	// 		}
+	// 		return false; // 유지
+	// 	});
+	//
+	// 	if (cleanedCount.get() > 0) {
+	// 		log.info("Cleaned up {} zombie connections. Remaining connections: {}",
+	// 			cleanedCount.get(), emitterMap.size());
+	// 	}
+	// }
 }
 

@@ -58,7 +58,11 @@ public class WaitingQueueEntryService {
 	 */
 	private void enter(String userId, String eventId) throws JsonProcessingException {
 
+<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/app/WaitingQueueEntryService.java
 		// Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
+=======
+		Map<String, SseConnection> emitterMap = sseEmitterService.getEmitterMap();
+>>>>>>> tmp:broker/src/main/java/org/codenbug/broker/service/WaitingQueueEntryService.java
 		// emitterMap.forEach((id, emitterConnection) -> {
 		// 	try {
 		// 		emitterConnection.getEmitter().send(SseEmitter.event()
@@ -69,6 +73,11 @@ public class WaitingQueueEntryService {
 		// 		emitterConnection.getEmitter().complete();
 		// 	}
 		// });
+<<<<<<< HEAD:broker/src/main/java/org/codenbug/broker/app/WaitingQueueEntryService.java
+=======
+		// 총 좌석수 얻기
+		RestTemplate restTemplate = new RestTemplate();
+>>>>>>> tmp:broker/src/main/java/org/codenbug/broker/service/WaitingQueueEntryService.java
 
 
 		if (!simpleRedisTemplate.opsForHash().hasKey(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString())) {
@@ -121,6 +130,22 @@ public class WaitingQueueEntryService {
 		simpleRedisTemplate.opsForHash()
 			.put(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId.toString(), idx);
 
+	}
+
+	/**
+	 * 현재 로그인한 사용자의 대기열 연결을 명시적으로 해제합니다.
+	 * IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게 승급할 수 있도록 돕니다.
+	 *
+	 * @param eventId 행사의 id
+	 * @return 성공 시 200 OK 응답
+	 */
+	public ResponseEntity<Void> disconnect(String eventId) {
+		String userId = getLoggedInUserId();
+		
+		// SSE 연결 해제 및 리소스 정리
+		sseEmitterService.closeConnection(userId, eventId);
+		
+		return ResponseEntity.ok().build();
 	}
 
 	private String getLoggedInUserId() {
