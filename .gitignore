@@ -45,3 +45,6 @@ out/
 /package.json
 /terraform/
 /.claude/
+/.idea/
+/logs/
+/pyscript/
