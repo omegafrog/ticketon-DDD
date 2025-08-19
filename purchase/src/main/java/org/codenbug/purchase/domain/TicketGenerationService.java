@@ -31,7 +31,7 @@ public class TicketGenerationService {
 
 		return seats.stream()
 			.map(seat -> new Ticket(
-				seatLayout.getLocation(), 
+				seatLayout.getLocationName(), 
 				new EventId(eventProjection.getEventId()),
 				seat.getSeatId(), 
 				purchase

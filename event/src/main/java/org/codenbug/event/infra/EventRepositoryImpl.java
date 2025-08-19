@@ -3,6 +3,7 @@ package org.codenbug.event.infra;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
+import org.codenbug.event.domain.SeatLayoutId;
 import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.EventListFilter;
 import org.springframework.data.domain.Page;
@@ -29,6 +30,11 @@ public class EventRepositoryImpl implements EventRepository {
 	public Event findEvent(EventId id) {
 		return jpaEventRepository.findById(id)
 			.orElseThrow(() -> new RuntimeException("Cannot find event"));
+	}
+
+	@Override
+	public Event findBySeatLayoutId(SeatLayoutId seatLayoutId) {
+		return jpaEventRepository.findBySeatLayoutId(seatLayoutId);
 	}
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {

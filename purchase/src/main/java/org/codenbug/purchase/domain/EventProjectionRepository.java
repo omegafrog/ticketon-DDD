@@ -6,4 +6,6 @@ public interface EventProjectionRepository {
 	boolean existById(String eventId);
 
 	EventProjection findByEventId(String eventId);
+	
+	EventProjection save(EventProjection eventProjection);
 }

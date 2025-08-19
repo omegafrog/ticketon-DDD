@@ -19,4 +19,14 @@ public class SeatLayoutProjectionRepositoryImpl implements SeatLayoutProjectionR
 		return jpaRepository.findById(seatLayoutId)
 			.orElseThrow(() -> new EntityNotFoundException());
 	}
+
+	@Override
+	public boolean existsById(Long layoutId) {
+		return jpaRepository.existsById(layoutId);
+	}
+
+	@Override
+	public SeatLayoutProjection save(SeatLayoutProjection seatLayoutProjection) {
+		return jpaRepository.save(seatLayoutProjection);
+	}
 }

@@ -24,4 +24,9 @@ public class EventProjectionRepositoryImpl implements EventProjectionRepository 
 		return jpaRepository.findById(eventId)
 			.orElseThrow(() -> new EntityNotFoundException());
 	}
+
+	@Override
+	public EventProjection save(EventProjection eventProjection) {
+		return jpaRepository.save(eventProjection);
+	}
 }

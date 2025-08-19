@@ -1,7 +1,5 @@
 package org.codenbug.purchase.ui;
 
-import java.io.IOException;
-
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
@@ -66,12 +64,11 @@ public class PurchaseController {
 	public ResponseEntity<RsData<ConfirmPaymentResponse>> confirmPayment(
 		@RequestBody ConfirmPaymentRequest request,
 		@RequestHeader("entryAuthToken") String entryAuthToken
-	) throws IOException, InterruptedException {
+	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
-
 		entryTokenValidator.validate(userId, entryAuthToken);
-		ConfirmPaymentResponse response = purchaseService.confirmPayment(request, userId);
+		ConfirmPaymentResponse response = purchaseService.confirmPaymentWithSaga(request, userId);
 		return ResponseEntity.ok(new RsData<>("200", "결제 승인 완료", response));
 	}
 
@@ -88,7 +85,6 @@ public class PurchaseController {
 		@RequestBody CancelPaymentRequest request
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
-
 
 		CancelPaymentResponse response = purchaseService.cancelPayment(request, paymentKey, userId);
 		return ResponseEntity.ok(new RsData<>("200", "결제 취소 완료", response));

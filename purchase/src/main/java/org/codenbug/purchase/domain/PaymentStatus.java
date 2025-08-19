@@ -5,6 +5,7 @@ public enum PaymentStatus {
 	DONE("완료"),
 	CANCELED("취소"),
 	EXPIRED("만료"),
+	FAILED("실패"),
 	REFUNDED("환불 완료"),
 	PARTIAL_REFUNDED("부분 환불");
 	

@@ -1,7 +1,6 @@
 package org.codenbug.purchase.infra;
 
 import org.codenbug.message.EventCreatedEvent;
-import org.codenbug.message.EventUpdatedEvent;
 import org.codenbug.purchase.query.model.EventProjection;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -23,25 +22,14 @@ public class EventProjectionConsumer {
             event.getEventId(),
             event.getTitle(),
             event.getManagerId(),
+            event.getSeatLayoutId(),
             event.isSeatSelectable(),
-            event.getSeatLayoutId()
+            event.getLocation(),
+            event.getStartTime(),
+            event.getEndTime(),
+            1L,  // 초기 version
+            "OPEN"  // 초기 상태
         );
         eventProjectionRepository.save(projection);
-    }
-    
-    @KafkaListener(topics = EventUpdatedEvent.TOPIC, groupId = "purchase-event-projection-group")
-    @Transactional
-    public void handleEventUpdated(EventUpdatedEvent event) {
-        EventProjection existing = eventProjectionRepository.findById(event.getEventId()).orElse(null);
-        if (existing != null) {
-            // Update existing projection in-place
-            existing.updateFrom(
-                event.getTitle(),
-                event.getManagerId(),
-                event.isSeatSelectable(),
-                event.getSeatLayoutId()
-            );
-            eventProjectionRepository.save(existing);
-        }
     }
 }

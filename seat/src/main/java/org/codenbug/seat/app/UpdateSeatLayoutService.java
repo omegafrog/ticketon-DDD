@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.codenbug.common.redis.RedisLockService;
+import org.codenbug.message.SeatLayoutUpdatedEvent;
 import org.codenbug.seat.domain.Seat;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
@@ -17,6 +18,7 @@ import org.codenbug.seat.global.SeatSelectResponse;
 import org.codenbug.seat.global.exception.ConflictException;
 import org.codenbug.seat.query.model.EventProjection;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -31,22 +33,33 @@ public class UpdateSeatLayoutService {
 	private final EventProjectionRepository eventProjectionRepository;
 	private final SeatTransactionService seatTransactionService;
 	private final RedisLockService redisLockService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	public UpdateSeatLayoutService(SeatLayoutRepository seatLayoutRepository,
 		EventProjectionRepository eventProjectionRepository, SeatTransactionService seatTransactionService,
-		RedisLockService redisLockService) {
+		RedisLockService redisLockService, ApplicationEventPublisher eventPublisher) {
 		this.seatLayoutRepository = seatLayoutRepository;
 		this.eventProjectionRepository = eventProjectionRepository;
 		this.seatTransactionService = seatTransactionService;
 		this.redisLockService = redisLockService;
+		this.eventPublisher = eventPublisher;
 	}
 
+	@Transactional
 	public void update(Long seatLayoutId, RegisterSeatLayoutDto seatLayout) {
 		SeatLayout layout = seatLayoutRepository.findSeatLayout(seatLayoutId);
 		layout.update(seatLayout.getLayout(), seatLayout.getSeats()
 			.stream()
 			.map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
 			.toList());
+		
+		seatLayoutRepository.save(layout);
+		
+		// Publish SeatLayoutUpdatedEvent after transaction success
+		SeatLayoutUpdatedEvent seatLayoutUpdatedEvent = new SeatLayoutUpdatedEvent(seatLayoutId);
+		eventPublisher.publishEvent(seatLayoutUpdatedEvent);
+		
+		log.info("[update] SeatLayout 업데이트 완료. seatLayoutId: {}", seatLayoutId);
 	}
 
 	/**

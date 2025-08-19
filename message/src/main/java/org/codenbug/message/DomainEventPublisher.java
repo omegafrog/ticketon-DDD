@@ -26,4 +26,9 @@ public class DomainEventPublisher {
     public void handleUserRegistered(UserRegisteredEvent event) {
         kafkaTemplate.send(UserRegisteredEvent.TOPIC, event.getUserId(), event);
     }
+    
+    @TransactionalEventListener
+    public void handleSeatLayoutCreated(SeatLayoutCreatedEvent event) {
+        kafkaTemplate.send(SeatLayoutCreatedEvent.TOPIC, event.getLayoutId().toString(), event);
+    }
 }

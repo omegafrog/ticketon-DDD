@@ -14,18 +14,27 @@ import lombok.Getter;
 public class SeatLayoutProjection {
 	@Id
 	private Long layoutId;
-	private String location;
+	private String layout;
+	private String locationName;
+	private String hallName;
 	@ElementCollection
 	@CollectionTable(name = "seat_layout_projection_seats", joinColumns = @JoinColumn(name = "layout_id"))
 	private Set<Seat> seats;
 
 	protected SeatLayoutProjection(){}
 
-	public SeatLayoutProjection(Long layoutId, String location, Set<Seat> seats){
+	public SeatLayoutProjection(Long layoutId, String layout, String locationName, String hallName, Set<Seat> seats){
 		this.layoutId = layoutId;
-		this.location = location;
+		this.layout = layout;
+		this.locationName = locationName;
+		this.hallName = hallName;
 		this.seats = seats;
 	}
 
-
+	public void updateFrom(String layout, String locationName, String hallName, Set<Seat> seats) {
+		this.layout = layout;
+		this.locationName = locationName;
+		this.hallName = hallName;
+		this.seats = seats;
+	}
 }

@@ -1,5 +1,7 @@
 package org.codenbug.purchase.app;
 
+import static org.codenbug.common.transaction.TransactionExecutor.*;
+
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -8,10 +10,13 @@ import java.util.List;
 import org.codenbug.common.exception.AccessDeniedException;
 import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.notification.domain.entity.NotificationType;
+import org.codenbug.purchase.domain.EventChangeDetectedException;
+import org.codenbug.purchase.domain.EventProjectionRepository;
 import org.codenbug.purchase.domain.MessagePublisher;
 import org.codenbug.purchase.domain.PaymentMethod;
 import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.domain.PaymentValidationService;
+import org.codenbug.purchase.domain.PrePaymentValidationResult;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseCancel;
 import org.codenbug.purchase.domain.PurchaseDomainService;
@@ -35,9 +40,11 @@ import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
+import org.codenbug.purchase.query.model.EventProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -58,6 +65,8 @@ public class PurchaseService {
 	private final NotificationEventPublisher notificationEventPublisher;
 	private final RefundDomainService refundDomainService;
 	private final RefundRepository refundRepository;
+	private final EventProjectionRepository eventProjectionRepository;
+	private final PlatformTransactionManager transactionManager;
 
 	/**
 	 * 결제 사전 등록 처리
@@ -75,6 +84,218 @@ public class PurchaseService {
 
 		purchaseRepository.save(purchase);
 		return new InitiatePaymentResponse(purchase.getPurchaseId().getValue(), purchase.getPaymentStatus().name());
+	}
+
+	/**
+	 * Phase 1: 결제 사전 검증 및 Event version 캡처
+	 * - Event 상태 확인 및 version 저장
+	 * - Purchase 상태를 PAYMENT_PENDING으로 설정
+	 */
+	public PrePaymentValidationResult preparePayment(String purchaseId, String userId) {
+		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
+			.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
+
+		EventProjection event = eventProjectionRepository.findByEventId(purchase.getEventId());
+		if (event == null) {
+			throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
+		}
+
+		if (!"OPEN".equals(event.getStatus())) {
+			throw new IllegalStateException("이벤트가 예매 가능한 상태가 아닙니다.");
+		}
+
+		return PrePaymentValidationResult.builder()
+			.eventId(purchase.getEventId())
+			.eventVersion(event.getVersion())
+			.eventStatus(event.getStatus())
+			.purchaseId(purchase.getPurchaseId())
+			.userId(userId)
+			.amount(purchase.getAmount())
+			.orderId(purchase.getOrderId())
+			.build();
+	}
+
+	/**
+	 * Phase 3: Event version 재검증 후 최종 결제 완료 처리
+	 */
+	public ConfirmPaymentResponse finalizePaymentWithVersionCheck(
+		PrePaymentValidationResult preResult,
+		ConfirmedPaymentInfo paymentInfo,
+		String userId
+	) {
+		try {
+			// Event version 재검증
+			EventProjection currentEvent = eventProjectionRepository.findByEventId(preResult.getEventId());
+			if (currentEvent == null) {
+				throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
+			}
+
+			// Version이 변경되었거나 상태가 OPEN이 아니면 예외 발생
+			if (!preResult.getEventVersion().equals(currentEvent.getVersion()) ||
+				!"OPEN".equals(currentEvent.getStatus())) {
+
+				log.warn(
+					"[finalizePayment] Event 상태 변경 감지. eventId: {}, 기존 version: {}, 현재 version: {}, 기존 상태: {}, 현재 상태: {}",
+					preResult.getEventId(), preResult.getEventVersion(), currentEvent.getVersion(),
+					preResult.getEventStatus(), currentEvent.getStatus());
+
+				// EventChangeDetectedException을 던져서 상위에서 예외 처리
+				throw new EventChangeDetectedException(
+					"결제 진행 중 이벤트 상태가 변경되어 결제가 취소되었습니다.",
+					paymentInfo.getPaymentKey(),
+					preResult
+				);
+			}
+
+			// 정상적인 결제 완료 처리 (기존 로직)
+			Purchase purchase = purchaseRepository.findById(preResult.getPurchaseId())
+				.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
+
+			PurchaseDomainService.PurchaseConfirmationResult result =
+				purchaseDomainService.confirmPurchase(purchase, paymentInfo, userId);
+
+			purchase.markAsCompleted();
+
+			ticketRepository.saveAll(result.getTickets());
+			purchaseRepository.save(purchase);
+			publisher.publishSeatPurchasedEvent(
+				purchase.getEventId(),
+				result.getSeatLayout().getLayoutId(),
+				result.getSeatIds(),
+				userId
+			);
+
+			PaymentMethod methodEnum = PaymentMethod.from(paymentInfo.getMethod());
+			LocalDateTime localDateTime = OffsetDateTime.parse(paymentInfo.getApprovedAt())
+				.atZoneSameInstant(ZoneId.of("Asia/Seoul"))
+				.toLocalDateTime();
+
+			return new ConfirmPaymentResponse(
+				paymentInfo.getPaymentKey(),
+				paymentInfo.getOrderId(),
+				paymentInfo.getOrderName(),
+				paymentInfo.getTotalAmount(),
+				paymentInfo.getStatus(),
+				methodEnum,
+				localDateTime,
+				new ConfirmPaymentResponse.Receipt(paymentInfo.getReceipt().getUrl())
+			);
+		} catch (Exception e) {
+			log.error("[finalizePayment] 결제 최종 처리 중 예외 발생 - userId: {}, 오류: {}", userId, e.getMessage(), e);
+			redisLockService.releaseAllLocks(userId);
+			redisLockService.releaseAllEntryQueueLocks(userId);
+			throw e;
+		}
+	}
+
+	/**
+	 * Event 상태 변경시 기존 event 정보로 생성된 purchase는 취소됨
+	 */
+	public void cancelPaymentDueToEventChange(String paymentKey, PrePaymentValidationResult preResult, String userId) {
+		try {
+			// 1. 외부 결제 취소
+			CanceledPaymentInfo cancelInfo = pgApiService.cancelPayment(paymentKey, "이벤트 상태 변경으로 인한 자동 취소");
+
+			// 2. Purchase 상태 변경
+			Purchase purchase = purchaseRepository.findById(preResult.getPurchaseId())
+				.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
+
+			purchase.cancel();
+			purchaseRepository.save(purchase);
+
+			// 3. Redis Lock 해제
+			redisLockService.releaseAllLocks(userId);
+			redisLockService.releaseAllEntryQueueLocks(userId);
+
+			log.info("[compensatePaymentDueToEventChange] 보상 트랜잭션 완료 - purchaseId: {}, userId: {}",
+				preResult.getPurchaseId().getValue(), userId);
+		} catch (Exception e) {
+			log.error("[compensatePaymentDueToEventChange] 보상 트랜잭션 실패 - purchaseId: {}, userId: {}, 오류: {}",
+				preResult.getPurchaseId().getValue(), userId, e.getMessage(), e);
+			throw new RuntimeException("보상 트랜잭션 처리 중 오류가 발생했습니다.", e);
+		}
+	}
+
+	/**
+	 * 외부 결제 API 실패 시 보상 트랜잭션
+	 * 주의: 이 메소드는 confirmPaymentWithSaga에서 명시적 트랜잭션으로 호출됩니다.
+	 */
+	public void cancelFailedPayment(PrePaymentValidationResult preResult, String userId) {
+		try {
+			// Purchase 상태를 FAILED로 변경
+			Purchase purchase = purchaseRepository.findById(preResult.getPurchaseId())
+				.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
+
+			purchase.markAsFailed();
+			purchaseRepository.save(purchase);
+
+			// Redis Lock 해제
+			redisLockService.releaseAllLocks(userId);
+			redisLockService.releaseAllEntryQueueLocks(userId);
+
+			log.info("[compensateFailedPayment] 결제 실패 보상 트랜잭션 완료 - purchaseId: {}, userId: {}",
+				preResult.getPurchaseId().getValue(), userId);
+		} catch (Exception e) {
+			log.error("[compensateFailedPayment] 결제 실패 보상 트랜잭션 실패 - purchaseId: {}, userId: {}, 오류: {}",
+				preResult.getPurchaseId().getValue(), userId, e.getMessage(), e);
+			throw new RuntimeException("결제 실패 보상 트랜잭션 처리 중 오류가 발생했습니다.", e);
+		}
+	}
+
+	/**
+	 * Saga 패턴 기반 결제 승인 통합 메서드
+	 * 명시적 트랜잭션 관리를 통한 일관성 보장
+	 */
+	public ConfirmPaymentResponse confirmPaymentWithSaga(ConfirmPaymentRequest request, String userId) {
+		log.info("[confirmPaymentWithSaga] 시작 - purchaseId: {}, userId: {}", request.getPurchaseId(), userId);
+
+		// Phase 1: 사전 검증 및 Event version 캡처 (트랜잭션 1)
+		PrePaymentValidationResult preResult = executeInTransaction(
+			transactionManager,
+			() -> {
+				log.info("[confirmPaymentWithSaga] Phase 1 시작 - 사전 검증 및 Event version 캡처");
+				return preparePayment(request.getPurchaseId(), userId);
+			});
+
+		try {
+			// Phase 2: 외부 결제 API 호출 (트랜잭션 외부)
+			log.info("[confirmPaymentWithSaga] Phase 2 시작 - 외부 결제 API 호출");
+			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(
+				request.getPaymentKey(),
+				request.getOrderId(),
+				request.getAmount()
+			);
+
+			// Phase 3: Event version 재검증 후 최종 처리 (트랜잭션 2)
+			return executeInTransaction(
+				transactionManager,
+				() -> {
+					log.info("[confirmPaymentWithSaga] Phase 3 시작 - Event version 재검증 후 최종 처리");
+					return finalizePaymentWithVersionCheck(preResult, paymentInfo, userId);
+				});
+
+		} catch (EventChangeDetectedException e) {
+			// Event 상태 변경으로 인한 특별한 보상 트랜잭션 (트랜잭션 3a)
+			executeInTransaction(
+				transactionManager,
+				() -> {
+					log.warn("[confirmPaymentWithSaga] Event 상태 변경 보상 트랜잭션 시작 - paymentKey: {}", e.getPaymentKey());
+					cancelPaymentDueToEventChange(e.getPaymentKey(), e.getPreResult(), userId);
+					return null;
+				});
+			throw new IllegalStateException(e.getMessage(), e);
+
+		} catch (RuntimeException e) {
+			// 외부 API 실패 시 보상 트랜잭션 (트랜잭션 3b)
+			executeInTransaction(
+				transactionManager,
+				() -> {
+					log.warn("[confirmPaymentWithSaga] 외부 API 실패 보상 트랜잭션 시작 - 오류: {}", e.getMessage());
+					cancelFailedPayment(preResult, userId);
+					return null;
+				});
+			throw e;
+		}
 	}
 
 	/**
@@ -103,7 +324,7 @@ public class PurchaseService {
 				request.getPaymentKey(), request.getOrderId(), request.getAmount()
 			);
 
-			PurchaseDomainService.PurchaseConfirmationResult result = 
+			PurchaseDomainService.PurchaseConfirmationResult result =
 				purchaseDomainService.confirmPurchase(purchase, info, userId);
 
 			purchase.markAsCompleted();
@@ -111,9 +332,9 @@ public class PurchaseService {
 			ticketRepository.saveAll(result.getTickets());
 			purchaseRepository.save(purchase);
 			publisher.publishSeatPurchasedEvent(
-				purchase.getEventId(), 
-				result.getSeatLayout().getLayoutId(), 
-				result.getSeatIds(), 
+				purchase.getEventId(),
+				result.getSeatLayout().getLayoutId(),
+				result.getSeatIds(),
 				userId
 			);
 
@@ -212,7 +433,7 @@ public class PurchaseService {
 
 			// 2. 외부 결제 시스템 취소 요청
 			CanceledPaymentInfo canceledPaymentInfo = pgApiService.cancelPayment(paymentKey, request.getCancelReason());
-			
+
 			// 3. 환불 금액 계산
 			int refundAmount = canceledPaymentInfo.getCancels().stream()
 				.mapToInt(CanceledPaymentInfo.CancelDetail::getCancelAmount)
@@ -220,15 +441,15 @@ public class PurchaseService {
 
 			// 4. 도메인 서비스를 통한 환불 처리
 			RefundDomainService.RefundResult refundResult = refundDomainService.processUserRefund(
-				purchase, 
-				refundAmount, 
-				request.getCancelReason(), 
+				purchase,
+				refundAmount,
+				request.getCancelReason(),
 				new UserId(userId)
 			);
 
 			// 5. 환불 엔티티 저장
 			Refund savedRefund = refundRepository.save(refundResult.getRefund());
-			
+
 			// 6. 외부 결제 시스템 정보로 환불 완료 처리
 			refundDomainService.completeRefundWithPaymentInfo(savedRefund, canceledPaymentInfo);
 			refundRepository.save(savedRefund);
@@ -246,9 +467,9 @@ public class PurchaseService {
 			publisher.publishSeatPurchaseCanceledEvent(refundResult.getSeatIds(), purchase.getPurchaseId().getValue());
 
 			return CancelPaymentResponse.of(canceledPaymentInfo);
-			
+
 		} catch (Exception e) {
-			log.error("[cancelPayment] 결제 취소 처리 중 예외 발생 - userId: {}, paymentKey: {}, 오류: {}", 
+			log.error("[cancelPayment] 결제 취소 처리 중 예외 발생 - userId: {}, paymentKey: {}, 오류: {}",
 				userId, paymentKey, e.getMessage(), e);
 			// Redis 락 해제
 			redisLockService.releaseAllLocks(userId);
@@ -277,8 +498,8 @@ public class PurchaseService {
 	/**
 	 * 환불 완료 알림 이벤트 발행
 	 */
-	private void publishRefundCompletedEvent(Purchase purchase, int refundAmount, String cancelReason, 
-											CanceledPaymentInfo canceledPaymentInfo) {
+	private void publishRefundCompletedEvent(Purchase purchase, int refundAmount, String cancelReason,
+		CanceledPaymentInfo canceledPaymentInfo) {
 		try {
 			RefundCompletedEvent refundEvent = RefundCompletedEvent.of(
 				purchase.getUserId().getValue(),

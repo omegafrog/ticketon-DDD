@@ -9,6 +9,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Version;
 import lombok.Getter;
 
 /**
@@ -32,6 +33,9 @@ public class Event {
 	private SeatLayoutId seatLayoutId;
 	@Embedded
 	private MetaData metaData;
+
+	@Version
+	private Long version;
 
 	protected Event() {}
 

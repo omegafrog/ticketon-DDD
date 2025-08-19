@@ -168,4 +168,12 @@ public class Purchase {
 	public String getPaymentKey() {
 		return this.pid;
 	}
+	
+	public void cancel() {
+		this.paymentStatus = PaymentStatus.CANCELED;
+	}
+	
+	public void markAsFailed() {
+		this.paymentStatus = PaymentStatus.FAILED;
+	}
 }
