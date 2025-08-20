@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.codenbug.common.Util;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 import jakarta.persistence.Column;
@@ -20,7 +21,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "members")
 @Getter
-@EntityListeners(EnableJpaAuditing.class)
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
 	@EmbeddedId

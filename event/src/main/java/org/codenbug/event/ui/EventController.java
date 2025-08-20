@@ -1,12 +1,17 @@
 package org.codenbug.event.ui;
 
+import java.util.List;
+
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.FindEventService;
+import org.codenbug.event.application.ImageUploadService;
 import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;
 import org.codenbug.event.domain.EventId;
+import org.codenbug.event.global.FileUploadRequest;
 import org.codenbug.event.global.NewEventRequest;
+import org.codenbug.event.global.PresignedUrlResponse;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
@@ -28,12 +33,14 @@ public class EventController {
 	private final RegisterEventService registerEventService;
 	private final UpdateEventService updateEventService;
 	private final FindEventService findEventService;
+	private final ImageUploadService imageUploadService;
 
 	public EventController(RegisterEventService registerEventService, UpdateEventService updateEventService,
-		FindEventService findEventService) {
+		FindEventService findEventService, ImageUploadService imageUploadService) {
 		this.registerEventService = registerEventService;
 		this.updateEventService = updateEventService;
 		this.findEventService = findEventService;
+		this.imageUploadService = imageUploadService;
 	}
 
 	/**
@@ -95,4 +102,6 @@ public class EventController {
 			new EventId(eventId)
 		));
 	}
+
+
 }

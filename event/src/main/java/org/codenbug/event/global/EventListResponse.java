@@ -51,6 +51,8 @@ public class EventListResponse implements Serializable {
 		this.status = event.getEventInformation().getStatus();
 		this.seatSelectable = event.getEventInformation().getSeatSelectable();
 		this.isDeleted = event.getMetaData().getDeleted();
+		this.minPrice = event.getEventInformation().getMinPrice();
+		this.maxPrice = event.getEventInformation().getMaxPrice();
 	}
 
 	public EventListResponse(Event event, String categoryName, Integer minPrice, Integer maxPrice) {

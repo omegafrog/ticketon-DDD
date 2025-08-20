@@ -30,7 +30,7 @@ public class UserController {
 
 	@GetMapping("/me")
 	@AuthNeeded
-	@RoleRequired(value={Role.USER})
+	@RoleRequired(value={Role.USER, Role.MANAGER})
 	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		UserInfo userinfo = userQueryService.findUser(userSecurityToken, new UserId(userSecurityToken.getUserId()));
