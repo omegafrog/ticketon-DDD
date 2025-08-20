@@ -5,6 +5,7 @@ import java.util.List;
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.categoryid.domain.EventCategoryRepository;
+import org.codenbug.categoryid.global.EventCategoryListResponse;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -30,5 +31,15 @@ public class EventCategoryService {
 	public EventCategory findById(Long id) {
 		return eventCategoryRepository.findById(new CategoryId(id))
 			.orElseThrow(() -> new EntityNotFoundException());
+	}
+
+	public List<EventCategoryListResponse> getAllCategories() {
+		List<EventCategory> categories = eventCategoryRepository.findAll();
+		return categories.stream()
+			.map(category -> new EventCategoryListResponse(
+				category.getId().getId(),
+				category.getName()
+			))
+			.toList();
 	}
 }
