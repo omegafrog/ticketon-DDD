@@ -2,6 +2,11 @@ spring:
   jpa:
     properties:
       show-sql: true
+  web:
+    resources:
+      static-locations: file:/mnt/c/Users/jiwoo/workspace/ticketon-DDD/static/
+      cache:
+        period: 31536000  # 1년 캐시
 logging:
   level:
     org.hibernate.SQL: DEBUG

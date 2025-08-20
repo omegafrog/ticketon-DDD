@@ -34,6 +34,14 @@ spring:
               uri: lb://broker-service
               predicates:
                 - Path=/api/v1/broker/**
+            - id: static-event-service
+              uri: http://localhost:9000
+              predicates:
+                - Path=/static/events/**
+            - id: static-service
+              uri: http://localhost:9000
+              predicates:
+                - Path=/static/**
             - id: main-service # 규칙의 고유 ID
               uri: http://localhost:9000 # user 모듈이 실행될 주소
               predicates:
@@ -56,6 +64,12 @@ filter:
         url: "/api/v1/auth/social/**"
       - method: POST
         url: "/api/v1/events"
+      - method: PUT
+        url: "/static/**"
+      - method: GET
+        url: "/static/**"
+      - method: "*"
+        url: "/static/events/images/**"
 
 management:
   endpoints:

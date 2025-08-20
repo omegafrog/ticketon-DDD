@@ -72,3 +72,4 @@ management:
     metrics:
       export:
         enabled: true
+
