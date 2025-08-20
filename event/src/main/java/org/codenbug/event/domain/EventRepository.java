@@ -11,6 +11,7 @@ public interface EventRepository {
 	Event findBySeatLayoutId(SeatLayoutId seatLayoutId);
 
 	Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable);
+	Page<Event> getManagerEventList(ManagerId managerId, Pageable pageable);
 
 	EventInfoResponse getEventInfo(Long id);
 }

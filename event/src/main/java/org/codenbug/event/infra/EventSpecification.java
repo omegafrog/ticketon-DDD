@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventStatus;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.global.EventListFilter;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -29,6 +30,16 @@ public class EventSpecification {
 		}
 		// 'eventInformation' Embeddable 객체 내부의 'title' 필드에 접근
 		return (root, query, builder) -> builder.like(builder.lower(root.get("eventInformation").get("title")), "%" + keyword.toLowerCase() + "%");
+	}
+
+	/**
+	 * 매니저 ID 조건
+	 */
+	public static Specification<Event> hasManagerId(ManagerId managerId) {
+		if (managerId == null) {
+			return null;
+		}
+		return (root, query, builder) -> builder.equal(root.get("managerId"), managerId);
 	}
 
 	/**

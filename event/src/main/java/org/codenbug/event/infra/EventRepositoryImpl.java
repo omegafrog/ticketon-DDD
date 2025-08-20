@@ -3,6 +3,7 @@ package org.codenbug.event.infra;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.SeatLayoutId;
 import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.EventListFilter;
@@ -39,32 +40,49 @@ public class EventRepositoryImpl implements EventRepository {
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {
 
-		// 1. 기본 조건을 직접 할당하여 Specification 체인을 시작합니다.
-		//    이렇게 하면 deprecated된 where()를 사용하지 않게 됩니다.
+		// 1. 기본 조건 - isNotDeleted는 항상 필수
 		Specification<Event> spec = EventSpecification.isNotDeleted();
 
-		// 2. 키워드가 있으면 키워드 검색 조건을 추가합니다.
+		// 2. 키워드와 필터 조건을 OR로 연결
+		Specification<Event> optionalConditions = null;
+		
+		// 키워드 조건 추가
 		if (StringUtils.hasText(keyword)) {
-			spec = spec.and(EventSpecification.titleContains(keyword));
+			optionalConditions = EventSpecification.titleContains(keyword);
 		}
-
-		// 3. 필터가 있으면 필터 조건을 추가합니다.
+		
+		// 필터 조건 추가 (키워드와 OR 연결)
 		if (filter != null) {
-			// fromFilter가 null을 반환할 수 있으므로, null 체크 후 조합합니다.
 			Specification<Event> filterSpec = EventSpecification.fromFilter(filter);
 			if (filterSpec != null) {
-				spec = spec.and(filterSpec);
+				if (optionalConditions != null) {
+					optionalConditions = optionalConditions.or(filterSpec);
+				} else {
+					optionalConditions = filterSpec;
+				}
 			}
+		}
+		
+		// 3. 선택적 조건이 있으면 기본 조건과 AND로 연결
+		if (optionalConditions != null) {
+			spec = spec.and(optionalConditions);
 		}
 
 		// 4. 조합된 Specification으로 데이터를 조회합니다.
 		Page<Event> eventPage = jpaEventRepository.findAll(spec, pageable);
 
-		// 5. Page<Event>를 Page<EventListResponse>로 변환하여 반환합니다.
-		//    미완성된 생성자 호출을 올바르게 수정합니다.
+		// 5. Page<Event>를 반환합니다.
 		return eventPage;
 	}
 
+
+	@Override
+	public Page<Event> getManagerEventList(ManagerId managerId, Pageable pageable) {
+		Specification<Event> spec = EventSpecification.isNotDeleted()
+			.and(EventSpecification.hasManagerId(managerId));
+		
+		return jpaEventRepository.findAll(spec, pageable);
+	}
 
 	@Override
 	public EventInfoResponse getEventInfo(Long id) {
