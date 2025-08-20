@@ -7,9 +7,11 @@ import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.global.EventListResponse;
+import org.codenbug.event.global.EventManagerListResponse;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.SeatDto;
@@ -56,6 +58,36 @@ public class EventQueryService {
 			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
 			seatLayout.getLocation().getHallName(),
 			seatLayout.getLocation().getLocationName()));
+	}
+
+	public Page<EventManagerListResponse> getManagerEvents(ManagerId managerId, Pageable pageable) {
+		Page<Event> eventPage = eventRepository.getManagerEventList(managerId, pageable);
+		List<EventCategory> categories = eventCategoryService.findAllByIds(
+			eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
+		
+		return eventPage.map(event -> {
+			EventCategory category = categories.stream()
+				.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Category not found"));
+			
+			SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId().getValue());
+			
+			return new EventManagerListResponse(
+				String.valueOf(event.getEventId().getEventId()),
+				event.getEventInformation().getTitle(),
+				event.getEventInformation().getCategoryId(),
+				event.getEventInformation().getThumbnailUrl(),
+				event.getEventInformation().getStatus(),
+				event.getEventInformation().getEventStart(),
+				event.getEventInformation().getEventEnd(),
+				seatLayout.getLocation().getLocationName(),
+				seatLayout.getLocation().getHallName(),
+				event.getMetaData().getDeleted(),
+				event.getEventInformation().getBookingStart(),
+				event.getEventInformation().getBookingEnd()
+			);
+		});
 	}
 
 }

@@ -1,10 +1,16 @@
 package org.codenbug.event.ui;
 
+import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.EventQueryService;
+import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.global.EventListResponse;
+import org.codenbug.event.global.EventManagerListResponse;
+import org.codenbug.securityaop.aop.AuthNeeded;
+import org.codenbug.securityaop.aop.LoggedInUserContext;
+import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -39,4 +45,16 @@ public class EventQueryController {
 
 		return ResponseEntity.ok(new RsData("200", "event 단건 조회 성공.", event));
 	}
+
+	@GetMapping("/manager/me")
+	@RoleRequired(Role.MANAGER)
+	@AuthNeeded
+	public ResponseEntity<RsData<Page<EventManagerListResponse>>> getManagerEvents(Pageable pageable) {
+		String userId = LoggedInUserContext.get().getUserId();
+		ManagerId managerId = new ManagerId(userId);
+		Page<EventManagerListResponse> events = eventQueryService.getManagerEvents(managerId, pageable);
+		
+		return ResponseEntity.ok(new RsData("200", "매니저 이벤트 리스트 조회 성공.", events));
+	}
+
 }
