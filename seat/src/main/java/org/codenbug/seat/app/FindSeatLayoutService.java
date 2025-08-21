@@ -4,14 +4,18 @@ import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.SeatDto;
 import org.codenbug.seat.global.SeatLayoutResponse;
+import org.codenbug.seat.query.model.EventProjection;
 import org.springframework.stereotype.Service;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class FindSeatLayoutService {
 	private final SeatLayoutRepository repository;
-
-	public FindSeatLayoutService(SeatLayoutRepository repository) {
+	private final EventProjectionRepository eventProjectionRepository;
+	public FindSeatLayoutService(SeatLayoutRepository repository, EventProjectionRepository eventProjectionRepository) {
 		this.repository = repository;
+		this.eventProjectionRepository = eventProjectionRepository;
 	}
 
 	public SeatLayoutResponse findSeatLayout(Long seatLayoutId) {
@@ -27,7 +31,9 @@ public class FindSeatLayoutService {
 	}
 
 	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
-		SeatLayout seatLayout = repository.findSeatLayoutByEventId(eventId);
+		EventProjection event = eventProjectionRepository.findByEventId(eventId)
+			.orElseThrow(() -> new EntityNotFoundException("Cannot find Event projection."));
+		SeatLayout seatLayout = repository.findSeatLayout(event.getSeatLayoutId());
 		return new SeatLayoutResponse(
 			seatLayout.getId(),
 			seatLayout.getLayout(),

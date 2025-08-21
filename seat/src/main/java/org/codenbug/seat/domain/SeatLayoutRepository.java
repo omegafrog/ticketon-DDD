@@ -5,5 +5,4 @@ public interface SeatLayoutRepository {
 
 	SeatLayout save(SeatLayout seatLayout);
 
-	SeatLayout findSeatLayoutByEventId(String eventId);
 }

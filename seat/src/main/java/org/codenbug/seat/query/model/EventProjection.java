@@ -11,5 +11,6 @@ public class EventProjection {
 	@Id
 	private String eventId;
 	private Boolean seatSelectable;
+	private Long seatLayoutId;
 
 }

@@ -17,10 +17,7 @@ public class SeatLayoutRepositoryImpl implements SeatLayoutRepository {
 		return jpaSeatRepository.save(seatLayout);
 	}
 
-	@Override
-	public SeatLayout findSeatLayoutByEventId(String eventId) {
-		return jpaSeatRepository.findByEventId(eventId);
-	}
+
 
 	@Override
 	public SeatLayout findSeatLayout(Long id) {

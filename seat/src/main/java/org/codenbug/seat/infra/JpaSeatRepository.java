@@ -7,5 +7,4 @@ public interface JpaSeatRepository extends JpaRepository<SeatLayout, Long> {
 
 	SeatLayout findSeatLayoutById(Long id);
 
-	SeatLayout findByEventId(String eventId);
 }

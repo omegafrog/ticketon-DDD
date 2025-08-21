@@ -80,7 +80,7 @@ public class UpdateSeatLayoutService {
 		EventProjection event = eventProjectionRepository.findByEventId(eventId)
 			.orElseThrow(() -> new EntityNotFoundException("이벤트를 찾을 수 없습니다."));
 
-		SeatLayout seatLayout = seatLayoutRepository.findSeatLayoutByEventId(eventId);
+		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
 		Set<Seat> seats = seatLayout.getSeats();
 		List<Seat> selectedSeats = seats.stream().filter(seat -> seatSelectRequest.getSeatList().stream().anyMatch(
 			seatId -> seatId.equals(seat.getSeatId().getValue())
@@ -175,7 +175,9 @@ public class UpdateSeatLayoutService {
 		if (userId == null ) {
 			throw new IllegalArgumentException("[cancelSeat] 로그인된 사용자가 없습니다.");
 		}
-		SeatLayout seatLayout = seatLayoutRepository.findSeatLayoutByEventId(eventId);
+		EventProjection event = eventProjectionRepository.findByEventId(eventId)
+			.orElseThrow(() -> new EntityNotFoundException("Cannot find event projection."));
+		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
 
 		for (String seatId : seatCancelRequest.getSeatList()) {
 			String lockKey = SEAT_LOCK_KEY_PREFIX + userId + ":" + eventId + ":" + seatId;
