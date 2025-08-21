@@ -63,7 +63,9 @@ filter:
       - method: "*"
         url: "/api/v1/auth/social/**"
       - method: POST
-        url: "/api/v1/events"
+        url: "/api/v1/events/list"
+      - method: GET
+        url: "/api/v1/events/{id}"
       - method: PUT
         url: "/static/**"
       - method: GET
