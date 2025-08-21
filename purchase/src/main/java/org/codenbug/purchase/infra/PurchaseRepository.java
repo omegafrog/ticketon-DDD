@@ -24,9 +24,10 @@ public interface PurchaseRepository extends JpaRepository<Purchase, PurchaseId> 
 	@Query("""
     SELECT DISTINCT p FROM Purchase p
     JOIN p.tickets t
-    WHERE t.eventId = :eventId
+    WHERE p.eventId = :eventId
 """)
-	List<Purchase> findAllByEventId(@Param("eventId") Long eventId);
+	List<Purchase> findAllByEventId(@Param("eventId") String eventId);
+
 
 	// 환불 관련 메서드 추가
 	List<Purchase> findByEventIdAndPaymentStatus(String eventId, PaymentStatus paymentStatus);

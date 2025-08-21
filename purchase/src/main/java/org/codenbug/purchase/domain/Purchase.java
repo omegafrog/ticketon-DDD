@@ -17,6 +17,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
@@ -56,7 +57,7 @@ public class Purchase {
 	@Embedded
 	private UserId userId;
 
-	@OneToMany(mappedBy = "purchase", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(mappedBy = "purchase", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Ticket> tickets = new ArrayList<>();
 
 	protected Purchase(){}
