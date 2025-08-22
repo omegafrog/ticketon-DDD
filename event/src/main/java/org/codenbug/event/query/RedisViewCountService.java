@@ -1,4 +1,4 @@
-package org.codenbug.event.ui.service;
+package org.codenbug.event.query;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -57,6 +57,28 @@ public class RedisViewCountService {
     }
     
     /**
+     * Event viewCount 조회 (리스트용 - Redis에 없으면 DB 값만 반환, 캐싱하지 않음)
+     */
+    public Integer getViewCountForList(String eventId, Integer dbViewCount) {
+        String key = generateViewCountKey(eventId);
+        
+        try {
+            Object cachedCount = redisTemplate.opsForValue().get(key);
+            
+            if (cachedCount != null) {
+                return Integer.parseInt(cachedCount.toString());
+            } else {
+                // Redis에 없으면 DB 값 그대로 반환 (캐싱하지 않음)
+                return dbViewCount != null ? dbViewCount : 0;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to get viewCount from Redis for event: {}, error: {}", eventId, e.getMessage());
+            // Redis 실패 시 DB 값 반환
+            return dbViewCount != null ? dbViewCount : 0;
+        }
+    }
+    
+    /**
      * Event viewCount 증가
      */
     public Long incrementViewCount(String eventId) {
@@ -83,7 +105,7 @@ public class RedisViewCountService {
         String key = generateViewCountKey(eventId);
         
         try {
-            redisTemplate.opsForValue().set(key, count, 24, TimeUnit.HOURS);
+            redisTemplate.opsForValue().set(key, count.toString(), 24, TimeUnit.HOURS);
             log.debug("Set viewCount for event: {} to {}", eventId, count);
         } catch (Exception e) {
             log.error("Failed to set viewCount in Redis for event: {}, error: {}", eventId, e.getMessage());

@@ -1,3 +1,32 @@
 spring:
   profiles:
     active: dev
+  redis:
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://127.0.0.1:6380"
+          password: null
+          database: 0
+          connectionPoolSize: 10
+          connectionMinimumIdleSize: 5
+          timeout: 3000
+          retryAttempts: 3
+          retryInterval: 1500
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000  # 10분
+      cache-null-values: false
+    cache-names:
+      - eventSearch
+
+# Redisson Cache Configuration for LRU
+redisson:
+  cache:
+    config:
+      eventSearch:
+        maxIdleTime: 300000  # 5분
+        timeToLive: 600000   # 10분
+        maxSize: 3000        # 최대 3000개 엔트리 (단일 이벤트 + 검색 결과)
+        evictionPolicy: LRU
