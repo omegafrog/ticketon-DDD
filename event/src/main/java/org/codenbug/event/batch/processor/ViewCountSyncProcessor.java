@@ -25,11 +25,11 @@ public class ViewCountSyncProcessor implements ItemProcessor<ViewCountSyncDto, V
         
         // 비정상적인 조회수 증가 체크 (예: 하루에 100만 이상 증가)
         int increment = item.getIncrementAmount();
-        if (increment > 1_000_000) {
-            log.warn("Suspicious view count increment detected: eventId={}, increment={}", 
-                     item.getEventId(), increment);
-            // 의심스러운 증가는 일단 경고만 남기고 처리는 진행
-        }
+        // if (increment > 1_000_000) {
+        //     log.warn("Suspicious view count increment detected: eventId={}, increment={}",
+        //              item.getEventId(), increment);
+        //     // 의심스러운 증가는 일단 경고만 남기고 처리는 진행
+        // }
         
         // 음수 조회수는 처리하지 않음
         if (item.getRedisViewCount() < 0) {

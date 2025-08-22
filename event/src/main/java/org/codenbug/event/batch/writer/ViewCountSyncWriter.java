@@ -1,6 +1,7 @@
 package org.codenbug.event.batch.writer;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import org.codenbug.event.batch.dto.ViewCountSyncDto;
 import org.codenbug.event.domain.QEvent;
 import org.springframework.batch.item.Chunk;
@@ -8,9 +9,13 @@ import org.springframework.batch.item.ItemWriter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -21,58 +26,46 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class ViewCountSyncWriter implements ItemWriter<ViewCountSyncDto> {
-    
-    private final JPAQueryFactory queryFactory;
-    private final QEvent event = QEvent.event;
-    
-    @Override
-    @Transactional
-    public void write(Chunk<? extends ViewCountSyncDto> chunk) {
-        List<? extends ViewCountSyncDto> items = chunk.getItems();
-        
-        if (items.isEmpty()) {
-            return;
-        }
-        
-        log.info("Writing {} viewCount sync items", items.size());
-        
-        int totalUpdated = 0;
-        
-        // 각 아이템에 대해 개별 업데이트 수행
-        for (ViewCountSyncDto syncDto : items) {
-            try {
-                long updated = queryFactory
-                    .update(event)
-                    .set(event.eventInformation.viewCount, syncDto.getRedisViewCount())
-                    .where(event.eventId.eventId.eq(syncDto.getEventId()))
-                    .execute();
-                
-                if (updated > 0) {
-                    totalUpdated++;
-                    log.debug("Updated viewCount for event: {} from {} to {}", 
-                             syncDto.getEventId(), 
-                             syncDto.getDbViewCount(), 
-                             syncDto.getRedisViewCount());
-                } else {
-                    log.warn("No event found for update: eventId={}", syncDto.getEventId());
-                }
-                
-            } catch (Exception e) {
-                log.error("Failed to update viewCount for event: {}, error: {}", 
-                         syncDto.getEventId(), e.getMessage());
-                // 개별 아이템 실패가 전체 청크 실패로 이어지지 않도록 예외를 먹음
-                // 필요하다면 실패한 아이템을 별도로 기록할 수 있음
-            }
-        }
-        
-        log.info("Successfully updated {} out of {} viewCount items", totalUpdated, items.size());
-        
-        // 업데이트 통계 로깅
-        if (log.isInfoEnabled()) {
-            int totalIncrement = items.stream()
-                .mapToInt(ViewCountSyncDto::getIncrementAmount)
-                .sum();
-            log.info("Total viewCount increment in this chunk: {}", totalIncrement);
-        }
-    }
+	@PersistenceContext
+	private final EntityManager entityManager;
+
+	@Override
+	@Transactional
+	public void write(Chunk<? extends ViewCountSyncDto> chunk) {
+		List<? extends ViewCountSyncDto> items = chunk.getItems();
+
+		if (items.isEmpty()) {
+			return;
+		}
+		items.sort(Comparator.comparing((ViewCountSyncDto o) -> o.getEventId()));
+
+		log.info("Writing {} viewCount sync items", items.size());
+
+		int totalUpdated = 0;
+		StringBuilder builder = new StringBuilder();
+		builder.append("INSERT INTO event (id, view_count) values");
+		// 각 아이템에 대해 개별 업데이트 수행
+		for (int i = 0; i < items.size(); i++) {
+			if (i > 0)
+				builder.append(", ");
+			builder.append("( ?, ? )");
+		}
+		builder.append(" ON DUPLICATE KEY UPDATE id = VALUES(id);");
+		Query query = entityManager.createNativeQuery(builder.toString());
+
+		int idx = 1;
+		for (ViewCountSyncDto syncDto : items) {
+			query.setParameter(idx++, syncDto.getEventId());
+			query.setParameter(idx++, syncDto.getRedisViewCount());
+		}
+		query.executeUpdate();
+
+		// 업데이트 통계 로깅
+		if (log.isInfoEnabled()) {
+			int totalIncrement = items.stream()
+				.mapToInt(ViewCountSyncDto::getIncrementAmount)
+				.sum();
+			log.info("Total viewCount increment in this chunk: {}", totalIncrement);
+		}
+	}
 }
