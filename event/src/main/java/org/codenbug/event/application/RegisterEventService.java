@@ -13,6 +13,7 @@ import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.seat.global.SeatLayoutResponse;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +58,10 @@ public class RegisterEventService {
 			event.getEventInformation().getSeatSelectable(),
 			seatLayoutResponse.getLocationName(),
 			event.getEventInformation().getEventStart().toString(),
-			event.getEventInformation().getEventEnd().toString()
+			event.getEventInformation().getEventEnd().toString(),
+			event.getEventInformation().getMinPrice(),
+			event.getEventInformation().getMaxPrice(),
+			event.getEventInformation().getCategoryId().getValue()
 		);
 		eventPublisher.publishEvent(eventCreatedEvent);
 

@@ -18,4 +18,7 @@ public class EventUpdatedEvent {
     private String location;
     private String startTime;
     private String endTime;
+    private Integer minPrice;
+    private Integer maxPrice;
+    private Long categoryId;
 }
