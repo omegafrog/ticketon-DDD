@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
  * Redis viewCount가 적용된 이벤트 리스트 조회용 Projection
  * DB viewCount 대신 Redis의 실시간 viewCount를 사용
  */
-public class EventListProjectionWithRedis {
+public class EventListProjection {
     private final String eventId;
     private final String title;
     private final String thumbnailUrl;
@@ -22,7 +22,7 @@ public class EventListProjectionWithRedis {
     private final Long categoryId;
     private final String location;
     
-    public EventListProjectionWithRedis(String eventId, String title, String thumbnailUrl, 
+    public EventListProjection(String eventId, String title, String thumbnailUrl,
                               LocalDateTime eventStart, LocalDateTime eventEnd,
                               LocalDateTime bookingStart, LocalDateTime bookingEnd,
                               Integer minPrice, Integer maxPrice, Integer dbViewCount,

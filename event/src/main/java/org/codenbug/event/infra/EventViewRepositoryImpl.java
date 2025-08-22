@@ -11,6 +11,7 @@ import org.codenbug.event.ui.projection.EventListProjectionWithRedis;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.ui.service.RedisViewCountService;
 import org.codenbug.seat.domain.QSeatLayout;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -260,6 +261,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
     }
 
     @Override
+    @Cacheable(value = "events", key = "#eventId")
     public EventListProjectionWithRedis findEventById(String eventId) {
         EventListProjectionWithRedis dbResult = queryFactory
             .select(Projections.constructor(EventListProjectionWithRedis.class,
