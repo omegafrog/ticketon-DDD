@@ -4,7 +4,7 @@ import org.codenbug.event.batch.dto.ViewCountSyncDto;
 import org.codenbug.event.batch.processor.ViewCountSyncProcessor;
 import org.codenbug.event.batch.reader.ViewCountSyncReader;
 import org.codenbug.event.batch.writer.ViewCountSyncWriter;
-import org.codenbug.event.ui.service.RedisViewCountService;
+import org.codenbug.event.query.RedisViewCountService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.JobBuilder;

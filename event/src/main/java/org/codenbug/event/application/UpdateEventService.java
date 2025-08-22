@@ -10,6 +10,7 @@ import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.seat.app.UpdateSeatLayoutService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -27,6 +28,7 @@ public class UpdateEventService {
 
 
 	@Transactional
+	@CacheEvict(value = "events", key = "#id")
 	public void updateEvent(EventId id, UpdateEventRequest request) {
 		Event event = eventRepository.findEvent(id);
 

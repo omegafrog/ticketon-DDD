@@ -1,6 +1,6 @@
-package org.codenbug.event.ui;
+package org.codenbug.event.application;
 
-import org.codenbug.event.ui.repository.EventViewRepository;
+import org.codenbug.event.query.EventViewRepository;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

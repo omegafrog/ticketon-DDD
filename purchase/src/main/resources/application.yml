@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: purchase
+
+# Purchase 모듈 관련 설정
+# custom:
+#   purchase:
+#     payment-timeout: 300000  # 5분
+#     max-refund-days: 7
+#   toss:
+#     payment:
+#       api-url: https://api.tosspayments.com

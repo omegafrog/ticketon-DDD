@@ -1,4 +1,4 @@
-package org.codenbug.event.service;
+package org.codenbug.event.application;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

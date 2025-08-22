@@ -1,4 +1,4 @@
-package org.codenbug.event.query.model;
+package org.codenbug.event.query;
 
 public interface EventCategoryProjectionRepository {
 }

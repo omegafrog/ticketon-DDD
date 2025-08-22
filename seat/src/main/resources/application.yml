@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: seat
+
+# 향후 seat 모듈의 추가 설정들을 여기에 정의
+# custom:
+#   seat:
+#     max-seats-per-layout: 1000
+#     seat-hold-timeout: 600000  # 10분
+#     layout-cache-ttl: 3600000   # 1시간

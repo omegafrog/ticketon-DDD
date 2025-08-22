@@ -34,7 +34,13 @@ spring:
   #   password:
   #   driver-class-name: org.h2.Driver
   config:
-    import: "user.yml"
+    import:
+      - "optional:../user/src/main/resources/application.yml"
+      - "optional:../seat/src/main/resources/application.yml"
+      - "optional:../event/src/main/resources/application.yml"
+      - "optional:../event/src/main/resources/application-dev.yml"
+      - "optional:../purchase/src/main/resources/application.yml"
+      - "optional:../notification/src/main/resources/application.yml"
 
   # Kafka Configuration for notification events
   kafka:

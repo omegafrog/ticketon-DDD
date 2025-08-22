@@ -1,4 +1,4 @@
-package org.codenbug.event.ui.projection;
+package org.codenbug.event.query;
 
 import java.time.LocalDateTime;
 

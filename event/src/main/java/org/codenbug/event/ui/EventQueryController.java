@@ -3,14 +3,10 @@ package org.codenbug.event.ui;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.EventQueryService;
-import org.codenbug.event.domain.ManagerId;
-import org.codenbug.event.global.EventInfoResponse;
 import org.codenbug.event.global.EventListFilter;
-import org.codenbug.event.global.EventListResponse;
-import org.codenbug.event.global.EventManagerListResponse;
-import org.codenbug.event.ui.projection.EventListProjectionWithRedis;
-import org.codenbug.event.ui.repository.EventViewRepository;
-import org.codenbug.event.ui.EventViewCountService;
+import org.codenbug.event.query.EventListProjection;
+import org.codenbug.event.query.EventViewRepository;
+import org.codenbug.event.application.EventViewCountService;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
@@ -39,19 +35,19 @@ public class EventQueryController {
 		this.eventViewCountService = eventViewCountService;
 	}
 	@PostMapping("/list")
-	public ResponseEntity<RsData<Page<EventListProjectionWithRedis>>> getEvents(
+	public ResponseEntity<RsData<Page<EventListProjection>>> getEvents(
 		@RequestParam(name = "keyword", required = false) String keyword,
 		 @RequestBody(required = false) EventListFilter filter, Pageable pageable){
 		// 최적화된 Projection 조회로 N+1 문제 해결 (Redis viewCount 포함)
-		Page<EventListProjectionWithRedis> eventList = eventViewRepository.findEventList(keyword, filter, pageable);
+		Page<EventListProjection> eventList = eventViewRepository.findEventList(keyword, filter, pageable);
 
 		return ResponseEntity.ok(new RsData("200","event list 조회 성공.", eventList));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<RsData<EventListProjectionWithRedis>> getEvent(@PathVariable(name = "id") String id) {
+	public ResponseEntity<RsData<EventListProjection>> getEvent(@PathVariable(name = "id") String id) {
 		// 최적화된 Projection으로 단건 조회 (Redis viewCount 포함)
-		EventListProjectionWithRedis event = eventViewRepository.findEventById(id);
+		EventListProjection event = eventViewRepository.findEventById(id);
 		
 		// 비동기로 조회수 증가 (응답 속도에 영향 없음)
 		eventViewCountService.incrementViewCountAsync(id);
@@ -62,10 +58,10 @@ public class EventQueryController {
 	@GetMapping("/manager/me")
 	@RoleRequired(Role.MANAGER)
 	@AuthNeeded
-	public ResponseEntity<RsData<Page<EventListProjectionWithRedis>>> getManagerEvents(Pageable pageable) {
+	public ResponseEntity<RsData<Page<EventListProjection>>> getManagerEvents(Pageable pageable) {
 		String userId = LoggedInUserContext.get().getUserId();
 		// 최적화된 Projection 조회로 N+1 문제 해결 (Redis viewCount 포함)
-		Page<EventListProjectionWithRedis> events = eventViewRepository.findManagerEventList(userId, pageable);
+		Page<EventListProjection> events = eventViewRepository.findManagerEventList(userId, pageable);
 		
 		return ResponseEntity.ok(new RsData("200", "매니저 이벤트 리스트 조회 성공.", events));
 	}

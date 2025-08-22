@@ -4,9 +4,8 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import org.codenbug.event.batch.dto.ViewCountSyncDto;
-import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.QEvent;
-import org.codenbug.event.ui.service.RedisViewCountService;
+import org.codenbug.event.query.RedisViewCountService;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * ViewCount 동기화를 위한 ItemReader

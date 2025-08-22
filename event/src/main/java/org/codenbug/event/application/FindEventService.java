@@ -9,6 +9,7 @@ public class FindEventService {
 	private final EventRepository repository;
 	private final FindSeatLayoutService findSeatLayoutService;
 
+
 	public FindEventService(EventRepository repository, FindSeatLayoutService findSeatLayoutService) {
 		this.repository = repository;
 		this.findSeatLayoutService = findSeatLayoutService;

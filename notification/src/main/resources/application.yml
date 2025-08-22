@@ -1,0 +1,6 @@
+# Notification 모듈 관련 설정
+# custom:
+#   notification:
+#     max-notifications-per-user: 100
+#     notification-retention-days: 30
+#     sse-timeout: 300000  # 5분
