@@ -1,465 +1,153 @@
-# Ticketon - Event Ticketing System
+# 🎫 Ticketon-DDD
 
-A microservices-based ticket booking system built with Domain-Driven Design (DDD) principles, featuring high-traffic queue management and real-time seat selection.
+도메인 주도 설계(DDD) 원칙을 적용한 마이크로서비스 기반 티켓 예약 시스템입니다.
 
-## 🏗️ System Architecture
+## 📋 개요
 
-### Overall Architecture Diagram
+Spring Boot와 Java 21을 사용하여 구축된 고가용성 티켓 예매 시스템으로, 이벤트 관리, 사용자 인증, 결제 처리, 좌석 관리, 대기열 시스템을 지원합니다.
 
-```mermaid
-graph TB
-    subgraph "Client Layer"
-        WEB[Web Client]
-        MOBILE[Mobile App]
-    end
+## 🏗️ 시스템 아키텍처
 
-    subgraph "API Gateway"
-        GATEWAY[Spring Cloud Gateway<br/>Port: 8080]
-    end
-
-    subgraph "Service Discovery"
-        EUREKA[Eureka Server<br/>Port: 8761]
-    end
-
-    subgraph "Core Business Services"
-        AUTH[Auth Service<br/>Port: 9001]
-        USER[User Service]
-        EVENT[Event Service]
-        SEAT[Seat Service]
-        PURCHASE[Purchase Service]
-        CATEGORYID[Category Service]
-    end
-
-    subgraph "Queue Management System"
-        BROKER[Broker Service<br/>Port: 9000<br/>SSE Connections]
-        DISPATCHER[Dispatcher Service<br/>Port: 9002<br/>Queue Promotion]
-    end
-
-    subgraph "Infrastructure"
-        REDIS[(Redis<br/>Queue & Cache)]
-        MYSQL[(MySQL<br/>Database)]
-        KAFKA[(Kafka<br/>Event Stream)]
-    end
-
-    subgraph "Shared Modules"
-        COMMON[Common Module]
-        MESSAGE[Message Module]
-        SECURITY[Security AOP]
-    end
-
-    WEB --> GATEWAY
-    MOBILE --> GATEWAY
-    GATEWAY --> AUTH
-    GATEWAY --> BROKER
-    GATEWAY --> EVENT
-    GATEWAY --> SEAT
-    GATEWAY --> PURCHASE
-    GATEWAY --> USER
-
-    AUTH -.-> EUREKA
-    BROKER -.-> EUREKA
-    EVENT -.-> EUREKA
-    SEAT -.-> EUREKA
-    PURCHASE -.-> EUREKA
-    USER -.-> EUREKA
-    DISPATCHER -.-> EUREKA
-
-    BROKER <--> REDIS
-    DISPATCHER <--> REDIS
-    PURCHASE --> KAFKA
-    EVENT --> KAFKA
-    SEAT --> KAFKA
-
-    AUTH --> MYSQL
-    USER --> MYSQL
-    EVENT --> MYSQL
-    SEAT --> MYSQL
-    PURCHASE --> MYSQL
-
-    BROKER --> MESSAGE
-    DISPATCHER --> MESSAGE
-    PURCHASE --> MESSAGE
-
-    AUTH --> COMMON
-    BROKER --> COMMON
-    PURCHASE --> COMMON
-    SEAT --> COMMON
-    EVENT --> COMMON
-
-    AUTH --> SECURITY
-    USER --> SECURITY
-    EVENT --> SECURITY
-    SEAT --> SECURITY
-    PURCHASE --> SECURITY
+```
+                    ┌─────────────────────────────────┐
+                    │      API Gateway (8080)         │
+                    │    Spring Cloud Gateway         │
+                    └─────────────────┬───────────────┘
+                                      │
+                    ┌─────────────────┼───────────────┐
+                    │    Service Discovery            │
+                    │      Eureka (8761)              │
+                    └─────────────────┬───────────────┘
+                                      │
+    ┌─────────────────────────────────┼─────────────────────────────────┐
+    │                                 │                                 │
+    ▼                                 ▼                                 ▼
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│ Auth    │     │ Event   │     │ User    │     │Purchase │     │ Seat    │
+│(9001)   │     │         │     │         │     │         │     │         │
+└─────────┘     └─────────┘     └─────────┘     └─────────┘     └─────────┘
+    │               │               │               │               │
+    └─────┬─────────┼─────────────┬─│─────────────┬─│─────────────┬─┘
+          │         │             │ │             │ │             │
+          ▼         ▼             ▼ ▼             ▼ ▼             ▼
+    ┌─────────┐ ┌─────────┐   ┌─────────────────────────────────┐
+    │ Broker  │ │Dispatcher│   │           Infrastructure        │
+    │   SSE   │ │ Queue   │   │   MySQL + Redis + Kafka        │
+    └─────────┘ └─────────┘   └─────────────────────────────────┘
 ```
 
-## 🎯 Waiting Queue System Flow
+## 🔧 주요 기술 스택
 
-### High-Traffic Queue Management
-
-```sequence
-User->Gateway: GET /events/{id}/tickets/waiting
-Gateway->Broker: Forward request (with auth)
-
-note over Broker: Queue Entry Logic
-Broker->Redis: Check duplicate entry
-Broker->Redis: Get current queue size  
-Broker->Redis: ZADD WAITING:{eventId} {timestamp} {userId}
-Broker->Redis: HSET WAITING_QUEUE_RECORD:{eventId}
-Broker->User: SSE Connection established
-
-loop Every 1 second
-    Broker->User: Send queue position via SSE
-end
-
-note over Dispatcher: Promotion Processing (Every 1 second)
-Dispatcher->Redis: SCAN WAITING:* keys
-
-par Multi-threaded Processing
-    Dispatcher->Redis: Execute Lua script (Atomic promotion)
-    note over Redis: promote_all_waiting_for_event.lua
-    Redis-->Dispatcher: Users promoted to ENTRY queue
-end
-
-Dispatcher->Redis: XADD ENTRY stream (promoted users)
-Dispatcher->Redis: XADD DISPATCH stream (notification)
-
-Redis->Broker: Stream message (user promoted)  
-Broker->User: SSE: "You can now purchase tickets!"
-
-User->Gateway: Access purchase flow
-Gateway->Purchase: Process ticket purchase
-Purchase->Redis: Lock seats temporarily
-Purchase->Purchase: Complete payment
-Purchase->Redis: Release queue locks
-```
-
-### Queue States and Transitions
-
-```mermaid
-stateDiagram-v2
-    [*] --> WaitingQueue : User joins queue
-    
-    state WaitingQueue {
-        [*] --> IN_ENTRY
-        IN_ENTRY --> IN_ENTRY : Receive position updates
-    }
-    
-    WaitingQueue --> EntryQueue : Dispatcher promotes<br/>(every 1 second)
-    
-    state EntryQueue {
-        [*] --> IN_PROGRESS
-        IN_PROGRESS --> IN_PROGRESS : Can select seats
-    }
-    
-    EntryQueue --> PurchaseFlow : User starts purchase
-    EntryQueue --> Expired : Timeout (entry window)
-    
-    state PurchaseFlow {
-        [*] --> SeatSelection
-        SeatSelection --> PaymentProcessing
-        PaymentProcessing --> PaymentCompleted
-        PaymentProcessing --> PaymentFailed
-    }
-    
-    PurchaseFlow --> [*] : Purchase completed
-    Expired --> [*] : Queue entry expired
-    PaymentFailed --> [*] : Return to general access
-```
-
-## 🛠️ Technology Stack
-
-### Core Technologies
 - **Framework**: Spring Boot 3.5, Spring Cloud Gateway
-- **Language**: Java 21
-- **Database**: MySQL with JPA/Hibernate
-- **Cache/Queue**: Redis (Lettuce client)
-- **Message Broker**: Apache Kafka
+- **Database**: MySQL with JPA/Hibernate  
+- **Cache/Queue**: Redis
+- **Message Broker**: Kafka (Bitnami)
 - **Service Discovery**: Eureka
-- **Build Tool**: Gradle (Multi-module)
-
-### External Integrations
 - **Payment**: Toss Payments API
-- **Authentication**: JWT + OAuth2 (Google/Kakao)
-- **Monitoring**: Micrometer + Prometheus
-- **Containerization**: Docker + Docker Compose
+- **Security**: JWT, OAuth2 (Google/Kakao)
 
-## 📁 Module Structure
+## 📦 마이크로서비스 모듈
 
-### Core Business Services
-- **`auth`** - Authentication & authorization with social login
-- **`user`** - User profile and account management
-- **`event`** - Event creation, management, and querying
-- **`seat`** - Seat layout and availability management
-- **`purchase`** - Payment processing and ticket purchasing
-- **`category-id`** - Event category management
+### 핵심 비즈니스 서비스
+- **`auth`** - OAuth 통합 인증/인가 (Google, Kakao)
+- **`event`** - 이벤트 생성, 관리, 조회
+- **`user`** - 사용자 프로필 관리  
+- **`seat`** - 좌석 레이아웃 및 가용성 관리
+- **`purchase`** - 결제 처리 및 티켓 구매
+- **`broker`** - SSE 연결 및 대기열 관리
+- **`dispatcher`** - Redis 기반 대기열 승급 시스템
 
-### Queue Management Services
-- **`broker`** - SSE connections and real-time queue notifications
-- **`dispatcher`** - Multi-threaded queue promotion engine
+### 인프라 서비스  
+- **`gateway`** - API Gateway (포트 8080)
+- **`eureka`** - 서비스 디스커버리
+- **`app`** - 메인 애플리케이션 오케스트레이터
 
-### Infrastructure Services
-- **`gateway`** - API Gateway with routing and load balancing
-- **`eureka`** - Service discovery and registration
-- **`app`** - Main application orchestrator
+### 공유 모듈
+- **`common`** - 공통 유틸리티, 예외처리, Redis 서비스
+- **`message`** - 서비스 간 이벤트 메시지
+- **`security-aop`** - AOP 기반 보안 애노테이션
+- **`category-id`** - 이벤트 카테고리 관리
 
-### Shared Libraries
-- **`common`** - Shared utilities, exceptions, Redis services
-- **`message`** - Event messages for inter-service communication
-- **`security-aop`** - AOP-based security and user context
+## 🚀 주요 변경사항
 
-## 🚀 Quick Start
+### 최근 업데이트 (2024-2025)
 
-### Prerequisites
-- Java 21
-- Docker & Docker Compose
-- MySQL 8.0+
-- Redis 6.0+
+#### 캐시 시스템 최적화
+- **LRU 정책 적용**: 메모리 효율성 개선
+- **캐시 무효화 시스템**: 실시간 데이터 일관성 보장
+- **Redis ViewCount 시스템**: 이벤트 조회수 분산 처리
 
-### Infrastructure Setup
+#### 성능 최적화  
+- **N+1 문제 해결**: QueryDSL 적용으로 쿼리 최적화
+- **배치 처리**: ViewCount 동기화 배치 작업
+- **멀티스레딩**: Dispatcher의 병렬 대기열 승급 처리
+
+#### 구조 개선
+- **DDD 원칙 강화**: 애그리거트 경계 명확화
+- **프로젝트 구조 표준화**: 모듈 간 의존성 정리
+- **파일명 표준화**: 일관된 네이밍 컨벤션 적용
+
+## ⚡ 실행 방법
+
+### 개발 환경 실행
 ```bash
-# Start infrastructure services
+# 인프라 서비스 시작
 docker-compose -f docker/docker-compose.yml up -d
 
-# Verify services are running
-docker-compose -f docker/docker-compose.yml ps
-```
-
-### Build and Run Services
-```bash
-# Build all modules
+# 전체 빌드
 ./gradlew build
 
-# Start service discovery
-./gradlew :eureka:bootRun
-
-# Start API Gateway
+# 특정 서비스 실행
 ./gradlew :gateway:bootRun
-
-# Start core services
 ./gradlew :auth:bootRun
-./gradlew :broker:bootRun
-./gradlew :dispatcher:bootRun
-./gradlew :purchase:bootRun
 ./gradlew :event:bootRun
-./gradlew :seat:bootRun
-./gradlew :user:bootRun
 ```
 
-### Service Endpoints
-- **Gateway**: http://localhost:8080
-- **Eureka Dashboard**: http://localhost:8761
-- **Broker (SSE)**: http://localhost:9000
-- **Dispatcher**: http://localhost:9002
-- **Auth Service**: http://localhost:9001
+### 서비스 포트
+| 서비스 | 포트 | 설명 |
+|--------|------|------|
+| Gateway | 8080 | 메인 진입점 |
+| Eureka | 8761 | 서비스 디스커버리 |
+| Auth | 9001 | 인증 서비스 |
+| App | 9000 | 메인 애플리케이션 |
 
-## 📊 Key Features
+### 인프라 포트  
+| 서비스 | 포트 | 설명 |
+|--------|------|------|
+| MySQL | 3306 | 데이터베이스 |
+| Redis | 6379 | 캐시/세션 |
+| Kafka | 29092 | 메시지 브로커 |
 
-### High-Performance Queue System
-- **Real-time Updates**: SSE-based queue position notifications
-- **Horizontal Scaling**: Redis-based distributed state management
-- **Atomic Operations**: Lua scripts for consistent queue promotions
-- **Backpressure Handling**: Thread pool management with overflow policies
+## 🎯 핵심 기능
 
-### Domain-Driven Design
-- **Aggregate Boundaries**: Clear separation of business domains
-- **Domain Services**: Encapsulated business logic
-- **Event-Driven Communication**: Kafka-based inter-service messaging
-- **Repository Pattern**: Clean data access abstraction
+### 대기열 시스템
+- **멀티스레드 승급 처리**: 동시성 제어로 안전한 좌석 예약
+- **Redis 분산 락**: 중복 예약 방지
+- **SSE 실시간 알림**: 대기열 상태 실시간 업데이트
 
-### Security & Authentication
-- **JWT Tokens**: Stateless authentication
-- **OAuth2 Integration**: Google and Kakao social login
-- **Role-Based Access**: Fine-grained permission control
-- **AOP Security**: Cross-cutting security concerns
+### 결제 플로우
+- **Toss Payments 통합**: 안전한 결제 처리
+- **이벤트 기반 업데이트**: 서비스 간 비동기 통신
+- **분산 락**: 좌석 중복 판매 방지
 
-### Monitoring & Observability
-- **Health Checks**: Spring Actuator endpoints
-- **Metrics**: Prometheus-compatible metrics export
-- **Distributed Tracing**: Request correlation across services
-- **Logging**: Structured logging with correlation IDs
+### 보안
+- **OAuth2 통합**: Google, Kakao 소셜 로그인
+- **JWT 토큰**: 무상태 인증
+- **AOP 보안**: 선언적 보안 처리
 
-## 🏗️ Development Guidelines
+## 📊 성능 최적화
 
-### Code Organization
-- Follow DDD principles with clear aggregate boundaries
-- Use domain services for complex business logic
-- Implement repository pattern for data access
-- Apply AOP for cross-cutting concerns
+- **QueryDSL**: 복잡한 쿼리 최적화 및 N+1 문제 해결
+- **Redis 캐시**: 조회 성능 향상 및 ViewCount 분산 처리  
+- **배치 처리**: 대용량 데이터 효율적 처리
+- **분산 시스템**: 마이크로서비스 기반 확장성
 
-### Testing Strategy
+## 🛠️ 개발 및 테스트
+
 ```bash
-# Run all tests
+# 전체 테스트 실행
 ./gradlew test
 
-# Run specific module tests
-./gradlew :purchase:test
-./gradlew :broker:test
-```
-
-### Database Migration
-- Use JPA/Hibernate auto-DDL for development
-- Manual schema management for production
-- Event sourcing for audit trails
-
-## 🚦 API Documentation
-
-### Authentication Endpoints
-- `POST /auth/login` - User login
-- `POST /auth/oauth/google` - Google OAuth login
-- `POST /auth/oauth/kakao` - Kakao OAuth login
-- `POST /auth/refresh` - Token refresh
-
-### Event & Ticketing Endpoints  
-- `GET /events` - List events
-- `GET /events/{id}` - Event details
-- `GET /events/{id}/seats` - Seat layout
-- `GET /events/{id}/tickets/waiting` - Join waiting queue (SSE)
-- `POST /purchase/initiate` - Initiate payment
-- `POST /purchase/confirm` - Confirm payment
-
-### Queue Management (Internal)
-- Broker handles SSE connections
-- Dispatcher processes queue promotions
-- Redis streams coordinate between services
-
-## 📈 Performance Characteristics
-
-### Throughput
-- **Queue Processing**: 1000+ promotions per second
-- **Concurrent SSE**: 10,000+ simultaneous connections  
-- **Database**: Optimized for high read/write ratios
-- **Redis Operations**: Sub-millisecond response times
-
-### Scalability
-- **Horizontal**: Add broker/dispatcher instances
-- **Vertical**: Thread pool and connection tuning
-- **Database**: Read replicas and connection pooling
-- **Caching**: Multi-level caching strategy
-
-## 🔒 Security Considerations
-
-### Authentication & Authorization
-- JWT token validation on all protected endpoints
-- Role-based access control (USER, ADMIN, MANAGER)
-- OAuth2 integration with external providers
-- Session management with Redis
-
-### Data Protection
-- Sensitive data encryption at rest
-- TLS/SSL for all external communications
-- PII data handling compliance
-- Audit logging for all financial transactions
-
-## 🔄 최근 변경사항
-
-### v1.3.0 - 인스턴스별 전용 DISPATCH 스트림 구조 구현
-- **인스턴스별 스트림 분리**: 각 디스패처 인스턴스가 전용 DISPATCH 스트림을 가지도록 개선
-- **성능 향상**: 스트림 분산을 통한 처리량 증가 및 부하 분산
-- **확장성 개선**: 수평 확장 시 스트림 격리로 안정성 향상
-- **동시성 최적화**: 인스턴스 간 메시지 처리 충돌 방지
-
-### v1.2.0 - 프런트엔드 연동 및 이벤트 조회 기능
-- **프런트엔드 통합**: React 기반 클라이언트와 API 연동 완료
-- **이벤트 조회 API**: 필터링 및 페이지네이션 지원
-- **실시간 대기열**: SSE를 통한 실시간 위치 업데이트
-- **UI/UX 개선**: 대기열 상태 시각화 및 사용자 경험 향상
-
-## 🛠️ 빌드 및 실행 방법
-
-### 1. 사전 요구사항
-```bash
-# Java 21 설치 확인
-java --version
-
-# Docker 및 Docker Compose 설치 확인
-docker --version
-docker-compose --version
-```
-
-### 2. 인프라 서비스 시작
-```bash
-# MySQL, Redis, Kafka 등 인프라 서비스 실행
-docker-compose -f docker/docker-compose.yml up -d
-
-# 서비스 상태 확인
-docker-compose -f docker/docker-compose.yml ps
-```
-
-### 3. 애플리케이션 빌드
-```bash
-# 전체 모듈 빌드
-./gradlew clean build
-
-# 특정 모듈만 빌드
-./gradlew :auth:build
-./gradlew :broker:build
-```
-
-### 4. 서비스 실행 순서
-```bash
-# 1. 서비스 디스커버리 시작
-./gradlew :eureka:bootRun
-
-# 2. API 게이트웨이 시작 (새 터미널)
-./gradlew :gateway:bootRun
-
-# 3. 핵심 서비스들 시작 (각각 새 터미널에서)
-./gradlew :auth:bootRun          # 인증 서비스
-./gradlew :broker:bootRun        # 대기열 관리 (SSE)
-./gradlew :dispatcher:bootRun    # 대기열 처리 엔진
-./gradlew :event:bootRun         # 이벤트 관리
-./gradlew :seat:bootRun          # 좌석 관리
-./gradlew :purchase:bootRun      # 결제 처리
-./gradlew :user:bootRun          # 사용자 관리
-```
-
-### 5. 서비스 접근 포트
-- **메인 API**: http://localhost:8080 (Gateway)
-- **유레카 대시보드**: http://localhost:8761
-- **브로커 서비스**: http://localhost:9000
-- **디스패처 서비스**: http://localhost:9002
-- **인증 서비스**: http://localhost:9001
-
-### 6. Docker를 이용한 실행 (선택사항)
-```bash
 # Docker 이미지 빌드
-./gradlew bootBuildImage
-
-# 전체 스택 실행
-docker-compose up -d
+./gradlew :SERVICE_NAME:bootBuildImage
 ```
-
-### 7. 개발 환경 설정
-```bash
-# 테스트 실행
-./gradlew test
-
-# 특정 모듈 테스트
-./gradlew :purchase:test
-
-# 라이브 리로드 모드 (개발용)
-./gradlew :gateway:bootRun --continuous
-```
-
-### 8. 환경별 설정
-- **개발환경**: `application-dev.yml`
-- **운영환경**: `application-prod.yml`
-- **테스트환경**: `application-test.yml`
-
-```bash
-# 특정 프로파일로 실행
-./gradlew :auth:bootRun -Dspring.profiles.active=dev
-```
-
-## 📝 Contributing
-
-1. Follow the existing code style and conventions
-2. Write comprehensive tests for new features
-3. Update documentation for API changes
-4. Use conventional commits for clear history
-5. Submit PRs with detailed descriptions
-
-## 📋 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
