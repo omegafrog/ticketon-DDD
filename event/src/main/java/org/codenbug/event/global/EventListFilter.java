@@ -19,14 +19,18 @@ public class EventListFilter {
 	private List<EventStatus> eventStatusList;
 	private LocalDateTime startDate;
 	private LocalDateTime endDate;
+	private Long categoryId; // 단일 카테고리 필터링 지원
 
 	private EventListFilter(Builder builder) {
 		this.costRange = builder.costRange;
-		this.locationList = builder.locationList.stream().map(lo -> lo.getLocationName()).toList();
-		this.eventCategoryList = builder.eventCategoryList.stream().map(cat -> cat.getId().getId()).toList();
+		this.locationList = builder.locationList != null ? 
+			builder.locationList.stream().map(lo -> lo.getLocationName()).toList() : null;
+		this.eventCategoryList = builder.eventCategoryList != null ? 
+			builder.eventCategoryList.stream().map(cat -> cat.getId().getId()).toList() : null;
 		this.eventStatusList = builder.eventStatusList;
 		this.startDate = builder.startDate;
 		this.endDate = builder.endDate;
+		this.categoryId = builder.categoryId;
 	}
 
 	protected EventListFilter() {
@@ -35,10 +39,11 @@ public class EventListFilter {
 	public boolean canFiltered() {
 		return costRange != null
 			|| (locationList != null && !locationList.isEmpty())
-			|| (eventCategoryList != null && !eventCategoryList.isEmpty()
+			|| (eventCategoryList != null && !eventCategoryList.isEmpty())
 			|| (eventStatusList != null && !eventStatusList.isEmpty())
 			|| startDate != null
-			|| endDate != null);
+			|| endDate != null
+			|| categoryId != null;
 	}
 
 	public static class Builder {
@@ -48,6 +53,7 @@ public class EventListFilter {
 		private List<EventStatus> eventStatusList;
 		private LocalDateTime startDate;
 		private LocalDateTime endDate;
+		private Long categoryId;
 
 		@JsonIgnore
 		public Builder costRange(CostRange costRange) {
@@ -82,6 +88,12 @@ public class EventListFilter {
 		@JsonIgnore
 		public Builder endDate(LocalDateTime endDate) {
 			this.endDate = endDate;
+			return this;
+		}
+
+		@JsonIgnore
+		public Builder categoryId(Long categoryId) {
+			this.categoryId = categoryId;
 			return this;
 		}
 

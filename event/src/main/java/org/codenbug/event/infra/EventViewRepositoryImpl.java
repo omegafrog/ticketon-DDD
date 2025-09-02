@@ -158,7 +158,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		if (filter !=null && filter.getCostRange() != null) {
 			complexity += 2; // 가격 범위도 다양함
 		}
-		if (filter !=null && filter.getEventCategoryList() != null) {
+		if (filter !=null && (filter.getEventCategoryList() != null || filter.getCategoryId() != null)) {
 			complexity += 1; // 카테고리는 상대적으로 제한적
 		}
 		if (filter !=null && filter.getLocationList() != null) {
@@ -308,9 +308,14 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				whereClause.and(seatLayout.location.locationName.in(filter.getLocationList()));
 			}
 
-			// 카테고리 필터
+			// 카테고리 필터 (리스트)
 			if (filter.getEventCategoryList() != null && !filter.getEventCategoryList().isEmpty()) {
 				whereClause.and(event.eventInformation.categoryId.value.in(filter.getEventCategoryList()));
+			}
+			
+			// 카테고리 필터 (단일)
+			if (filter.getCategoryId() != null) {
+				whereClause.and(event.eventInformation.categoryId.value.eq(filter.getCategoryId()));
 			}
 
 			// 상태 필터
