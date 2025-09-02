@@ -40,7 +40,11 @@ public class EventQueryController {
 		this.eventViewRepository = eventViewRepository;
 		this.eventViewCountService = eventViewCountService;
 	}
-	@Operation(summary = "이벤트 목록 조회", description = "필터와 키워드를 기반으로 이벤트 목록을 조회합니다.")
+	@Operation(
+		summary = "이벤트 목록 조회", 
+		description = "필터와 키워드를 기반으로 이벤트 목록을 조회합니다. " +
+		"필터에서 categoryId(단일 카테고리) 또는 eventCategoryList(다중 카테고리)를 사용하여 카테고리별 필터링이 가능합니다."
+	)
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "이벤트 목록 조회 성공"),
 		@ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터")
@@ -49,7 +53,11 @@ public class EventQueryController {
 	public ResponseEntity<RsData<Page<EventListProjection>>> getEvents(
 		@Parameter(description = "검색 키워드", required = false)
 		@RequestParam(name = "keyword", required = false) String keyword,
-		@Parameter(description = "이벤트 필터 조건", required = false)
+		@Parameter(
+			description = "이벤트 필터 조건 (categoryId: 단일 카테고리 ID, eventCategoryList: 다중 카테고리 ID 목록, " +
+			"locationList: 지역 필터, costRange: 가격 범위, eventStatusList: 이벤트 상태, startDate/endDate: 날짜 범위)", 
+			required = false
+		)
 		@RequestBody(required = false) EventListFilter filter, 
 		@Parameter(description = "페이징 정보")
 		Pageable pageable){
