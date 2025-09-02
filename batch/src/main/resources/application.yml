@@ -1,0 +1,54 @@
+server:
+  port: 9005
+spring:
+  application:
+    name: batch-service
+  
+  datasource:
+
+    url: jdbc:mysql://localhost:3307/ticketon?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: batch_analyze
+    password: analyze_password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+  # Batch configuration
+  batch:
+    job:
+      enabled: false  # Prevent auto-execution on startup
+    jdbc:
+      initialize-schema: never
+  # Quartz Scheduler configuration
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: never
+
+
+logging:
+  level:
+    org.springframework.batch: DEBUG
+    org.codenbug.batch: DEBUG
+    com.zaxxer.hikari: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Custom configuration for ANALYZE operations
+batch:
+  analyze:
+    # Tables to analyze (in priority order)
+    tables:
+      - events
+      - purchases  
+      - tickets
+      - users
+      - seat_layouts
+    # Cron expression for weekly Sunday 2 AM execution
+    cron: "0 0 2 ? * SUN"
+    # Timeout for each ANALYZE operation (in seconds)  
+    timeout: 300
