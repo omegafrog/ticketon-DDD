@@ -10,6 +10,9 @@ dependencies {
     implementation 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     annotationProcessor 'org.projectlombok:lombok'
+    
+    // SpringDoc OpenAPI (Swagger) for WebFlux
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.2.0'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
