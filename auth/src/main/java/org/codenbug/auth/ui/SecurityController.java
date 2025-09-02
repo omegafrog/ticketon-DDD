@@ -4,6 +4,11 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.auth.app.AuthService;
 import org.codenbug.auth.app.OAuthService;
 import org.codenbug.auth.domain.RefreshTokenBlackList;
@@ -33,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/auth")
+@Tag(name = "Authentication", description = "인증 및 로그인 API")
 @Slf4j
 public class SecurityController {
 
@@ -52,14 +58,31 @@ public class SecurityController {
 		this.blackList = blackList;
 	}
 
+	@Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "회원가입 성공"),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
+		@ApiResponse(responseCode = "409", description = "이미 존재하는 사용자")
+	})
 	@PostMapping("/register")
-	public ResponseEntity<RsData<SecurityUserId>> register(@RequestBody RegisterRequest request) {
+	public ResponseEntity<RsData<SecurityUserId>> register(
+		@Parameter(description = "회원가입 정보", required = true)
+		@RequestBody RegisterRequest request) {
 		SecurityUserId userId = authService.register(request);
 		return ResponseEntity.ok(new RsData<>("202", "유저 생성 요청이 전송되었습니다.", userId));
 	}
 
+	@Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "로그인 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 실패 (잘못된 자격증명)"),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
+	})
 	@PostMapping("/login")
-	public ResponseEntity<RsData<String>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
+	public ResponseEntity<RsData<String>> login(
+		@Parameter(description = "로그인 정보", required = true)
+		@RequestBody LoginRequest request, 
+		HttpServletResponse resp) {
 		long startTime = System.currentTimeMillis();
 		log.info("Login request started for email: {}", request.getEmail());
 
@@ -100,6 +123,11 @@ public class SecurityController {
 		return created;
 	}
 
+	@Operation(summary = "로그아웃", description = "현재 로그인된 사용자를 로그아웃합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자")
+	})
 	@AuthNeeded
 	@GetMapping("/logout")
 	public ResponseEntity<RsData<Void>> logout(HttpServletRequest req, HttpServletResponse resp) {
@@ -116,8 +144,14 @@ public class SecurityController {
 		return ResponseEntity.ok(new RsData<>("200", "logout success.", null));
 	}
 
+	@Operation(summary = "소셜 로그인 요청", description = "소셜 로그인 페이지로의 리다이렉션 URL을 반환합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "소셜 로그인 URL 반환 성공"),
+		@ApiResponse(responseCode = "400", description = "지원하지 않는 소셜 로그인 타입")
+	})
 	@GetMapping(value = "/social/{socialLoginType}")
 	public ResponseEntity<String> request(
+		@Parameter(description = "소셜 로그인 타입 (google, kakao)", required = true)
 		@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
 
 		String redirectURL = authService.request(socialLoginType);
@@ -125,10 +159,19 @@ public class SecurityController {
 		return ResponseEntity.ok(redirectURL);  // 리다이렉션 URL을 응답으로 반환
 	}
 
+	@Operation(summary = "소셜 로그인 콜백", description = "소셜 로그인 콜백을 처리하고 JWT 토큰을 발급합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "소셜 로그인 성공"),
+		@ApiResponse(responseCode = "400", description = "잘못된 인증 코드"),
+		@ApiResponse(responseCode = "500", description = "소셜 로그인 처리 중 오류")
+	})
 	@GetMapping(value = "/social/{socialLoginType}/callback")
 	public ResponseEntity<RsData<String>> callback(
+		@Parameter(description = "소셜 로그인 타입", required = true)
 		@PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
+		@Parameter(description = "소셜 로그인 인증 코드", required = true)
 		@RequestParam(name = "code") String code,
+		@Parameter(description = "리다이렉션 URL", required = false)
 		@RequestParam(name = "redirectUrl", required = false) String redirectUrl,
 		HttpServletResponse response) {
 

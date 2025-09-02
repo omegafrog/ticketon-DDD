@@ -1,5 +1,10 @@
 package org.codenbug.event.ui;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.FindEventService;
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/events")
+@Tag(name = "Event Command", description = "이벤트 관리 API (생성, 수정, 삭제)")
 public class EventCommandController {
 
 	private final RegisterEventService registerEventService;
@@ -39,15 +45,18 @@ public class EventCommandController {
 		this.imageUploadService = imageUploadService;
 	}
 
-	/**
-	 * 이벤트 등록 API
-	 * @param request 이벤트 등록 요청 DTO
-	 * @return 성공 시 RsData<EventRegisterResponse> 포맷으로 응답
-	 */
+	@Operation(summary = "이벤트 등록", description = "새로운 이벤트를 등록합니다. 매니저 권한이 필요합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "이벤트 등록 성공"),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+		@ApiResponse(responseCode = "403", description = "권한 부족 (매니저 권한 필요)")
+	})
 	@AuthNeeded
 	@RoleRequired(Role.MANAGER)
 	@PostMapping
-	public ResponseEntity<RsData<EventId>> eventRegister(@RequestBody NewEventRequest request) {
+	public ResponseEntity<RsData<EventId>> eventRegister(
+		@Parameter(description = "이벤트 등록 정보", required = true)
+		@RequestBody NewEventRequest request) {
 
 		// register event
 		EventId eventId = registerEventService.registerNewEvent(request);
@@ -58,11 +67,20 @@ public class EventCommandController {
 		));
 	}
 
+	@Operation(summary = "이벤트 수정", description = "기존 이벤트 정보를 수정합니다. 매니저 또는 관리자 권한이 필요합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "이벤트 수정 성공"),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+		@ApiResponse(responseCode = "403", description = "권한 부족"),
+		@ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음")
+	})
 	@AuthNeeded
 	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PutMapping("/{eventId}")
 	public ResponseEntity<RsData<EventId>> updateEvent(
+		@Parameter(description = "수정할 이벤트 ID", required = true)
 		@PathVariable String eventId,
+		@Parameter(description = "이벤트 수정 정보", required = true)
 		@RequestBody UpdateEventRequest request
 	) {
 		updateEventService.updateEvent(new EventId(eventId), request);
@@ -73,10 +91,19 @@ public class EventCommandController {
 		));
 	}
 
+	@Operation(summary = "이벤트 삭제", description = "이벤트를 삭제합니다. 매니저 또는 관리자 권한이 필요합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "이벤트 삭제 성공"),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+		@ApiResponse(responseCode = "403", description = "권한 부족"),
+		@ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음")
+	})
 	@AuthNeeded
 	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@DeleteMapping("/{eventId}")
-	public ResponseEntity<RsData<Void>> deleteEvent(@PathVariable String eventId) {
+	public ResponseEntity<RsData<Void>> deleteEvent(
+		@Parameter(description = "삭제할 이벤트 ID", required = true)
+		@PathVariable String eventId) {
 		updateEventService.deleteEvent(new EventId(eventId));
 		return ResponseEntity.ok(new RsData<>(
 			"200",
@@ -87,10 +114,21 @@ public class EventCommandController {
 
 
 
+	@Operation(summary = "이벤트 상태 변경", description = "이벤트의 상태를 변경합니다. 매니저 또는 관리자 권한이 필요합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "이벤트 상태 변경 성공"),
+		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+		@ApiResponse(responseCode = "403", description = "권한 부족"),
+		@ApiResponse(responseCode = "404", description = "이벤트를 찾을 수 없음")
+	})
 	@AuthNeeded
 	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PatchMapping("/{eventId}")
-	public ResponseEntity<RsData<EventId>> changeStatus(@PathVariable String eventId, @RequestParam(name = "status") String status){
+	public ResponseEntity<RsData<EventId>> changeStatus(
+		@Parameter(description = "상태를 변경할 이벤트 ID", required = true)
+		@PathVariable String eventId, 
+		@Parameter(description = "변경할 이벤트 상태", required = true)
+		@RequestParam(name = "status") String status){
 		updateEventService.changeStatus(eventId, status);
 		return ResponseEntity.ok(new RsData<>(
 			"200",

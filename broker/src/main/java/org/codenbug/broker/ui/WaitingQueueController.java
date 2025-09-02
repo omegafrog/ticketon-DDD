@@ -2,6 +2,11 @@ package org.codenbug.broker.ui;
 
 import java.util.Map;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.broker.app.WaitingQueueEntryService;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.common.Role;
@@ -25,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/broker")
+@Tag(name = "Waiting Queue", description = "대기열 관리 및 SSE 연결 API")
 @Slf4j
 public class WaitingQueueController {
 

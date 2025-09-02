@@ -1,5 +1,10 @@
 package org.codenbug.user.ui;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.securityaop.aop.AuthNeeded;
@@ -18,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/users/")
+@Tag(name = "User", description = "사용자 정보 관리 API")
 public class UserController {
 
 	private final UserQueryService userQueryService;

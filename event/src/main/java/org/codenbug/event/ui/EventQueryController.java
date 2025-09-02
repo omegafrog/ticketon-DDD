@@ -1,5 +1,10 @@
 package org.codenbug.event.ui;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.EventQueryService;
@@ -23,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/events")
+@Tag(name = "Event Query", description = "이벤트 조회 API")
 public class EventQueryController {
 	private final EventQueryService eventQueryService;
 	private final EventViewRepository eventViewRepository;
@@ -34,10 +40,19 @@ public class EventQueryController {
 		this.eventViewRepository = eventViewRepository;
 		this.eventViewCountService = eventViewCountService;
 	}
+	@Operation(summary = "이벤트 목록 조회", description = "필터와 키워드를 기반으로 이벤트 목록을 조회합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "이벤트 목록 조회 성공"),
+		@ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터")
+	})
 	@PostMapping("/list")
 	public ResponseEntity<RsData<Page<EventListProjection>>> getEvents(
+		@Parameter(description = "검색 키워드", required = false)
 		@RequestParam(name = "keyword", required = false) String keyword,
-		 @RequestBody(required = false) EventListFilter filter, Pageable pageable){
+		@Parameter(description = "이벤트 필터 조건", required = false)
+		@RequestBody(required = false) EventListFilter filter, 
+		@Parameter(description = "페이징 정보")
+		Pageable pageable){
 		// 최적화된 Projection 조회로 N+1 문제 해결 (Redis viewCount 포함)
 		Page<EventListProjection> eventList = eventViewRepository.findEventList(keyword, filter, pageable);
 

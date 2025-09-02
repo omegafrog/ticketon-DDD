@@ -1,5 +1,10 @@
 package org.codenbug.seat.ui;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
@@ -23,9 +28,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+
 @RestController
 @RequestMapping("/api/v1/events")
 @RequiredArgsConstructor
+@Tag(name = "Seat", description = "좌석 관리 API")
 public class SeatController {
 	private final FindSeatLayoutService findSeatLayoutService;
 	private final UpdateSeatLayoutService updateSeatLayoutService;
