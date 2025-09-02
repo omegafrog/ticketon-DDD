@@ -1,6 +1,33 @@
+server:
+  port: 9003
+
 spring:
   application:
-    name: purchase
+    name: purchase-service
+  profiles:
+    include: secret
+  datasource:
+    url: jdbc:mysql://localhost:3306/ticketon
+    username: ticketon
+    password: ticketon
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
 # Purchase 모듈 관련 설정
 # custom:

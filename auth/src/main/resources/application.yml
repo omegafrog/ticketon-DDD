@@ -48,7 +48,8 @@ spring:
       port: 6379
       host: localhost
 
-
+springdoc:
+  override-with-generic-response: false
 server:
   port: 9001
   tomcat:

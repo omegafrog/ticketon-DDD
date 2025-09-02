@@ -30,7 +30,8 @@ spring:
   #   username: sa
   #   password:
   #   driver-class-name: org.h2.Driver
-
+springdoc:
+  override-with-generic-response: false
 eureka:
   client:
     service-url:
