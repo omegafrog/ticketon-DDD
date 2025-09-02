@@ -127,22 +127,58 @@ services:
     command: redis-server --save 60 1 --loglevel warning
     networks:
       - common
-  mysql:
+  mysql-master:
     image: mysql:lts
+    container_name: mysql-master
     environment:
       MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ticketon
+      MYSQL_USER: ticketon
+      MYSQL_PASSWORD: ticketon
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/my.cnf
+      - mysql_master_data:/var/lib/mysql
+      - ./mysql/master/my.cnf:/etc/my.cnf
+      - ./mysql/init-master.sql:/docker-entrypoint-initdb.d/init-master.sql
     ports:
       - "3306:3306"
       - "33060:33060"
     restart: always
     networks:
       - common
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      timeout: 5s
+      retries: 10
+
+  mysql-replica:
+    image: mysql:lts
+    container_name: mysql-replica
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: ticketon
+      MYSQL_USER: ticketon
+      MYSQL_PASSWORD: ticketon
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+      - ./mysql/replica/my.cnf:/etc/my.cnf
+      - ./mysql/init-replica.sql:/docker-entrypoint-initdb.d/init-replica.sql
+    ports:
+      - "3307:3306"
+      - "33061:33060"
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+    restart: always
+    networks:
+      - common
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      timeout: 5s
+      retries: 10
 
 networks:
   common:
     driver: bridge
 volumes:
-  mysql_data:
+  mysql_master_data:
+  mysql_replica_data:
