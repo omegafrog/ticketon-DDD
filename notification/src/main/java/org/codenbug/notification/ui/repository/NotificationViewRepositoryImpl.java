@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.QNotification;
 import org.codenbug.notification.ui.projection.NotificationListProjection;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +21,7 @@ public class NotificationViewRepositoryImpl implements NotificationViewRepositor
     private final JPAQueryFactory queryFactory;
     private final QNotification notification = QNotification.notification;
     
-    public NotificationViewRepositoryImpl(JPAQueryFactory queryFactory) {
+    public NotificationViewRepositoryImpl(@Qualifier("primaryQueryFactory") JPAQueryFactory queryFactory) {
         this.queryFactory = queryFactory;
     }
     

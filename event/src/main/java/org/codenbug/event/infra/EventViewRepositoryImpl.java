@@ -49,7 +49,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	private final RedissonClient redissonClient;
 	private final ObjectMapper objectMapper;
 
-	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory, 
+	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory,
 		RedisViewCountService redisViewCountService, RedissonClient redissonClient, ObjectMapper objectMapper) {
 		this.readOnlyQueryFactory = readOnlyQueryFactory;
 		this.redisViewCountService = redisViewCountService;

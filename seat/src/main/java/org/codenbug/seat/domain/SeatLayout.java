@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,6 +31,10 @@ public class SeatLayout {
 	@Embedded
 	private Location location;
 
+	@Enumerated(EnumType.STRING)
+	@Column(name = "region_location")
+	private RegionLocation regionLocation;
+
 	@OneToMany(mappedBy = "seatLayout", fetch = FetchType.LAZY)
 	private Set<Seat> seats;
 
@@ -38,6 +44,14 @@ public class SeatLayout {
 
 	public SeatLayout(List<List<String>> layout, Location location, List<Seat> seats) {
 		this.location = location;
+		validate(layout, seats);
+		this.layout = convertLayout(layout);
+		this.seats = new HashSet<>(seats);
+	}
+
+	public SeatLayout(List<List<String>> layout, Location location, RegionLocation regionLocation, List<Seat> seats) {
+		this.location = location;
+		this.regionLocation = regionLocation;
 		validate(layout, seats);
 		this.layout = convertLayout(layout);
 		this.seats = new HashSet<>(seats);

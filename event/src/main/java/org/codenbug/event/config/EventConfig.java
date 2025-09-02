@@ -9,7 +9,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableJpaRepositories(basePackages = {"org.codenbug.event"})
+@EnableJpaRepositories(
+    basePackages = {"org.codenbug.event.infra"},
+    entityManagerFactoryRef = "primaryEntityManagerFactory",
+    transactionManagerRef = "primaryTransactionManager"
+)
 @EntityScan(basePackages = {"org.codenbug.event"})
 @ComponentScan(basePackages = {"org.codenbug.event"})
 @Import({SeatLayoutConfig.class,

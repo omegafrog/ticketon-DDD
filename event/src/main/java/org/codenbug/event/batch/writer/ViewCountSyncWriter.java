@@ -6,6 +6,7 @@ import org.codenbug.event.batch.dto.ViewCountSyncDto;
 import org.codenbug.event.domain.QEvent;
 import org.springframework.batch.item.Chunk;
 import org.springframework.batch.item.ItemWriter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +25,12 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ViewCountSyncWriter implements ItemWriter<ViewCountSyncDto> {
-	@PersistenceContext
 	private final EntityManager entityManager;
+
+	public ViewCountSyncWriter(@Qualifier("primaryEntityManagerFactory") jakarta.persistence.EntityManagerFactory primaryEntityManagerFactory) {
+		this.entityManager = primaryEntityManagerFactory.createEntityManager();
+	}
 
 	@Override
 	@Transactional

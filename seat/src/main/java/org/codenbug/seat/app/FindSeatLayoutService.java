@@ -27,7 +27,8 @@ public class FindSeatLayoutService {
 				item -> new SeatDto(item.getSeatId().getValue(), item.getSignature(), item.getGrade(), item.getAmount(),
 					item.isAvailable())).toList(),
 			seatLayout.getLocation().getHallName(),
-			seatLayout.getLocation().getLocationName());
+			seatLayout.getLocation().getLocationName(),
+			seatLayout.getRegionLocation());
 	}
 
 	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
@@ -39,7 +40,8 @@ public class FindSeatLayoutService {
 			seatLayout.getLayout(),
 			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
 			seatLayout.getLocation().getHallName(),
-			seatLayout.getLocation().getLocationName()
+			seatLayout.getLocation().getLocationName(),
+			seatLayout.getRegionLocation()
 		);
 	}
 }

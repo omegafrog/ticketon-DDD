@@ -10,9 +10,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
+@EnableJpaRepositories(
+    basePackages = {"org.codenbug.purchase.infra"},
+    entityManagerFactoryRef = "primaryEntityManagerFactory",
+    transactionManagerRef = "primaryTransactionManager"
+)
 @EntityScan(basePackages = {"org.codenbug.purchase.domain", "org.codenbug.purchase.query.model"})
 @ComponentScan(basePackages = {"org.codenbug.purchase"})
-@EnableJpaRepositories(basePackages = {"org.codenbug.purchase.infra"})
 public class PurchaseConfig {
 
 	@Bean

@@ -24,10 +24,21 @@ public class RegisterSeatLayoutService {
 
 	@Transactional
 	public SeatLayoutResponse registerSeatLayout(RegisterSeatLayoutDto seatLayout) {
-		SeatLayout layout = new SeatLayout(seatLayout.getLayout(),
-			new Location(seatLayout.getLocation(), seatLayout.getHallName()), seatLayout.getSeats()
-			.stream().map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
-			.toList());
+		SeatLayout layout;
+		if (seatLayout.getRegionLocation() != null) {
+			layout = new SeatLayout(seatLayout.getLayout(),
+				new Location(seatLayout.getLocation(), seatLayout.getHallName()), 
+				seatLayout.getRegionLocation(),
+				seatLayout.getSeats()
+				.stream().map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
+				.toList());
+		} else {
+			layout = new SeatLayout(seatLayout.getLayout(),
+				new Location(seatLayout.getLocation(), seatLayout.getHallName()), 
+				seatLayout.getSeats()
+				.stream().map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
+				.toList());
+		}
 		SeatLayout saved = seatLayoutRepository.save(layout);
 		
 		// Publish SeatLayoutCreatedEvent after transaction success
@@ -53,7 +64,7 @@ public class RegisterSeatLayoutService {
 			seat.getGrade(),
 			seat.getAmount(),
 			seat.isAvailable()
-		)).toList(), saved.getLocation().getHallName(), saved.getLocation().getLocationName());
+		)).toList(), saved.getLocation().getHallName(), saved.getLocation().getLocationName(), saved.getRegionLocation());
 	}
 
 }

@@ -41,6 +41,7 @@ import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.codenbug.purchase.query.model.EventProjection;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -52,7 +53,6 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PurchaseService {
 	private final PGApiService pgApiService;
 	private final PurchaseRepository purchaseRepository;
@@ -67,6 +67,28 @@ public class PurchaseService {
 	private final RefundRepository refundRepository;
 	private final EventProjectionRepository eventProjectionRepository;
 	private final PlatformTransactionManager transactionManager;
+
+	public PurchaseService(PGApiService pgApiService, PurchaseRepository purchaseRepository,
+		PurchaseCancelRepository purchaseCancelRepository, TicketRepository ticketRepository,
+		RedisLockService redisLockService, MessagePublisher publisher, PurchaseDomainService purchaseDomainService,
+		PaymentValidationService paymentValidationService, NotificationEventPublisher notificationEventPublisher,
+		RefundDomainService refundDomainService, RefundRepository refundRepository,
+		EventProjectionRepository eventProjectionRepository,
+		@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager) {
+		this.pgApiService = pgApiService;
+		this.purchaseRepository = purchaseRepository;
+		this.purchaseCancelRepository = purchaseCancelRepository;
+		this.ticketRepository = ticketRepository;
+		this.redisLockService = redisLockService;
+		this.publisher = publisher;
+		this.purchaseDomainService = purchaseDomainService;
+		this.paymentValidationService = paymentValidationService;
+		this.notificationEventPublisher = notificationEventPublisher;
+		this.refundDomainService = refundDomainService;
+		this.refundRepository = refundRepository;
+		this.eventProjectionRepository = eventProjectionRepository;
+		this.transactionManager = transactionManager;
+	}
 
 	/**
 	 * 결제 사전 등록 처리

@@ -21,8 +21,6 @@ public class UserViewRepositoryImpl implements UserViewRepository {
     
     private final JPAQueryFactory readOnlyQueryFactory;
     private final QUser user = QUser.user;
-    @Value("${custom.auth.url}")
-    private String authUrl;
 
     public UserViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory) {
         this.readOnlyQueryFactory = readOnlyQueryFactory;

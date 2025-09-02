@@ -7,6 +7,7 @@ import org.codenbug.event.batch.dto.ViewCountSyncDto;
 import org.codenbug.event.domain.QEvent;
 import org.codenbug.event.query.RedisViewCountService;
 import org.springframework.batch.item.ItemReader;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +23,6 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ViewCountSyncReader implements ItemReader<ViewCountSyncDto> {
 
 	private final JPAQueryFactory queryFactory;
@@ -31,6 +31,12 @@ public class ViewCountSyncReader implements ItemReader<ViewCountSyncDto> {
 
 	private Iterator<ViewCountSyncDto> syncDataIterator;
 	private boolean initialized = false;
+
+	public ViewCountSyncReader(@Qualifier("readOnlyQueryFactory") JPAQueryFactory queryFactory,
+		RedisViewCountService redisViewCountService) {
+		this.queryFactory = queryFactory;
+		this.redisViewCountService = redisViewCountService;
+	}
 
 	@Override
 	public ViewCountSyncDto read() {

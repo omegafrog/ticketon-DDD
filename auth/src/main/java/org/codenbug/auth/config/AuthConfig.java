@@ -14,7 +14,11 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Configuration
-@EnableJpaRepositories(basePackages = {"org.codenbug.auth.infra"})
+@EnableJpaRepositories(
+    basePackages = {"org.codenbug.auth.infra"},
+    entityManagerFactoryRef = "primaryEntityManagerFactory",
+    transactionManagerRef = "primaryTransactionManager"
+)
 @EntityScan(basePackages = {"org.codenbug.auth.domain"})
 @ComponentScan(basePackages = {"org.codenbug.auth"},
 	excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
