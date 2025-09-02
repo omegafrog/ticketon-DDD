@@ -28,7 +28,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.support.PageableUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -37,18 +39,19 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Repository
+@Transactional(value = "readOnlyTransactionManager", readOnly = true)
 public class EventViewRepositoryImpl implements EventViewRepository {
 
-	private final JPAQueryFactory queryFactory;
+	private final JPAQueryFactory readOnlyQueryFactory;
 	private final RedisViewCountService redisViewCountService;
 	private final QEvent event = QEvent.event;
 	private final QSeatLayout seatLayout = QSeatLayout.seatLayout;
 	private final RedissonClient redissonClient;
 	private final ObjectMapper objectMapper;
 
-	public EventViewRepositoryImpl(JPAQueryFactory queryFactory, RedisViewCountService redisViewCountService,
-		RedissonClient redissonClient, ObjectMapper objectMapper) {
-		this.queryFactory = queryFactory;
+	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory, 
+		RedisViewCountService redisViewCountService, RedissonClient redissonClient, ObjectMapper objectMapper) {
+		this.readOnlyQueryFactory = readOnlyQueryFactory;
 		this.redisViewCountService = redisViewCountService;
 		this.redissonClient = redissonClient;
 		this.objectMapper = objectMapper;
@@ -69,7 +72,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
 		// 메인 쿼리: DB 데이터 조회 (viewCount 포함)
-		JPAQuery<EventListProjection> query = queryFactory
+		JPAQuery<EventListProjection> query = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
 				event.eventInformation.title,
@@ -129,7 +132,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			.toList();
 
 		// COUNT 쿼리
-		Long total = queryFactory
+		Long total = readOnlyQueryFactory
 			.select(event.count())
 			.from(event)
 			.where(whereClause)
@@ -189,7 +192,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 
 	@Override
 	public Page<EventListProjection> findManagerEventList(String managerId, Pageable pageable) {
-		JPAQuery<EventListProjection> query = queryFactory
+		JPAQuery<EventListProjection> query = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
 				event.eventInformation.title,
@@ -227,7 +230,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			})
 			.toList();
 
-		Long total = queryFactory
+		Long total = readOnlyQueryFactory
 			.select(event.count())
 			.from(event)
 			.where(event.managerId.managerId.eq(managerId)
@@ -247,7 +250,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			whereClause.and(event.eventId.eventId.gt(lastEventId));
 		}
 
-		List<EventListProjection> dbResults = queryFactory
+		List<EventListProjection> dbResults = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
 				event.eventInformation.title,
@@ -346,7 +349,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	@Override
 	@Cacheable(value = "eventSearch", key = "'single:' + #eventId")
 	public EventListProjection findEventById(String eventId) {
-		EventListProjection dbResult = queryFactory
+		EventListProjection dbResult = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
 				event.eventInformation.title,

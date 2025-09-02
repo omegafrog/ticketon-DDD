@@ -1,9 +1,5 @@
 package org.codenbug.user.ui;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
@@ -39,7 +35,7 @@ public class UserController {
 	@RoleRequired(value={Role.USER, Role.MANAGER})
 	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
-		UserInfo userinfo = userQueryService.findUser(userSecurityToken, new UserId(userSecurityToken.getUserId()));
+		UserInfo userinfo = userQueryService.findMe(userSecurityToken, new UserId(userSecurityToken.getUserId()));
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
 	}
 

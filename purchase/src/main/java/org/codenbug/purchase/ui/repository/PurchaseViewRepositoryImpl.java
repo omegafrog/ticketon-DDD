@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,20 +21,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Repository
+@Transactional(value = "readOnlyTransactionManager", readOnly = true)
 public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
     
-    private final JPAQueryFactory queryFactory;
+    private final JPAQueryFactory readOnlyQueryFactory;
     private final QPurchase purchase = QPurchase.purchase;
     private final QTicket ticket = QTicket.ticket;
     
-    public PurchaseViewRepositoryImpl(JPAQueryFactory queryFactory) {
-        this.queryFactory = queryFactory;
+    public PurchaseViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory) {
+        this.readOnlyQueryFactory = readOnlyQueryFactory;
     }
     
     @Override
     public Page<PurchaseListProjection> findUserPurchaseList(String userId, List<PaymentStatus> statuses, Pageable pageable) {
         // 1. Purchase 기본 정보 조회
-        List<PurchaseListProjection> purchases = queryFactory
+        List<PurchaseListProjection> purchases = readOnlyQueryFactory
             .select(Projections.constructor(PurchaseListProjection.class,
                 purchase.purchaseId.value,
                 purchase.orderId,
@@ -60,7 +63,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
         
         // 3. Ticket 정보 조회 (한 번의 쿼리로)
         if (!purchaseIds.isEmpty()) {
-            List<PurchaseListProjection.TicketProjection> tickets = queryFactory
+            List<PurchaseListProjection.TicketProjection> tickets = readOnlyQueryFactory
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
@@ -81,7 +84,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
         }
         
         // COUNT 쿼리
-        Long total = queryFactory
+        Long total = readOnlyQueryFactory
             .select(purchase.count())
             .from(purchase)
             .where(purchase.userId.value.eq(userId)
@@ -94,7 +97,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
     @Override
     public Page<PurchaseListProjection> findEventPurchaseList(String eventId, PaymentStatus paymentStatus, Pageable pageable) {
         // Purchase 기본 정보 조회
-        List<PurchaseListProjection> purchases = queryFactory
+        List<PurchaseListProjection> purchases = readOnlyQueryFactory
             .select(Projections.constructor(PurchaseListProjection.class,
                 purchase.purchaseId.value,
                 purchase.orderId,
@@ -121,7 +124,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
             .collect(Collectors.toList());
         
         if (!purchaseIds.isEmpty()) {
-            List<PurchaseListProjection.TicketProjection> tickets = queryFactory
+            List<PurchaseListProjection.TicketProjection> tickets = readOnlyQueryFactory
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
@@ -139,7 +142,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
             purchases.forEach(p -> p.setTickets(ticketsByPurchase.getOrDefault(p.getPurchaseId(), List.of())));
         }
         
-        Long total = queryFactory
+        Long total = readOnlyQueryFactory
             .select(purchase.count())
             .from(purchase)
             .where(purchase.eventId.eq(eventId)
@@ -153,7 +156,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
     public List<PurchaseListProjection> findUserPurchaseListWithCursor(String userId, List<PaymentStatus> statuses, 
                                                                       LocalDateTime cursor, int size) {
         // 커서 기반 조회
-        List<PurchaseListProjection> purchases = queryFactory
+        List<PurchaseListProjection> purchases = readOnlyQueryFactory
             .select(Projections.constructor(PurchaseListProjection.class,
                 purchase.purchaseId.value,
                 purchase.orderId,
@@ -180,7 +183,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
             .collect(Collectors.toList());
         
         if (!purchaseIds.isEmpty()) {
-            List<PurchaseListProjection.TicketProjection> tickets = queryFactory
+            List<PurchaseListProjection.TicketProjection> tickets = readOnlyQueryFactory
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
