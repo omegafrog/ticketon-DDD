@@ -39,7 +39,7 @@ public class EventProjectionConsumerTest {
 
         EventCreatedEvent event = new EventCreatedEvent(
             eventId, title, managerId, seatLayoutId, seatSelectable, 
-            location, startTime, endTime
+            location, startTime, endTime,0, 10000, 1L
         );
 
         // When: 이벤트 소비 처리
@@ -77,7 +77,7 @@ public class EventProjectionConsumerTest {
 
         EventCreatedEvent event = new EventCreatedEvent(
             eventId, title, managerId, seatLayoutId, seatSelectable, 
-            location, startTime, endTime
+            location, startTime, endTime,0, 10000, 1L
         );
 
         // When: 이벤트 소비 처리
@@ -106,12 +106,12 @@ public class EventProjectionConsumerTest {
         // Given: 여러 개의 EventCreatedEvent 준비
         EventCreatedEvent event1 = new EventCreatedEvent(
             "event-1", "첫 번째 이벤트", "manager-1", 100L, true, 
-            "장소1", "2024-12-25T19:00:00", "2024-12-25T22:00:00"
+            "장소1", "2024-12-25T19:00:00", "2024-12-25T22:00:00",0, 10000, 1L
         );
         
         EventCreatedEvent event2 = new EventCreatedEvent(
             "event-2", "두 번째 이벤트", "manager-2", 200L, false, 
-            "장소2", "2024-12-26T19:00:00", "2024-12-26T22:00:00"
+            "장소2", "2024-12-26T19:00:00", "2024-12-26T22:00:00",0, 10000, 1L
         );
 
         // When: 두 이벤트를 순차적으로 처리

@@ -102,7 +102,7 @@ public class KafkaEventProjectionIntegrationTest {
 
             EventCreatedEvent event = new EventCreatedEvent(
                 eventId, title, managerId, seatLayoutId, seatSelectable, 
-                location, startTime, endTime
+                location, startTime, endTime,0, 10000, 1L
             );
 
             // When: Kafka에 이벤트 발행

@@ -107,7 +107,7 @@ public class SimpleEventProjectionIntegrationTest {
 
             EventCreatedEvent event = new EventCreatedEvent(
                 eventId, title, managerId, seatLayoutId, seatSelectable, 
-                location, startTime, endTime
+                location, startTime, endTime,0, 10000, 1L
             );
 
             // When: Kafka에 이벤트 발행
@@ -149,7 +149,7 @@ public class SimpleEventProjectionIntegrationTest {
         String eventId = "direct-test-event";
         EventCreatedEvent event = new EventCreatedEvent(
             eventId, "Direct Test Event", "direct-manager", 100L, true,
-            "Direct Test Location", "2024-12-25T19:00:00", "2024-12-25T22:00:00"
+            "Direct Test Location", "2024-12-25T19:00:00", "2024-12-25T22:00:00",0, 10000, 1L
         );
 
         // When: 직접 이벤트 처리
