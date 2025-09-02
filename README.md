@@ -48,9 +48,73 @@ Spring Boot와 Java 21을 사용하여 구축된 고가용성 티켓 예매 시�
 
 ## 📦 마이크로서비스 모듈
 
+### 비즈니스 서비스
+- **auth** - 인증/인가 서비스 (OAuth2, JWT)
+- **user** - 사용자 프로필 관리
+- **event** - 이벤트 생성, 관리, 조회
+- **seat** - 좌석 레이아웃 및 가용성 관리  
+- **purchase** - 결제 처리 및 티켓 발급
+- **broker** - SSE 연결 및 대기열 관리
+- **dispatcher** - Redis 기반 큐 승급 시스템
+
+### 인프라 서비스  
+- **gateway** - API 게이트웨이 (Spring Cloud Gateway)
+- **eureka** - 서비스 디스커버리
+- **app** - 메인 애플리케이션 오케스트레이터
+- **batch** - 통계 정보 최적화 배치 시스템 ⭐ NEW
+
+### 공통 모듈
+- **common** - 공통 유틸리티, Redis 서비스
+- **message** - 서비스 간 이벤트 메시지 
+- **security-aop** - AOP 기반 보안 어노테이션
+- **category-id** - 이벤트 카테고리 관리
+
+## 🔄 MySQL ANALYZE 배치 시스템
+
+### 아키텍처
+```
+┌─────────────────┐
+│     MySQL       │
+│  (Port: 3306)   │ ◄─── 기존 애플리케이션 (ticketon 사용자)
+│                 │
+│  + batch_analyze│ ◄─── 배치 시스템 (ANALYZE 전용)
+└─────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────┐
+│                Batch Service                           │
+│  • 매주 일요일 새벽 2시 ANALYZE 실행                      │
+│  • Spring Batch + Quartz Scheduler                    │  
+│  • REST API 모니터링 (/api/batch/*)                   │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 주요 기능
+- **간단한 구성**: 기존 MySQL에 배치 사용자만 추가
+- **자동 통계 갱신**: 주요 테이블의 통계 정보 주간 업데이트
+- **옵티마이저 최적화**: 정확한 통계로 쿼리 실행 계획 개선  
+- **안전한 분리**: 읽기 전용 권한으로 운영 영향 최소화
+
+### 빠른 시작
+```bash
+# 1. MySQL 시작 (이미 실행 중이면 생략)
+cd docker
+docker compose up -d mysql
+
+# 2. 배치 사용자 설정
+./setup-simple-batch.sh
+
+# 3. 배치 시스템 실행
+./gradlew :batch:bootRun
+
+# 4. 헬스 체크
+curl http://localhost:8080/api/batch/health
+```
+
+📖 **간단한 설정 가이드**: [`docs/simple-batch-setup.md`](docs/simple-batch-setup.md)  
+📖 **고급 설정 (레플리케이션)**: [`docs/mysql-replication-and-batch-setup.md`](docs/mysql-replication-and-batch-setup.md)
+
 ### 핵심 비즈니스 서비스
-- **`auth`** - OAuth 통합 인증/인가 (Google, Kakao)
-- **`event`** - 이벤트 생성, 관리, 조회
 - **`user`** - 사용자 프로필 관리  
 - **`seat`** - 좌석 레이아웃 및 가용성 관리
 - **`purchase`** - 결제 처리 및 티켓 구매
