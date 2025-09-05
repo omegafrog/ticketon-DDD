@@ -1,18 +1,12 @@
 package org.codenbug.user.query;
 
-import org.codenbug.auth.domain.QSecurityUser;
 import org.codenbug.user.domain.QUser;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
-import org.codenbug.user.global.dto.UserInfo;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
-import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 @Repository

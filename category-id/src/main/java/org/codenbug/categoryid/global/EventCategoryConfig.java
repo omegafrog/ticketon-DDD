@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Configuration
 // @EntityScan(basePackages = {"org.codenbug.categoryid"})
 @ComponentScan(basePackages = {"org.codenbug.categoryid"})
-// @EnableJpaRepositories(basePackages = {"org.codenbug.categoryid.infra"})
+@EnableJpaRepositories(
+	basePackages = {"org.codenbug.categoryid.infra"},
+	entityManagerFactoryRef = "primaryEntityManagerFactory",
+	transactionManagerRef = "primaryTransactionManager"
+)
 public class EventCategoryConfig {
 }

@@ -16,6 +16,7 @@ import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
 import org.codenbug.seat.domain.QSeatLayout;
+import org.codenbug.seat.domain.RegionLocation;
 import org.redisson.api.RBucket;
 import org.redisson.api.RMap;
 import org.redisson.api.RMapCache;
@@ -306,9 +307,19 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 
 		// 필터 조건들 (filter가 null이 아닐 때만)
 		if (filter != null) {
-			// 위치 필터
+			// 위치 필터 (Location name)
 			if (filter.getLocationList() != null && !filter.getLocationList().isEmpty()) {
 				whereClause.and(seatLayout.location.locationName.in(filter.getLocationList()));
+			}
+
+			// 지역 필터 (RegionLocation enum) - 서브쿼리 접근법
+			if (filter.getRegionLocationList() != null && !filter.getRegionLocationList().isEmpty()) {
+				QSeatLayout subSeatLayout = new QSeatLayout("subSeatLayout");
+				whereClause.and(event.seatLayoutId.value.in(
+					readOnlyQueryFactory.select(subSeatLayout.id)
+						.from(subSeatLayout)
+						.where(subSeatLayout.regionLocation.in(filter.getRegionLocationList()))
+				));
 			}
 
 			// 카테고리 필터 (리스트)

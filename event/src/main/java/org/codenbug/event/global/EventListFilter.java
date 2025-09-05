@@ -6,6 +6,7 @@ import java.util.List;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.seat.domain.Location;
+import org.codenbug.seat.domain.RegionLocation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -15,6 +16,7 @@ import lombok.Getter;
 public class EventListFilter {
 	private CostRange costRange;
 	private List<String> locationList;
+	private List<RegionLocation> regionLocationList; // RegionLocation enum 지원
 	private List<Long> eventCategoryList;
 	private List<EventStatus> eventStatusList;
 	private LocalDateTime startDate;
@@ -25,6 +27,7 @@ public class EventListFilter {
 		this.costRange = builder.costRange;
 		this.locationList = builder.locationList != null ? 
 			builder.locationList.stream().map(lo -> lo.getLocationName()).toList() : null;
+		this.regionLocationList = builder.regionLocationList;
 		this.eventCategoryList = builder.eventCategoryList != null ? 
 			builder.eventCategoryList.stream().map(cat -> cat.getId().getId()).toList() : null;
 		this.eventStatusList = builder.eventStatusList;
@@ -39,6 +42,7 @@ public class EventListFilter {
 	public boolean canFiltered() {
 		return costRange != null
 			|| (locationList != null && !locationList.isEmpty())
+			|| (regionLocationList != null && !regionLocationList.isEmpty())
 			|| (eventCategoryList != null && !eventCategoryList.isEmpty())
 			|| (eventStatusList != null && !eventStatusList.isEmpty())
 			|| startDate != null
@@ -49,6 +53,7 @@ public class EventListFilter {
 	public static class Builder {
 		private CostRange costRange;
 		private List<Location> locationList;
+		private List<RegionLocation> regionLocationList;
 		private List<EventCategory> eventCategoryList;
 		private List<EventStatus> eventStatusList;
 		private LocalDateTime startDate;
@@ -64,6 +69,12 @@ public class EventListFilter {
 		@JsonIgnore
 		public Builder locationList(List<Location> locationList) {
 			this.locationList = locationList;
+			return this;
+		}
+
+		@JsonIgnore
+		public Builder regionLocationList(List<RegionLocation> regionLocationList) {
+			this.regionLocationList = regionLocationList;
 			return this;
 		}
 

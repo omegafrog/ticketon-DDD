@@ -9,6 +9,7 @@ import jakarta.persistence.Embedded;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Getter;
 
@@ -17,6 +18,7 @@ import lombok.Getter;
  * 비즈니스 로직에 사용되면서 유저에게 노출되는 데이터는 {@link EventInformation}, 그렇지 않은 데이터는 {@link MetaData}에 포함됨
  * {@link EventId}는 UUIDv7이 적용됨
  */
+@Table(name = "event")
 @Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
