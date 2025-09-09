@@ -75,4 +75,20 @@ public class AuthService {
 		return provider.getOauthLoginUri();
 	}
 
+	public TokenInfo refreshTokens(jakarta.servlet.http.HttpServletRequest request) {
+		String userId = request.getHeader("User-Id");
+		String email = request.getHeader("Email");
+		String role = request.getHeader("Role");
+		
+		if (userId == null || email == null || role == null) {
+			throw new IllegalArgumentException("Missing required headers from gateway");
+		}
+		
+		TokenInfo tokenInfo = Util.generateTokens(
+			Map.of("userId", userId, "role", Role.valueOf(role), "email", email),
+			Util.Key.convertSecretKey(key));
+			
+		return tokenInfo;
+	}
+
 }

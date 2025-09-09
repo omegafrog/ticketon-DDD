@@ -201,4 +201,37 @@ public class SecurityController {
 		}
 	}
 
+	@Operation(summary = "토큰 재발급", description = "유효한 액세스 토큰과 리프레시 토큰을 사용하여 새로운 토큰을 발급합니다.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "토큰 재발급 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 실패 또는 토큰 무효")
+	})
+	@PostMapping("/refresh")
+	public ResponseEntity<RsData<String>> refreshTokens(
+		HttpServletRequest request,
+		HttpServletResponse response) {
+		
+		try {
+			TokenInfo tokenInfo = authService.refreshTokens(request);
+			
+			// 응답 헤더에 새로운 액세스 토큰 설정
+			response.setHeader(HttpHeaders.AUTHORIZATION,
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
+			
+			// 쿠키에 새로운 리프레시 토큰 설정
+			Cookie refreshTokenCookie = createRefreshTokenCookie(tokenInfo.getRefreshToken());
+			response.addCookie(refreshTokenCookie);
+			
+			log.info("Token refresh successful for user: {}", request.getHeader("User-Id"));
+			
+			return ResponseEntity.ok(new RsData<>("200", "토큰 재발급 성공",
+				tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+				
+		} catch (Exception e) {
+			log.error("Token refresh failed: {}", e.getMessage(), e);
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(new RsData<>("401", "토큰 재발급 실패: " + e.getMessage(), null));
+		}
+	}
+
 }
