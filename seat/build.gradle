@@ -21,6 +21,7 @@ dependencies {
     implementation project(':message')
     implementation project(':common')
     implementation project(':security-aop')
+    implementation project(':redislock')
 }
 
 tasks.named('test') {

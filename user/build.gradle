@@ -25,7 +25,6 @@ dependencies {
     implementation project(':common')
     implementation project(':message')
     implementation project(':security-aop')
-    implementation project(':auth')
 }
 
 tasks.named('test') {

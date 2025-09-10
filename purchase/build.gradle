@@ -29,6 +29,7 @@ dependencies {
     implementation project(':security-aop')
     implementation project(':message')
     implementation project(':notification')
+    implementation project(':redislock')
 
 }
 
