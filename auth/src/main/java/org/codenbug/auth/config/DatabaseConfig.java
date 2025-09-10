@@ -126,6 +126,10 @@ public class DatabaseConfig {
         properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.format_sql", "true");
         properties.setProperty("hibernate.use_sql_comments", "true");
+        properties.put(
+            "hibernate.physical_naming_strategy",
+            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
+        );
         properties.setProperty("hibernate.jdbc.batch_size", "20");
         properties.setProperty("hibernate.jdbc.fetch_size", "50");
         properties.setProperty("hibernate.order_inserts", "true");

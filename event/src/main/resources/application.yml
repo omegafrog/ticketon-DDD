@@ -1,9 +1,6 @@
-server:
-  port: 9002
-
 spring:
-  application:
-    name: event-service
+  # application:
+    # name: event-service  # app 모듈에서 통합 관리
   profiles:
     active: dev
     include: secret

@@ -63,7 +63,10 @@ public class DatabaseConfig {
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.put(
+            "hibernate.physical_naming_strategy",
+            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
+        );
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.jdbc.batch_size", 100);
         em.setJpaPropertyMap(properties);
@@ -92,7 +95,11 @@ public class DatabaseConfig {
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.put(
+            "hibernate.physical_naming_strategy",
+            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
+        );
+
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.jdbc.batch_size", 100);
         em.setJpaPropertyMap(properties);

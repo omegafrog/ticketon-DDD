@@ -2,8 +2,8 @@ server:
   port: 9004
 
 spring:
-  application:
-    name: user-service
+  # application:
+    # name: user-service  # app 모듈에서 통합 관리
   profiles:
     include: secret
   datasource:

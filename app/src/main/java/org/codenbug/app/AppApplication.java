@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
     "org.codenbug.event",
     "org.codenbug.purchase",
     "org.codenbug.notification",
+	"org.codenbug.redislock"
 })
 @EnableJpaAuditing
 public class AppApplication {
