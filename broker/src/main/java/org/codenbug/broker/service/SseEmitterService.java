@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
+import org.codenbug.redislock.lock.RedisLock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -21,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 public class SseEmitterService {
 
 	private static final Map<String, SseConnection> emitterMap = new ConcurrentHashMap<>();
-	private final ObjectMapper objectMapper;
 
 	public Map<String, SseConnection> getEmitterMap() {
 		return emitterMap;
@@ -29,10 +29,44 @@ public class SseEmitterService {
 
 	private final RedisTemplate<String, Object> redisTemplate;
 
-	public SseEmitterService(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper) {
+	public SseEmitterService(RedisTemplate<String, Object> redisTemplate) {
 		this.redisTemplate = redisTemplate;
-		this.objectMapper = objectMapper;
 	}
+
+	@RedisLock(key = "#userId"+":"+"#eventId")
+	public SseEmitter add(String userId, String eventId) {
+
+		// 새로운 emitter 생성
+		SseEmitter emitter = new SseEmitter(0L);
+		// emitter연결이 끊어질 때 만약 entry상태라면 entry count를 1 증가
+		emitter.onCompletion(() -> {
+			closeConn(userId, eventId, redisTemplate);
+		});
+		emitter.onError((e) -> {
+			closeConn(userId, eventId, redisTemplate);
+
+		});
+		emitter.onTimeout(() -> {
+			closeConn(userId, eventId, redisTemplate);
+
+		});
+
+		// 초기 메시지 전달
+		try {
+			emitter.send(
+				SseEmitter.event()
+					.data("sse 연결 성공. userId:" + userId));
+		} catch (Exception e) {
+			closeConn(userId, eventId, redisTemplate);
+
+		}
+
+		// 전역 공간에 emitter 저장
+		emitterMap.put(userId, new SseConnection(userId, emitter, Status.IN_ENTRY, eventId));
+
+		return emitter;
+	}
+
 	public static void closeConn(String userId, String eventId, RedisTemplate<String, Object> redisTemplate) {
 		// 커넥션 정보 얻기
 
@@ -66,43 +100,6 @@ public class SseEmitterService {
 				.delete(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + parsedEventId,
 					userId.toString());
 		}
-	}
-
-	public SseEmitter add(String userId, String eventId) {
-
-
-		if (emitterMap.containsKey(userId)) {
-			throw new RuntimeException("다른 대기열에 이미 들어와 있습니다.");
-		}
-		// 새로운 emitter 생성
-		SseEmitter emitter = new SseEmitter(0L);
-		// emitter연결이 끊어질 때 만약 entry상태라면 entry count를 1 증가
-		emitter.onCompletion(() -> {
-			closeConn(userId, eventId, redisTemplate);
-		});
-		emitter.onError((e) -> {
-			closeConn(userId, eventId, redisTemplate);
-
-		});
-		emitter.onTimeout(() -> {
-			closeConn(userId, eventId, redisTemplate);
-
-		});
-
-		// 초기 메시지 전달
-		try {
-			emitter.send(
-				SseEmitter.event()
-					.data("sse 연결 성공. userId:" + userId));
-		} catch (Exception e) {
-			closeConn(userId, eventId, redisTemplate);
-
-		}
-
-		// 전역 공간에 emitter 저장
-		emitterMap.put(userId, new SseConnection(userId, emitter, Status.IN_ENTRY, eventId));
-
-		return emitter;
 	}
 
 	/**
