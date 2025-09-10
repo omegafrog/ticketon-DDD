@@ -1,4 +1,4 @@
-package org.codenbug.common.redis;
+package org.codenbug.redislock;
 
 import java.time.Duration;
 import java.util.List;

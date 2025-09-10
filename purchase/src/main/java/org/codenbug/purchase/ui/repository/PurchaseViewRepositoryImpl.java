@@ -67,7 +67,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
-                    ticket.eventId.value,
+                    ticket.purchase.eventId,
                     ticket.seatId,
                     ticket.purchase.purchaseId.value // Purchase ID 포함
                 ))
@@ -128,7 +128,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
-                    ticket.eventId.value,
+                    ticket.purchase.eventId,
                     ticket.seatId,
                     ticket.purchase.purchaseId.value
                 ))
@@ -187,7 +187,7 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
                 .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
                     ticket.id.value,
                     ticket.location,
-                    ticket.eventId.value,
+                    ticket.purchase.eventId,
                     ticket.seatId,
                     ticket.purchase.purchaseId.value
                 ))

@@ -23,16 +23,15 @@ public class PurchaseQueryDslRepository {
 	}
 
 	/**
-     * QueryDSL을 사용하여 Ticket을 드라이빙 테이블로 하는 최적화된 쿼리
-     * 기존: Purchase JOIN Ticket (Purchase 드라이빙)
-     * 개선: Ticket JOIN Purchase (Ticket 드라이빙) - eventId 조건으로 필터링된 Ticket 수가 적어 성능 향상
+     * QueryDSL을 사용하여 최적화된 쿼리
+     * Purchase를 드라이빙 테이블로 하여 eventId로 필터링
      */
     public List<Purchase> findAllByEventIdOptimized(String eventId) {
         return queryFactory
                 .selectDistinct(purchase)
-                .from(ticket)                           // Ticket을 드라이빙 테이블로 설정
-                .join(ticket.purchase, purchase)        // Ticket → Purchase JOIN
-                .where(ticket.eventId.value.eq(eventId)) // eventId 조건으로 필터링
+                .from(purchase)
+                .join(purchase.tickets, ticket)
+                .where(purchase.eventId.eq(eventId))
                 .fetch();
     }
 }

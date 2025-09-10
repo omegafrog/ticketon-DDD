@@ -1,6 +1,9 @@
 package org.codenbug.broker.infra;
 
 import org.codenbug.broker.config.InstanceConfig;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -36,6 +39,11 @@ public class RedisConfig {
 	public static final String WAITING_QUEUE_START_IDX_KEY = "WAITING_QUEUE_START_IDX";
 	private static final String ENTRY_USER_STREAM_GROUP = "ENTRY_CONSUMER_GROUP";
 
+	@Value("${spring.data.redis.host}")
+	public String redisHost;
+	@Value("${spring.data.redis.port}")
+	public Integer redisPort;
+
 	private final InstanceConfig instanceConfig;
 
 	public RedisConfig(InstanceConfig instanceConfig) {
@@ -69,6 +77,17 @@ public class RedisConfig {
 		redisTemplate.afterPropertiesSet();
 
 		return redisTemplate;
+	}
+
+	@Bean
+	public RedissonClient redissonClient(){
+		Config config = new Config();
+		config.useSingleServer()
+			.setAddress("redis://"+redisHost + ":"+redisPort)
+			.setConnectionMinimumIdleSize(1)
+			.setConnectionPoolSize(64)
+			.setDatabase(0);
+		return Redisson.create();
 	}
 
 	/**

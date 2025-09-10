@@ -3,7 +3,7 @@ package org.codenbug.seat.app;
 import java.time.Duration;
 import java.util.UUID;
 
-import org.codenbug.common.redis.RedisLockService;
+import org.codenbug.redislock.RedisLockService;
 import org.codenbug.seat.domain.Seat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

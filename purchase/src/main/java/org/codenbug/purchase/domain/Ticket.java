@@ -23,8 +23,6 @@ public class Ticket {
 	@CreatedDate
 	private LocalDateTime purchaseDate;
 
-	@Embedded
-	private EventId eventId;
 
 	private String seatId;
 
@@ -34,11 +32,10 @@ public class Ticket {
 
 	protected Ticket(){}
 	
-	public Ticket(String location, EventId eventId, String seatId, Purchase purchase){
+	public Ticket(String location, String seatId, Purchase purchase){
 		this.seatId = seatId;
 		this.id = new TicketId(Util.ID.createUUID());
 		this.location = location;
-		this.eventId = eventId;
 		this.purchase = purchase;
 	}
 

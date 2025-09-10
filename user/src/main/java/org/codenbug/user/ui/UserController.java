@@ -1,5 +1,8 @@
 package org.codenbug.user.ui;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
@@ -29,7 +32,14 @@ public class UserController {
 	}
 
 
-
+	@Operation(
+		summary = "내 정보 조회",
+		description = "내 정보를 조회합니다. "
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "내 정보 조회 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 정보 필요")
+	})
 	@GetMapping("/me")
 	@AuthNeeded
 	@RoleRequired(value={Role.USER, Role.MANAGER})
@@ -39,6 +49,14 @@ public class UserController {
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
 	}
 
+	@Operation(
+		summary = "내 정보 수정",
+		description = "내 정보를 수정합니다. "
+	)
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "내 정보 수정 성공"),
+		@ApiResponse(responseCode = "401", description = "인증 정보 필요")
+	})
 	@PutMapping("/me")
 	@AuthNeeded
 	@RoleRequired(value={Role.USER})

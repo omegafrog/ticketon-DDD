@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.message.SeatLayoutUpdatedEvent;
+import org.codenbug.redislock.RedisLockService;
 import org.codenbug.seat.domain.Seat;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;

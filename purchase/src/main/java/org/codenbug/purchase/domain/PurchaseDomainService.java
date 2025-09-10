@@ -5,10 +5,10 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.query.model.EventProjection;
 import org.codenbug.purchase.query.model.SeatLayoutProjection;
+import org.codenbug.redislock.RedisLockService;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;

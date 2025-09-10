@@ -8,7 +8,6 @@ import java.time.ZoneId;
 import java.util.List;
 
 import org.codenbug.common.exception.AccessDeniedException;
-import org.codenbug.common.redis.RedisLockService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.purchase.domain.EventChangeDetectedException;
 import org.codenbug.purchase.domain.EventProjectionRepository;
@@ -41,6 +40,7 @@ import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.codenbug.purchase.query.model.EventProjection;
+import org.codenbug.redislock.RedisLockService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +48,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

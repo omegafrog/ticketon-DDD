@@ -1,4 +1,4 @@
-package org.codenbug.common.redis.lock;
+package org.codenbug.redislock.lock;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
