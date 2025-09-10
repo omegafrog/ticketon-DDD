@@ -1,40 +1,36 @@
 package org.codenbug.event.infra;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.impl.JPAQuery;
-import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.QEvent;
-import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.global.EventListFilter;
+import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
+import org.codenbug.seat.domain.QSeat;
 import org.codenbug.seat.domain.QSeatLayout;
-import org.codenbug.seat.domain.RegionLocation;
+import org.codenbug.event.domain.SeatLayoutStats;
+import org.codenbug.event.domain.QSeatLayoutStats;
 import org.redisson.api.RBucket;
-import org.redisson.api.RMap;
-import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.support.PageableUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.jpa.impl.JPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,7 +68,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		// 동적 조건 생성
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
-		// 메인 쿼리: DB 데이터 조회 (viewCount 포함)
+		// 메인 쿼리: DB 데이터 조회 (머터리얼라이즈 뷰 활용)
+		QSeatLayoutStats seatStats = QSeatLayoutStats.seatLayoutStats;
 		JPAQuery<EventListProjection> query = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
@@ -87,12 +84,16 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName
+				seatLayout.location.locationName,
+				seatStats.seatCount.longValue() // 🔥 최적화: 서브쿼리 → 머터리얼라이즈 뷰 조인
 			))
 			.from(event)
 			.join(seatLayout).on(
 				seatLayout.id.eq(event.seatLayoutId.value)
-			).fetchJoin()
+			)
+			.join(seatStats).on(
+				seatStats.layoutId.eq(event.seatLayoutId.value)
+			)
 			.where(whereClause)
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize());
@@ -360,6 +361,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	@Override
 	@Cacheable(value = "eventSearch", key = "'single:' + #eventId")
 	public EventListProjection findEventById(String eventId) {
+		QSeat seat = QSeat.seat;
 		EventListProjection dbResult = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
@@ -374,10 +376,17 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName
+				seatLayout.location.locationName,
+				seatLayout.seats.size().longValue(),
+				new CaseBuilder()
+					.when(seat.available.isTrue())
+					.then(1)
+					.otherwise(0)
+					.sum().longValue()
 			))
 			.from(event)
-			.join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+			.leftJoin(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+			.leftJoin(seat).on(seatLayout.eq(seat.seatLayout)).fetchJoin()
 			.where(event.eventId.eventId.eq(eventId)
 				.and(event.metaData.deleted.isFalse()))
 			.fetchOne();
