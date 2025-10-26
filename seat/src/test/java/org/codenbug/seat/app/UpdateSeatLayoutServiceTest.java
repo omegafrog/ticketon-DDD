@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.codenbug.message.SeatLayoutUpdatedEvent;
+import org.codenbug.redislock.RedisLockService;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.RegisterSeatLayoutDto;
@@ -35,7 +36,7 @@ class UpdateSeatLayoutServiceTest {
     private SeatTransactionService seatTransactionService;
     
     @Mock
-    private org.codenbug.common.redis.RedisLockService redisLockService;
+    private RedisLockService redisLockService;
     
     @Mock
     private ApplicationEventPublisher eventPublisher;

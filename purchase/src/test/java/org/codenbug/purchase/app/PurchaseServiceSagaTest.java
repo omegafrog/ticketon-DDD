@@ -8,7 +8,7 @@ import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
-import org.codenbug.common.redis.RedisLockService;
+import org.codenbug.redislock.RedisLockService;
 import org.codenbug.purchase.domain.EventProjectionRepository;
 import org.codenbug.purchase.domain.MessagePublisher;
 import org.codenbug.purchase.domain.Purchase;

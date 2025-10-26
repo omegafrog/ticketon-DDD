@@ -1,4 +1,4 @@
-package org.codenbug.broker.controller;
+package org.codenbug.broker.ui;
 
 import org.apache.tomcat.util.threads.ThreadPoolExecutor;
 import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
