@@ -1,21 +1,23 @@
 package org.codenbug.auth.global;
 
 import org.codenbug.message.SecurityUserRegisteredEvent;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class SecurityUserRegisteredTransactionListener {
-	private final KafkaTemplate<String, SecurityUserRegisteredEvent> kafkaTemplate;
+	private final RabbitTemplate rabbitTemplate;
 
-	public SecurityUserRegisteredTransactionListener(KafkaTemplate<String, SecurityUserRegisteredEvent> kafkaTemplate) {
-		this.kafkaTemplate = kafkaTemplate;
+
+	public SecurityUserRegisteredTransactionListener(RabbitTemplate rabbitTemplate) {
+		this.rabbitTemplate = rabbitTemplate;
 	}
+
 
 	@TransactionalEventListener
 	public void handleSecurityUserRegistrationCompleted(SecurityUserRegisteredEvent event) {
-		kafkaTemplate.send("security-user-registered", event);
+		rabbitTemplate.convertAndSend("security-user.created", event);
 	}
 
 }

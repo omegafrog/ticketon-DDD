@@ -4,6 +4,11 @@ spring:
   profiles:
     active: dev
     include: secret
+  rabbitmq:
+    host: localhost # RabbitMQ host ip
+    port: 5672 # RabbitMQ port
+    username : root # RabbitMQ 웹 관리 콘솔 아이디
+    password: root # RabbitMQ 웹 관리 콘솔 비밀번호
 
   datasource:
     primary:
@@ -93,7 +98,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.orm.jpa: DEBUG
-
+    org.apache.kafka: off
 management:
   endpoints:
     web:
