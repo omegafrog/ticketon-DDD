@@ -25,8 +25,8 @@ public class RedisKeyScanner {
     private final RedisTemplate<String, String> redisTemplate;
 
     /**
-     * Scan Redis keys matching the given pattern
-     * Uses the SCAN command with a cursor to safely scan large key spaces
+     * Scan Redis keys matching the given pattern Uses the SCAN command with a cursor to safely scan
+     * large key spaces
      *
      * @param pattern The pattern to match keys against
      * @return A set of keys matching the pattern
@@ -34,19 +34,19 @@ public class RedisKeyScanner {
     public Set<String> scanKeys(String pattern) {
         return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
             Set<String> keys = new HashSet<>();
-            Cursor<byte[]> cursor = connection.keyCommands().scan(
-                    ScanOptions.scanOptions().match(pattern).count(100).build());
-            
+            Cursor<byte[]> cursor = connection.keyCommands()
+                    .scan(ScanOptions.scanOptions().match(pattern).count(100).build());
+
             while (cursor.hasNext()) {
                 keys.add(new String(cursor.next()));
             }
-            
+
             try {
                 cursor.close();
             } catch (Exception e) {
                 log.error("Error closing Redis cursor", e);
             }
-            
+
             return keys;
         });
     }

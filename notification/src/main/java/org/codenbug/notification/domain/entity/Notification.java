@@ -43,10 +43,11 @@ public class Notification {
 
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name = "title", column = @Column(name = "title", nullable = false, length = 100)),
-        @AttributeOverride(name = "content", column = @Column(name = "content", length = 500)),
-        @AttributeOverride(name = "targetUrl", column = @Column(name = "target_url", length = 500))
-    })
+            @AttributeOverride(name = "title",
+                    column = @Column(name = "title", nullable = false, length = 100)),
+            @AttributeOverride(name = "content", column = @Column(name = "content", length = 500)),
+            @AttributeOverride(name = "targetUrl",
+                    column = @Column(name = "target_url", length = 500))})
     private NotificationContent notificationContent;
 
     @CreatedDate
@@ -68,12 +69,10 @@ public class Notification {
         this.status = NotificationStatus.PENDING;
     }
 
-    public static Notification createFromLegacy(String userId, NotificationType type, String content) {
-        return new Notification(
-            new UserId(userId),
-            type,
-            NotificationContent.fromLegacyContent(content)
-        );
+    public static Notification createFromLegacy(String userId, NotificationType type,
+            String content) {
+        return new Notification(new UserId(userId), type,
+                NotificationContent.fromLegacyContent(content));
     }
 
     public void markAsRead() {

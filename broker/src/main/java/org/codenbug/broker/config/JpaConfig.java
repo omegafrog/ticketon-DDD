@@ -1,4 +1,4 @@
-package org.codenbug.broker.infra;
+package org.codenbug.broker.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;

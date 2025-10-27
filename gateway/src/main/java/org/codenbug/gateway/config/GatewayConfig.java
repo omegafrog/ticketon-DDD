@@ -23,50 +23,46 @@ import reactor.netty.resources.ConnectionProvider;
 @Configuration
 @EnableScheduling
 public class GatewayConfig {
-	@Bean
-	public CorsWebFilter corsWebFilter() {
-		CorsConfiguration config = new CorsConfiguration();
-		// 허용할 Origin
-		config.setAllowedOriginPatterns(Arrays.asList("*"));
-		// 허용할 HTTP Method
-		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-		// 허용할 Header
-		config.addAllowedHeader("*");
-		// 인증 정보 허용
-		config.setAllowCredentials(true);
-		// preflight 캐시 (초)
-		config.setMaxAge(3600L);
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        // 허용할 Origin
+        config.setAllowedOriginPatterns(Arrays.asList("*"));
+        // 허용할 HTTP Method
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // 허용할 Header
+        config.addAllowedHeader("*");
+        // 인증 정보 허용
+        config.setAllowCredentials(true);
+        // preflight 캐시 (초)
+        config.setMaxAge(3600L);
 
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		// 모든 경로에 CORS 정책 적용
-		source.registerCorsConfiguration("/**", config);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // 모든 경로에 CORS 정책 적용
+        source.registerCorsConfiguration("/**", config);
 
-		return new CorsWebFilter(source);
-	}
+        return new CorsWebFilter(source);
+    }
 
     private ConnectionProvider connectionProvider;
-    
+
     @Bean
     public ConnectionProvider connectionProvider() {
         this.connectionProvider = ConnectionProvider.builder("gateway-connection-pool")
-                .maxConnections(2000)
-                .maxIdleTime(Duration.ofSeconds(30))
-                .maxLifeTime(Duration.ofMinutes(5))
-                .pendingAcquireTimeout(Duration.ofSeconds(30))
-                .evictInBackground(Duration.ofSeconds(120))
-                .build();
+                .maxConnections(2000).maxIdleTime(Duration.ofSeconds(30))
+                .maxLifeTime(Duration.ofMinutes(5)).pendingAcquireTimeout(Duration.ofSeconds(30))
+                .evictInBackground(Duration.ofSeconds(120)).build();
         return this.connectionProvider;
     }
-    
+
     @Bean
     public HttpClient httpClient(ConnectionProvider connectionProvider) {
         return HttpClient.create(connectionProvider)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000)
-                .doOnConnected(conn ->
-                        conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
-                            .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS)));
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000).doOnConnected(
+                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
+                                .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS)));
     }
-    
+
     @Bean
     public ReactorClientHttpConnector reactorClientHttpConnector(HttpClient httpClient) {
         return new ReactorClientHttpConnector(httpClient);

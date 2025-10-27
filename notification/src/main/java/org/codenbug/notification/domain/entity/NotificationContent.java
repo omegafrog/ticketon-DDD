@@ -41,8 +41,10 @@ public class NotificationContent {
     }
 
     private static String extractTitleFromContent(String content) {
-        if (content == null || content.isEmpty()) return "알림";
-        if (content.length() <= 30) return content;
+        if (content == null || content.isEmpty())
+            return "알림";
+        if (content.length() <= 30)
+            return content;
         return content.substring(0, 30) + "...";
     }
 
@@ -60,12 +62,13 @@ public class NotificationContent {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         NotificationContent that = (NotificationContent) o;
-        return Objects.equals(title, that.title) &&
-               Objects.equals(content, that.content) &&
-               Objects.equals(targetUrl, that.targetUrl);
+        return Objects.equals(title, that.title) && Objects.equals(content, that.content)
+                && Objects.equals(targetUrl, that.targetUrl);
     }
 
     @Override

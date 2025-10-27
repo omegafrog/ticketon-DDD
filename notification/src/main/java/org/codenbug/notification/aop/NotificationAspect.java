@@ -31,13 +31,9 @@ public class NotificationAspect {
         try {
             String userId = extractUserId(result, notifyUser);
             if (userId != null && !userId.trim().isEmpty()) {
-                notificationService.createNotification(
-                    userId,
-                    notifyUser.type(),
-                    notifyUser.title(),
-                    notifyUser.content(),
-                    notifyUser.targetUrl().isEmpty() ? null : notifyUser.targetUrl()
-                );
+                notificationService.createNotification(userId, notifyUser.type(),
+                        notifyUser.title(), notifyUser.content(),
+                        notifyUser.targetUrl().isEmpty() ? null : notifyUser.targetUrl());
                 log.debug("알림 생성 완료: userId={}, type={}", userId, notifyUser.type());
             } else {
                 log.debug("유효하지 않은 userId로 인해 알림 생성 건너뜀: {}", userId);
@@ -53,7 +49,7 @@ public class NotificationAspect {
             Expression expression = parser.parseExpression(notifyUser.userIdExpression());
             EvaluationContext context = new StandardEvaluationContext();
             context.setVariable("result", result);
-            
+
             Object userId = expression.getValue(context);
             if (userId != null) {
                 return userId.toString();
@@ -61,7 +57,7 @@ public class NotificationAspect {
         } catch (Exception e) {
             log.debug("SpEL 표현식으로 userId 추출 실패: {}, 기본값 사용", notifyUser.userIdExpression());
         }
-        
+
         // 기본값 사용
         String defaultUserId = notifyUser.defaultUserId();
         return (defaultUserId != null && !defaultUserId.trim().isEmpty()) ? defaultUserId : null;

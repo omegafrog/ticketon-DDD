@@ -16,61 +16,38 @@ public class GatewayOpenApiConfig {
     public List<GroupedOpenApi> apis(RouteDefinitionLocator locator) {
         List<GroupedOpenApi> groups = new ArrayList<>();
         List<RouteDefinition> definitions = locator.getRouteDefinitions().collectList().block();
-        
+
         if (definitions != null) {
             definitions.stream()
-                .filter(routeDefinition -> routeDefinition.getId().contains("service"))
-                .forEach(routeDefinition -> {
-                    String name = routeDefinition.getId().replaceAll("-service", "");
-                    groups.add(GroupedOpenApi.builder()
-                        .pathsToMatch("/" + name + "/**")
-                        .group(name)
-                        .build());
-                });
+                    .filter(routeDefinition -> routeDefinition.getId().contains("service"))
+                    .forEach(routeDefinition -> {
+                        String name = routeDefinition.getId().replaceAll("-service", "");
+                        groups.add(GroupedOpenApi.builder().pathsToMatch("/" + name + "/**")
+                                .group(name).build());
+                    });
         }
-        
+
         // 각 서비스별 수동 그룹 정의
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/auth/**")
-            .group("auth")
-            .displayName("Authentication Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/events/**")
-            .group("event")
-            .displayName("Event Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/payments/**")
-            .group("purchase")
-            .displayName("Purchase Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/users/**")
-            .group("user")
-            .displayName("User Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/seats/**")
-            .group("seat")
-            .displayName("Seat Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/api/v1/broker/**")
-            .group("broker")
-            .displayName("Broker Service")
-            .build());
-            
-        groups.add(GroupedOpenApi.builder()
-            .pathsToMatch("/static/**")
-            .group("app")
-            .displayName("App Service (Static)")
-            .build());
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/auth/**").group("auth")
+                .displayName("Authentication Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/events/**").group("event")
+                .displayName("Event Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/payments/**").group("purchase")
+                .displayName("Purchase Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/users/**").group("user")
+                .displayName("User Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/seats/**").group("seat")
+                .displayName("Seat Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/api/v1/broker/**").group("broker")
+                .displayName("Broker Service").build());
+
+        groups.add(GroupedOpenApi.builder().pathsToMatch("/static/**").group("app")
+                .displayName("App Service (Static)").build());
 
         return groups;
     }

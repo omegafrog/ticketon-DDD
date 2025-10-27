@@ -1,4 +1,4 @@
-package org.codenbug.broker.infra;
+package org.codenbug.broker.config;
 
 import org.codenbug.securityaop.aop.AopConfig;
 import org.springframework.context.annotation.Configuration;

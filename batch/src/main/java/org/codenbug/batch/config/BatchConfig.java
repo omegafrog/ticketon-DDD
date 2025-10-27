@@ -18,65 +18,78 @@ import java.util.List;
 @Configuration
 @EnableBatchProcessing
 public class BatchConfig {
-    
+
     @Value("${batch.analyze.timeout:300}")
     private int analyzeTimeout;
-    
+
     private final JdbcTemplate batchJdbcTemplate;
-    
+
     public BatchConfig(JdbcTemplate batchJdbcTemplate) {
         this.batchJdbcTemplate = batchJdbcTemplate;
     }
-    
+
     @Bean
-    public Job analyzeStatisticsJob(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Job analyzeStatisticsJob(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new JobBuilder("analyzeStatisticsJob", jobRepository)
                 .start(analyzeEventsStep(jobRepository, transactionManager))
                 .next(analyzePurchasesStep(jobRepository, transactionManager))
                 .next(analyzeTicketsStep(jobRepository, transactionManager))
                 .next(analyzeUsersStep(jobRepository, transactionManager))
-                .next(analyzeSeatLayoutsStep(jobRepository, transactionManager))
-                .build();
+                .next(analyzeSeatLayoutsStep(jobRepository, transactionManager)).build();
     }
-    
+
     @Bean
-    public Step analyzeEventsStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzeEventsStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzeEventsStep", jobRepository)
-                .tasklet(new AnalyzeTableTasklet("event", batchJdbcTemplate, analyzeTimeout), transactionManager)
+                .tasklet(new AnalyzeTableTasklet("event", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
                 .build();
     }
-    
+
     @Bean
-    public Step analyzePurchasesStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzePurchasesStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzePurchasesStep", jobRepository)
-                .tasklet(new AnalyzeTableTasklet("purchase", batchJdbcTemplate, analyzeTimeout), transactionManager)
+                .tasklet(new AnalyzeTableTasklet("purchase", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
                 .build();
     }
-    
+
     @Bean
-    public Step analyzeTicketsStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzeTicketsStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzeTicketsStep", jobRepository)
-                .tasklet(new AnalyzeTableTasklet("ticket", batchJdbcTemplate, analyzeTimeout), transactionManager)
+                .tasklet(new AnalyzeTableTasklet("ticket", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
                 .build();
     }
-    
+
     @Bean
-    public Step analyzeUsersStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzeUsersStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzeUsersStep", jobRepository)
-                .tasklet(new AnalyzeTableTasklet("members", batchJdbcTemplate, analyzeTimeout), transactionManager)
+                .tasklet(new AnalyzeTableTasklet("members", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
                 .build();
     }
-    
+
     @Bean
-    public Step analyzeSeatLayoutsStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzeSeatLayoutsStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzeSeatLayoutsStep", jobRepository)
-                .tasklet(new AnalyzeTableTasklet("seat_layout", batchJdbcTemplate, analyzeTimeout), transactionManager)
+                .tasklet(new AnalyzeTableTasklet("seat_layout", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
                 .build();
     }
+
     @Bean
-    public Step analyzeSeatStep(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+    public Step analyzeSeatStep(JobRepository jobRepository,
+            PlatformTransactionManager transactionManager) {
         return new StepBuilder("analyzeSeatStep", jobRepository)
-            .tasklet(new AnalyzeTableTasklet("seat", batchJdbcTemplate, analyzeTimeout), transactionManager)
-            .build();
+                .tasklet(new AnalyzeTableTasklet("seat", batchJdbcTemplate, analyzeTimeout),
+                        transactionManager)
+                .build();
     }
 }

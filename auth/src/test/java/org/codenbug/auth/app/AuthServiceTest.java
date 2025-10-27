@@ -33,19 +33,19 @@ class AuthServiceTest {
 
     @Mock
     private SecurityUserRepository securityUserRepository;
-    
+
     @Mock
     private PasswordEncoder passwordEncoder;
-    
+
     @Mock
     private ApplicationEventPublisher publisher;
-    
+
     @Mock
     private ObjectMapper objectMapper;
-    
+
     @Mock
     private ProviderFactory factory;
-    
+
     @Mock
     private HttpServletRequest request;
 
@@ -138,10 +138,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn("USER");
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             assertEquals("Missing required headers from gateway", exception.getMessage());
         }
 
@@ -154,10 +152,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn("USER");
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             assertEquals("Missing required headers from gateway", exception.getMessage());
         }
 
@@ -170,10 +166,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn(null);
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             assertEquals("Missing required headers from gateway", exception.getMessage());
         }
 
@@ -186,10 +180,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn(null);
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             assertEquals("Missing required headers from gateway", exception.getMessage());
         }
 
@@ -202,10 +194,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn("INVALID_ROLE");
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             assertTrue(exception.getMessage().contains("No enum constant"));
         }
 
@@ -218,10 +208,8 @@ class AuthServiceTest {
             when(request.getHeader("Role")).thenReturn("");
 
             // When & Then
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> authService.refreshTokens(request)
-            );
+            IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                    () -> authService.refreshTokens(request));
             // 빈 문자열의 경우 Role.valueOf("")에서 예외가 발생함
             assertTrue(exception.getMessage().contains("No enum constant"));
         }

@@ -11,8 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 알림 정보 전송용 DTO 클래스
- * 클라이언트에 전달할 알림 정보를 포함
+ * 알림 정보 전송용 DTO 클래스 클라이언트에 전달할 알림 정보를 포함
  */
 @Getter
 @Builder
@@ -28,14 +27,9 @@ public class NotificationDto {
     private boolean isRead;
 
     public static NotificationDto from(Notification notification) {
-        return NotificationDto.builder()
-                .id(notification.getId())
-                .type(notification.getType())
-                .title(notification.getTitle())
-                .content(notification.getContent())
-                .targetUrl(notification.getTargetUrl())
-                .sentAt(notification.getSentAt())
-                .isRead(notification.isRead())
-                .build();
+        return NotificationDto.builder().id(notification.getId()).type(notification.getType())
+                .title(notification.getTitle()).content(notification.getContent())
+                .targetUrl(notification.getTargetUrl()).sentAt(notification.getSentAt())
+                .isRead(notification.isRead()).build();
     }
 }

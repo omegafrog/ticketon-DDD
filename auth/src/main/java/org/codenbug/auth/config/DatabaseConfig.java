@@ -18,8 +18,7 @@ import javax.sql.DataSource;
 import java.util.Properties;
 
 /**
- * Auth 모듈 전용 Database 설정
- * Primary/ReadOnly 데이터소스와 JPA 인프라 구성
+ * Auth 모듈 전용 Database 설정 Primary/ReadOnly 데이터소스와 JPA 인프라 구성
  */
 @Configuration
 public class DatabaseConfig {
@@ -53,11 +52,11 @@ public class DatabaseConfig {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(primaryDataSource);
         em.setPackagesToScan("org.codenbug.auth.domain");
-        
+
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(hibernateProperties());
-        
+
         return em;
     }
 
@@ -70,11 +69,11 @@ public class DatabaseConfig {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(readOnlyDataSource);
         em.setPackagesToScan("org.codenbug.auth.domain");
-        
+
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
         em.setJpaProperties(hibernateProperties());
-        
+
         return em;
     }
 
@@ -126,10 +125,8 @@ public class DatabaseConfig {
         properties.setProperty("hibernate.show_sql", "false");
         properties.setProperty("hibernate.format_sql", "true");
         properties.setProperty("hibernate.use_sql_comments", "true");
-        properties.put(
-            "hibernate.physical_naming_strategy",
-            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
-        );
+        properties.put("hibernate.physical_naming_strategy",
+                "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
         properties.setProperty("hibernate.jdbc.batch_size", "20");
         properties.setProperty("hibernate.jdbc.fetch_size", "50");
         properties.setProperty("hibernate.order_inserts", "true");

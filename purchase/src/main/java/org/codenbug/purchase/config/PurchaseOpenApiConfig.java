@@ -15,15 +15,10 @@ public class PurchaseOpenApiConfig {
     @Bean("purchaseOpenAPI")
     public OpenAPI purchaseCustomOpenAPI() {
         return new OpenAPI()
-            .servers(List.of(
-                new Server().url("http://localhost:8080").description("Gateway Server")
-            ))
-            .info(new Info()
-                .title("Ticketon Purchase Service API")
-                .description("티켓온 결제 서비스 API 문서")
-                .version("v1.0")
-                .contact(new Contact()
-                    .name("Ticketon Team")
-                    .email("team@ticketon.com")));
+                .servers(List.of(
+                        new Server().url("http://localhost:8080").description("Gateway Server")))
+                .info(new Info().title("Ticketon Purchase Service API")
+                        .description("티켓온 결제 서비스 API 문서").version("v1.0")
+                        .contact(new Contact().name("Ticketon Team").email("team@ticketon.com")));
     }
 }

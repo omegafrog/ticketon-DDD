@@ -32,29 +32,23 @@ public class PurchaseHistoryListResponse {
         private LocalDateTime purchaseDate;
         private String paymentMethod;
         private String paymentStatus;
-        public static PurchaseSummaryDto of(Purchase purchase){
+
+        public static PurchaseSummaryDto of(Purchase purchase) {
             return PurchaseHistoryListResponse.PurchaseSummaryDto.builder()
-                .purchaseId(purchase.getPurchaseId().getValue())
-                .itemName(purchase.getOrderName())
-                .amount(purchase.getAmount())
-                .purchaseDate(purchase.getCreatedAt())
-                .paymentMethod(purchase.getPaymentMethod().name())
-                .paymentStatus(purchase.getPaymentStatus().name())
-                .build();
+                    .purchaseId(purchase.getPurchaseId().getValue())
+                    .itemName(purchase.getOrderName()).amount(purchase.getAmount())
+                    .purchaseDate(purchase.getCreatedAt())
+                    .paymentMethod(purchase.getPaymentMethod().name())
+                    .paymentStatus(purchase.getPaymentStatus().name()).build();
         }
     }
 
     public static PurchaseHistoryListResponse of(Page<PurchaseSummaryDto> page) {
-        return PurchaseHistoryListResponse.builder()
-                .purchases(page.getContent())
-                .currentPage(page.getNumber())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .pageSize(page.getSize())
-                .hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious())
-                .build();
+        return PurchaseHistoryListResponse.builder().purchases(page.getContent())
+                .currentPage(page.getNumber()).totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements()).pageSize(page.getSize())
+                .hasNext(page.hasNext()).hasPrevious(page.hasPrevious()).build();
     }
 
 
-} 
+}

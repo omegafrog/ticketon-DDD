@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 결제 완료 이벤트
- * Kafka를 통해 다른 서비스에게 결제 완료를 알리는 이벤트
+ * 결제 완료 이벤트 Kafka를 통해 다른 서비스에게 결제 완료를 알리는 이벤트
  */
 @Getter
 @NoArgsConstructor
@@ -20,11 +19,11 @@ public class PaymentCompletedEvent {
     private String eventTitle;
     private String paymentMethod;
     private String approvedAt;
-    
-    public static PaymentCompletedEvent of(String userId, String purchaseId, String orderId, 
-                                         String orderName, Integer totalAmount, String eventTitle,
-                                         String paymentMethod, String approvedAt) {
-        return new PaymentCompletedEvent(userId, purchaseId, orderId, orderName, 
-                                       totalAmount, eventTitle, paymentMethod, approvedAt);
+
+    public static PaymentCompletedEvent of(String userId, String purchaseId, String orderId,
+            String orderName, Integer totalAmount, String eventTitle, String paymentMethod,
+            String approvedAt) {
+        return new PaymentCompletedEvent(userId, purchaseId, orderId, orderName, totalAmount,
+                eventTitle, paymentMethod, approvedAt);
     }
 }

@@ -17,15 +17,10 @@ public class GatewayMainOpenApiConfig {
     @Primary
     public OpenAPI gatewayOpenAPI() {
         return new OpenAPI()
-            .servers(List.of(
-                new Server().url("http://localhost:8080").description("API Gateway")
-            ))
-            .info(new Info()
-                .title("Ticketon API Gateway")
-                .description("티켓온 마이크로서비스 통합 API 게이트웨이")
-                .version("v1.0")
-                .contact(new Contact()
-                    .name("Ticketon Team")
-                    .email("team@ticketon.com")));
+                .servers(List
+                        .of(new Server().url("http://localhost:8080").description("API Gateway")))
+                .info(new Info().title("Ticketon API Gateway")
+                        .description("티켓온 마이크로서비스 통합 API 게이트웨이").version("v1.0")
+                        .contact(new Contact().name("Ticketon Team").email("team@ticketon.com")));
     }
 }

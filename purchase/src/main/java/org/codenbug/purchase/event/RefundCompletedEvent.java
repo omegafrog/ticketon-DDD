@@ -21,19 +21,12 @@ public class RefundCompletedEvent {
     private String refundReason;
     private String refundedAt;
     private String eventName;
-    
+
     public static RefundCompletedEvent of(String userId, String purchaseId, String orderId,
-                                        String orderName, Integer refundAmount, String refundReason,
-                                        String refundedAt, String eventName) {
-        return RefundCompletedEvent.builder()
-                .userId(userId)
-                .purchaseId(purchaseId)
-                .orderId(orderId)
-                .orderName(orderName)
-                .refundAmount(refundAmount)
-                .refundReason(refundReason)
-                .refundedAt(refundedAt)
-                .eventName(eventName)
-                .build();
+            String orderName, Integer refundAmount, String refundReason, String refundedAt,
+            String eventName) {
+        return RefundCompletedEvent.builder().userId(userId).purchaseId(purchaseId).orderId(orderId)
+                .orderName(orderName).refundAmount(refundAmount).refundReason(refundReason)
+                .refundedAt(refundedAt).eventName(eventName).build();
     }
 }

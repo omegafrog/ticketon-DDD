@@ -17,43 +17,36 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-	/**
-	 * 일반 예외 처리
-	 * 위에서 처리되지 않은 모든 예외를 처리합니다.
-	 *
-	 * @param e 예외 객체
-	 * @return API 응답
-	 */
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleAllExceptions(Exception e) {
-		e.printStackTrace();
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.body(e.getMessage());
-	}
+  /**
+   * 일반 예외 처리 위에서 처리되지 않은 모든 예외를 처리합니다.
+   *
+   * @param e 예외 객체
+   * @return API 응답
+   */
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<String> handleAllExceptions(Exception e) {
+    e.printStackTrace();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+  }
 
-	@ExceptionHandler(RuntimeException.class)
-	public ResponseEntity<String> handleRuntimeExceptions(RuntimeException e){
-		e.printStackTrace();
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-			.body(e.getMessage());
-	}
+  @ExceptionHandler(RuntimeException.class)
+  public ResponseEntity<String> handleRuntimeExceptions(RuntimeException e) {
+    e.printStackTrace();
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+  }
 
-	// @ExceptionHandler(AccessDeniedException.class)
-	// public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
-	// 	log.error("Access denied: {}", e.getMessage());
-	// 	ErrorResponse response = new ErrorResponse(
-	// 		HttpStatus.FORBIDDEN.value(),
-	// 		"접근 권한이 없습니다.",
-	// 		e.getMessage()
-	// 	);
-	// 	return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-	// }
+  // @ExceptionHandler(AccessDeniedException.class)
+  // public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
+  // log.error("Access denied: {}", e.getMessage());
+  // ErrorResponse response = new ErrorResponse(
+  // HttpStatus.FORBIDDEN.value(),
+  // "접근 권한이 없습니다.",
+  // e.getMessage()
+  // );
+  // return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+  // }
 
-	// 에러 응답 클래스
-	private record ErrorResponse(
-		int status,
-		String message,
-		String detail
-	) {
-	}
+  // 에러 응답 클래스
+  private record ErrorResponse(int status, String message, String detail) {
+  }
 }

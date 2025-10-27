@@ -12,20 +12,18 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 @Repository
 @Transactional(value = "readOnlyTransactionManager", readOnly = true)
 public class UserViewRepositoryImpl implements UserViewRepository {
-    
+
     private final JPAQueryFactory readOnlyQueryFactory;
     private final QUser user = QUser.user;
 
-    public UserViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory) {
+    public UserViewRepositoryImpl(
+            @Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory) {
         this.readOnlyQueryFactory = readOnlyQueryFactory;
     }
-    
+
     @Override
     public User findUserById(UserId userId) {
-        return readOnlyQueryFactory
-            .select(user)
-            .from(user)
-            .where(user.userId.eq(userId))
-            .fetchOne();
+        return readOnlyQueryFactory.select(user).from(user).where(user.userId.eq(userId))
+                .fetchOne();
     }
 }
