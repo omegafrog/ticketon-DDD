@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.codenbug.message.SeatLayoutUpdatedEvent;
+import org.codenbug.redislock.RedisLockService;
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.RegisterSeatLayoutDto;
@@ -27,16 +28,16 @@ class UpdateSeatLayoutServiceTest {
 
     @Mock
     private SeatLayoutRepository seatLayoutRepository;
-    
+
     @Mock
     private EventProjectionRepository eventProjectionRepository;
-    
-    @Mock 
-    private SeatTransactionService seatTransactionService;
-    
+
     @Mock
-    private org.codenbug.common.redis.RedisLockService redisLockService;
-    
+    private SeatTransactionService seatTransactionService;
+
+    @Mock
+    private RedisLockService redisLockService;
+
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
@@ -51,17 +52,14 @@ class UpdateSeatLayoutServiceTest {
     void setUp() {
         // SeatLayout mock 생성
         testSeatLayout = mock(SeatLayout.class);
-        
+
         // 업데이트 요청 DTO 생성
-        List<List<String>> layout = Arrays.asList(
-            Arrays.asList("A1", "A2"),
-            Arrays.asList("B1", "B2")
-        );
-        List<SeatDto> seatDtos = Arrays.asList(
-            new SeatDto("A001", "A1", "VIP", 100000, true),
-            new SeatDto("A002", "A2", "VIP", 100000, true)
-        );
-        updateRequest = new RegisterSeatLayoutDto(layout, seatDtos, "Updated Location", "Updated Hall");
+        List<List<String>> layout =
+                Arrays.asList(Arrays.asList("A1", "A2"), Arrays.asList("B1", "B2"));
+        List<SeatDto> seatDtos = Arrays.asList(new SeatDto("A001", "A1", "VIP", 100000, true),
+                new SeatDto("A002", "A2", "VIP", 100000, true));
+        updateRequest =
+                new RegisterSeatLayoutDto(layout, seatDtos, "Updated Location", "Updated Hall");
     }
 
     @Test
@@ -80,7 +78,8 @@ class UpdateSeatLayoutServiceTest {
         verify(seatLayoutRepository).save(testSeatLayout);
 
         // SeatLayoutUpdatedEvent가 발행되었는지 확인
-        ArgumentCaptor<SeatLayoutUpdatedEvent> eventCaptor = ArgumentCaptor.forClass(SeatLayoutUpdatedEvent.class);
+        ArgumentCaptor<SeatLayoutUpdatedEvent> eventCaptor =
+                ArgumentCaptor.forClass(SeatLayoutUpdatedEvent.class);
         verify(eventPublisher).publishEvent(eventCaptor.capture());
 
         SeatLayoutUpdatedEvent publishedEvent = eventCaptor.getValue();
@@ -92,11 +91,11 @@ class UpdateSeatLayoutServiceTest {
     void testUpdateSeatLayoutNotFound() {
         // Given
         when(seatLayoutRepository.findSeatLayout(testSeatLayoutId))
-            .thenThrow(new RuntimeException("SeatLayout not found"));
+                .thenThrow(new RuntimeException("SeatLayout not found"));
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> updateSeatLayoutService.update(testSeatLayoutId, updateRequest));
+                () -> updateSeatLayoutService.update(testSeatLayoutId, updateRequest));
 
         assertEquals("SeatLayout not found", exception.getMessage());
 
@@ -110,11 +109,12 @@ class UpdateSeatLayoutServiceTest {
     void testUpdateSeatLayoutWithUpdateException() {
         // Given
         when(seatLayoutRepository.findSeatLayout(testSeatLayoutId)).thenReturn(testSeatLayout);
-        doThrow(new RuntimeException("Update failed")).when(testSeatLayout).update(any(List.class), anyList());
+        doThrow(new RuntimeException("Update failed")).when(testSeatLayout).update(any(List.class),
+                anyList());
 
         // When & Then
         RuntimeException exception = assertThrows(RuntimeException.class,
-            () -> updateSeatLayoutService.update(testSeatLayoutId, updateRequest));
+                () -> updateSeatLayoutService.update(testSeatLayoutId, updateRequest));
 
         assertEquals("Update failed", exception.getMessage());
 

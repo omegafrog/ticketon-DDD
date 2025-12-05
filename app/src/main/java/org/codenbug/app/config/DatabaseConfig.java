@@ -25,48 +25,36 @@ public class DatabaseConfig {
     @Primary
     @Bean(name = {"primaryDataSource", "dataSource"})
     public DataSource primaryDataSource(PrimaryDataSourceProperties properties) {
-        return DataSourceBuilder.create()
-            .driverClassName(properties.getDriverClassName())
-            .url(properties.getUrl())
-            .password(properties.getPassword())
-            .username(properties.getUsername()).build();
+        return DataSourceBuilder.create().driverClassName(properties.getDriverClassName())
+                .url(properties.getUrl()).password(properties.getPassword())
+                .username(properties.getUsername()).build();
     }
 
     @Bean(name = "readOnlyDataSource")
     public DataSource readOnlyDataSource(ReadOnlyDataSourceProperties properties) {
-        return DataSourceBuilder.create()
-            .driverClassName(properties.getDriverClassName())
-            .url(properties.getUrl())
-            .username(properties.getUsername())
-            .password(properties.getPassword()).build();
+        return DataSourceBuilder.create().driverClassName(properties.getDriverClassName())
+                .url(properties.getUrl()).username(properties.getUsername())
+                .password(properties.getPassword()).build();
     }
 
     @Primary
     @Bean(name = "primaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean primaryEntityManagerFactory(
             @Qualifier("primaryDataSource") DataSource primaryDataSource) {
-        
+
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(primaryDataSource);
-        em.setPackagesToScan(
-            "org.codenbug.user.domain",
-            "org.codenbug.event.domain", 
-            "org.codenbug.seat.domain",
-            "org.codenbug.purchase.domain",
-            "org.codenbug.notification.domain.entity",
-            "org.codenbug.categoryid.domain",
-            "org.codenbug.seat.query.model",
-            "org.codenbug.purchase.query.model"
-        );
+        em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
+                "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
+                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
+                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(
-            "hibernate.physical_naming_strategy",
-            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
-        );
+        properties.put("hibernate.physical_naming_strategy",
+                "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.jdbc.batch_size", 100);
         em.setJpaPropertyMap(properties);
@@ -77,28 +65,20 @@ public class DatabaseConfig {
     @Bean(name = "readOnlyEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean readOnlyEntityManagerFactory(
             @Qualifier("readOnlyDataSource") DataSource readOnlyDataSource) {
-        
+
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(readOnlyDataSource);
-        em.setPackagesToScan(
-            "org.codenbug.user.domain",
-            "org.codenbug.event.domain", 
-            "org.codenbug.seat.domain",
-            "org.codenbug.purchase.domain",
-            "org.codenbug.notification.domain.entity",
-            "org.codenbug.categoryid.domain",
-            "org.codenbug.seat.query.model",
-            "org.codenbug.purchase.query.model"
-        );
+        em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
+                "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
+                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
+                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put(
-            "hibernate.physical_naming_strategy",
-            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"
-        );
+        properties.put("hibernate.physical_naming_strategy",
+                "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.jdbc.batch_size", 100);

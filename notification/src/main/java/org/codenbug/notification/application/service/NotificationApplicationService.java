@@ -31,7 +31,8 @@ public class NotificationApplicationService {
     @Transactional(readOnly = true)
     public Page<NotificationDto> getNotifications(String userId, Pageable pageable) {
         UserId userIdVO = new UserId(userId);
-        Page<Notification> notifications = notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO, pageable);
+        Page<Notification> notifications =
+                notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO, pageable);
         return notifications.map(NotificationDto::from);
     }
 
@@ -49,14 +50,16 @@ public class NotificationApplicationService {
         return NotificationDto.from(notification);
     }
 
-    public NotificationDto createNotification(String userId, NotificationType type, String title, String content, String targetUrl) {
+    public NotificationDto createNotification(String userId, NotificationType type, String title,
+            String content, String targetUrl) {
         log.debug("알림 생성 시작: userId={}, type={}, title={}", userId, type, title);
 
         // 사용자 검증 생략 - 알림 모듈은 단순히 알림 생성만 담당
 
-        Notification notification = domainService.createNotification(userId, type, title, content, targetUrl);
+        Notification notification =
+                domainService.createNotification(userId, type, title, content, targetUrl);
         Notification savedNotification = notificationRepository.save(notification);
-        
+
         log.debug("알림 저장 완료: notificationId={}", savedNotification.getId());
 
         NotificationDto notificationDto = NotificationDto.from(savedNotification);
@@ -68,11 +71,13 @@ public class NotificationApplicationService {
         return notificationDto;
     }
 
-    public NotificationDto createNotification(String userId, NotificationType type, String title, String content) {
+    public NotificationDto createNotification(String userId, NotificationType type, String title,
+            String content) {
         return createNotification(userId, type, title, content, null);
     }
 
-    public NotificationDto createLegacyNotification(String userId, NotificationType type, String content) {
+    public NotificationDto createLegacyNotification(String userId, NotificationType type,
+            String content) {
         // 사용자 검증 생략 - 알림 모듈은 단순히 알림 생성만 담당
 
         Notification notification = domainService.createLegacyNotification(userId, type, content);
@@ -100,8 +105,7 @@ public class NotificationApplicationService {
     }
 
     public boolean retryFailedNotification(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId)
-                .orElse(null);
+        Notification notification = notificationRepository.findById(notificationId).orElse(null);
 
         if (notification == null || !domainService.canRetry(notification)) {
             return false;
@@ -128,11 +132,12 @@ public class NotificationApplicationService {
 
     public void deleteNotifications(List<Long> notificationIds, String userId) {
         UserId userIdVO = new UserId(userId);
-        List<Notification> notifications = notificationRepository.findAllByUserIdAndIdIn(userIdVO, notificationIds);
+        List<Notification> notifications =
+                notificationRepository.findAllByUserIdAndIdIn(userIdVO, notificationIds);
 
         if (notifications.size() < notificationIds.size()) {
-            log.info("요청된 알림 중 일부가 이미 삭제됨: 요청={}, 실제 삭제={}",
-                    notificationIds.size(), notifications.size());
+            log.info("요청된 알림 중 일부가 이미 삭제됨: 요청={}, 실제 삭제={}", notificationIds.size(),
+                    notifications.size());
         }
 
         notificationRepository.deleteAll(notifications);
@@ -141,7 +146,8 @@ public class NotificationApplicationService {
 
     public void deleteAllNotifications(String userId) {
         UserId userIdVO = new UserId(userId);
-        List<Notification> notifications = notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO);
+        List<Notification> notifications =
+                notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO);
         notificationRepository.deleteAll(notifications);
         log.debug("모든 알림 삭제 완료: count={}, userId={}", notifications.size(), userId);
     }

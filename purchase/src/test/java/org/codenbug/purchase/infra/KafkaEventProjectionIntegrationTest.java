@@ -34,11 +34,9 @@ import org.springframework.test.context.TestPropertySource;
  */
 @DataJpaTest
 @EmbeddedKafka(partitions = 1, topics = {"event-created"}, ports = {0})
-@TestPropertySource(properties = {
-    "spring.jpa.hibernate.ddl-auto=create-drop",
-    "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-    "spring.datasource.driver-class-name=org.h2.Driver"
-})
+@TestPropertySource(properties = {"spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
+        "spring.datasource.driver-class-name=org.h2.Driver"})
 @DirtiesContext
 public class KafkaEventProjectionIntegrationTest {
 
@@ -57,15 +55,18 @@ public class KafkaEventProjectionIntegrationTest {
         Map<String, Object> producerProps = KafkaTestUtils.producerProps(embeddedKafkaBroker);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        DefaultKafkaProducerFactory<String, Object> producerFactory = new DefaultKafkaProducerFactory<>(producerProps);
+        DefaultKafkaProducerFactory<String, Object> producerFactory =
+                new DefaultKafkaProducerFactory<>(producerProps);
         KafkaTemplate<String, Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
 
         // Consumer 설정
-        Map<String, Object> consumerProps = KafkaTestUtils.consumerProps("test-group", "true", embeddedKafkaBroker);
+        Map<String, Object> consumerProps =
+                KafkaTestUtils.consumerProps("test-group", "true", embeddedKafkaBroker);
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         consumerProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        DefaultKafkaConsumerFactory<String, Object> consumerFactory = new DefaultKafkaConsumerFactory<>(consumerProps);
+        DefaultKafkaConsumerFactory<String, Object> consumerFactory =
+                new DefaultKafkaConsumerFactory<>(consumerProps);
 
         // 수동으로 EventProjectionConsumer 생성
         EventProjectionConsumer consumer = new EventProjectionConsumer(jpaRepository);
@@ -74,19 +75,18 @@ public class KafkaEventProjectionIntegrationTest {
         // 테스트용 리스너 컨테이너 생성
         ContainerProperties containerProperties = new ContainerProperties("event-created");
         containerProperties.setMessageListener(
-            (org.springframework.kafka.listener.MessageListener<String, Object>) record -> {
-                try {
-                    EventCreatedEvent event = (EventCreatedEvent) record.value();
-                    consumer.handleEventCreated(event);
-                    latch.countDown();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        );
-        
-        ConcurrentMessageListenerContainer<String, Object> container = 
-            new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
+                (org.springframework.kafka.listener.MessageListener<String, Object>) record -> {
+                    try {
+                        EventCreatedEvent event = (EventCreatedEvent) record.value();
+                        consumer.handleEventCreated(event);
+                        latch.countDown();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        ConcurrentMessageListenerContainer<String, Object> container =
+                new ConcurrentMessageListenerContainer<>(consumerFactory, containerProperties);
         container.start();
 
         try {
@@ -100,10 +100,8 @@ public class KafkaEventProjectionIntegrationTest {
             String startTime = "2024-12-25T19:00:00";
             String endTime = "2024-12-25T22:00:00";
 
-            EventCreatedEvent event = new EventCreatedEvent(
-                eventId, title, managerId, seatLayoutId, seatSelectable, 
-                location, startTime, endTime,0, 10000, 1L
-            );
+            EventCreatedEvent event = new EventCreatedEvent(eventId, title, managerId, seatLayoutId,
+                    seatSelectable, location, startTime, endTime, 0, 10000, 1L);
 
             // When: Kafka에 이벤트 발행
             kafkaTemplate.send("event-created", eventId, event);
@@ -114,20 +112,19 @@ public class KafkaEventProjectionIntegrationTest {
             // DB에서 EventProjection 확인
             entityManager.flush();
             entityManager.clear();
-            
+
             EventProjection savedProjection = jpaRepository.findById(eventId).orElse(null);
             assertNotNull(savedProjection, "EventProjection이 저장되어야 합니다");
-            
+
             assertAll("Kafka를 통해 저장된 EventProjection 검증",
-                () -> assertEquals(eventId, savedProjection.getEventId()),
-                () -> assertEquals(title, savedProjection.getTitle()),
-                () -> assertEquals(managerId, savedProjection.getManagerId()),
-                () -> assertEquals(seatLayoutId, savedProjection.getSeatLayoutId()),
-                () -> assertEquals(seatSelectable, savedProjection.isSeatSelectable()),
-                () -> assertEquals(location, savedProjection.getLocation()),
-                () -> assertEquals(startTime, savedProjection.getStartTime()),
-                () -> assertEquals(endTime, savedProjection.getEndTime())
-            );
+                    () -> assertEquals(eventId, savedProjection.getEventId()),
+                    () -> assertEquals(title, savedProjection.getTitle()),
+                    () -> assertEquals(managerId, savedProjection.getManagerId()),
+                    () -> assertEquals(seatLayoutId, savedProjection.getSeatLayoutId()),
+                    () -> assertEquals(seatSelectable, savedProjection.isSeatSelectable()),
+                    () -> assertEquals(location, savedProjection.getLocation()),
+                    () -> assertEquals(startTime, savedProjection.getStartTime()),
+                    () -> assertEquals(endTime, savedProjection.getEndTime()));
 
         } finally {
             container.stop();

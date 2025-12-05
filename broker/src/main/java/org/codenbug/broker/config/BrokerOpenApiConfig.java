@@ -15,15 +15,10 @@ public class BrokerOpenApiConfig {
     @Bean("brokerOpenAPI")
     public OpenAPI brokerCustomOpenAPI() {
         return new OpenAPI()
-            .servers(List.of(
-                new Server().url("http://localhost:8080").description("Gateway Server")
-            ))
-            .info(new Info()
-                .title("Ticketon Broker Service API")
-                .description("티켓온 브로커 서비스 API 문서 (대기열 및 SSE)")
-                .version("v1.0")
-                .contact(new Contact()
-                    .name("Ticketon Team")
-                    .email("team@ticketon.com")));
+                .servers(List.of(
+                        new Server().url("http://localhost:8080").description("Gateway Server")))
+                .info(new Info().title("Ticketon Broker Service API")
+                        .description("티켓온 브로커 서비스 API 문서 (대기열 및 SSE)").version("v1.0")
+                        .contact(new Contact().name("Ticketon Team").email("team@ticketon.com")));
     }
 }

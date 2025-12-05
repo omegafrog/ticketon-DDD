@@ -22,20 +22,13 @@ public class ManagerRefundCompletedEvent {
     private String refundedAt;
     private String eventName;
     private String managerName;
-    
+
     public static ManagerRefundCompletedEvent of(String userId, String purchaseId, String orderId,
-                                               String orderName, Integer refundAmount, String refundReason,
-                                               String refundedAt, String eventName, String managerName) {
-        return ManagerRefundCompletedEvent.builder()
-                .userId(userId)
-                .purchaseId(purchaseId)
-                .orderId(orderId)
-                .orderName(orderName)
-                .refundAmount(refundAmount)
-                .refundReason(refundReason)
-                .refundedAt(refundedAt)
-                .eventName(eventName)
-                .managerName(managerName)
-                .build();
+            String orderName, Integer refundAmount, String refundReason, String refundedAt,
+            String eventName, String managerName) {
+        return ManagerRefundCompletedEvent.builder().userId(userId).purchaseId(purchaseId)
+                .orderId(orderId).orderName(orderName).refundAmount(refundAmount)
+                .refundReason(refundReason).refundedAt(refundedAt).eventName(eventName)
+                .managerName(managerName).build();
     }
 }

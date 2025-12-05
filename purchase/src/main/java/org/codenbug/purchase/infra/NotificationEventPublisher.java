@@ -22,7 +22,8 @@ public class NotificationEventPublisher {
     private final ObjectMapper objectMapper;
 
     private static final String REFUND_COMPLETED_TOPIC = "notification.refund.completed";
-    private static final String MANAGER_REFUND_COMPLETED_TOPIC = "notification.manager.refund.completed";
+    private static final String MANAGER_REFUND_COMPLETED_TOPIC =
+            "notification.manager.refund.completed";
 
     /**
      * 사용자 환불 완료 이벤트 발행
@@ -31,11 +32,11 @@ public class NotificationEventPublisher {
         try {
             String message = objectMapper.writeValueAsString(event);
             kafkaTemplate.send(REFUND_COMPLETED_TOPIC, event.getUserId(), message);
-            log.info("환불 완료 이벤트 발행 성공: userId={}, purchaseId={}, refundAmount={}", 
-                event.getUserId(), event.getPurchaseId(), event.getRefundAmount());
+            log.info("환불 완료 이벤트 발행 성공: userId={}, purchaseId={}, refundAmount={}",
+                    event.getUserId(), event.getPurchaseId(), event.getRefundAmount());
         } catch (Exception e) {
-            log.error("환불 완료 이벤트 발행 실패: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId(), e);
+            log.error("환불 완료 이벤트 발행 실패: userId={}, purchaseId={}", event.getUserId(),
+                    event.getPurchaseId(), e);
         }
     }
 
@@ -46,11 +47,11 @@ public class NotificationEventPublisher {
         try {
             String message = objectMapper.writeValueAsString(event);
             kafkaTemplate.send(MANAGER_REFUND_COMPLETED_TOPIC, event.getUserId(), message);
-            log.info("매니저 환불 완료 이벤트 발행 성공: userId={}, purchaseId={}, managerName={}", 
-                event.getUserId(), event.getPurchaseId(), event.getManagerName());
+            log.info("매니저 환불 완료 이벤트 발행 성공: userId={}, purchaseId={}, managerName={}",
+                    event.getUserId(), event.getPurchaseId(), event.getManagerName());
         } catch (Exception e) {
-            log.error("매니저 환불 완료 이벤트 발행 실패: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId(), e);
+            log.error("매니저 환불 완료 이벤트 발행 실패: userId={}, purchaseId={}", event.getUserId(),
+                    event.getPurchaseId(), e);
         }
     }
 }

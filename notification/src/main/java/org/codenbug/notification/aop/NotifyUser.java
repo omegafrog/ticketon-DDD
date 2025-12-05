@@ -13,35 +13,34 @@ import org.codenbug.notification.domain.entity.NotificationType;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NotifyUser {
-    
+
     /**
      * 알림 유형
      */
     NotificationType type();
-    
+
     /**
      * 알림 제목
      */
     String title();
-    
+
     /**
      * 알림 내용
      */
     String content();
-    
+
     /**
      * 알림 클릭 시 이동할 URL (선택사항)
      */
     String targetUrl() default "";
-    
+
     /**
      * 사용자 ID를 추출할 수 없을 때 사용할 기본 사용자 ID
      */
     String defaultUserId() default "";
-    
+
     /**
-     * SpEL 표현식으로 사용자 ID 추출
-     * 예: "#result.userId", "#userId"
+     * SpEL 표현식으로 사용자 ID 추출 예: "#result.userId", "#userId"
      */
     String userIdExpression() default "#result.userId";
 }

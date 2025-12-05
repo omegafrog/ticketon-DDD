@@ -26,24 +26,21 @@ public class ImageUploadController {
     @AuthNeeded
     @RoleRequired(Role.MANAGER)
     @PostMapping("/image/url")
-    public ResponseEntity<RsData<List<PresignedUrlResponse>>> generateImageUploadUrls(@RequestBody FileUploadRequest request) {
-        List<PresignedUrlResponse> presignedUrls = request.getFileNames().stream()
-            .map(this::generatePresignedUrl)
-            .toList();
-        
-        return ResponseEntity.ok(new RsData<>(
-            "200",
-            "presigned URL 생성 성공",
-            presignedUrls
-        ));
+    public ResponseEntity<RsData<List<PresignedUrlResponse>>> generateImageUploadUrls(
+            @RequestBody FileUploadRequest request) {
+        List<PresignedUrlResponse> presignedUrls =
+                request.getFileNames().stream().map(this::generatePresignedUrl).toList();
+
+        return ResponseEntity.ok(new RsData<>("200", "presigned URL 생성 성공", presignedUrls));
     }
 
     private PresignedUrlResponse generatePresignedUrl(String originalFileName) {
         String hashedFileName = generateHashedFileName(originalFileName);
         String presignedUrl = BASE_URL + hashedFileName + FILE_EXTENSION;
-        
-        System.out.println("Generated presigned URL: " + presignedUrl + " for file: " + originalFileName);
-        
+
+        System.out.println(
+                "Generated presigned URL: " + presignedUrl + " for file: " + originalFileName);
+
         return new PresignedUrlResponse(originalFileName, presignedUrl);
     }
 
@@ -51,7 +48,7 @@ public class ImageUploadController {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest((originalFileName + System.currentTimeMillis()).getBytes());
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -60,14 +57,14 @@ public class ImageUploadController {
                 }
                 hexString.append(hex);
             }
-            
+
             // 적당한 길이로 자르기 (16자리)
             return hexString.toString().substring(0, 16);
-            
+
         } catch (NoSuchAlgorithmException e) {
             // 해싱 실패 시 현재 시간 기반 랜덤 문자열 사용
-            return String.valueOf(System.currentTimeMillis()).substring(5) + 
-                   Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
+            return String.valueOf(System.currentTimeMillis()).substring(5)
+                    + Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
         }
     }
 }

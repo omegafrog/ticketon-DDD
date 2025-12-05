@@ -13,8 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
- * 알림 엔티티에 대한 데이터 액세스 인터페이스
- * 사용자별 알림 조회 및 알림 상태 관리 기능 제공
+ * 알림 엔티티에 대한 데이터 액세스 인터페이스 사용자별 알림 조회 및 알림 상태 관리 기능 제공
  */
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -52,7 +51,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @return 페이징된 알림 목록
      */
     @Query("SELECT n FROM Notification n WHERE n.userId = :userId AND n.type = :type ORDER BY n.sentAt DESC")
-    Page<Notification> findByUserIdAndType(@Param("userId") UserId userId, @Param("type") String type, Pageable pageable);
+    Page<Notification> findByUserIdAndType(@Param("userId") UserId userId,
+            @Param("type") String type, Pageable pageable);
 
     /**
      * 특정 사용자의 미읽은 알림 목록을 페이지네이션하여 조회
@@ -61,7 +61,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param pageable 페이징 정보
      * @return 페이징된 미읽은 알림 목록
      */
-    Page<Notification> findByUserIdAndIsReadFalseOrderBySentAtDesc(UserId userId, Pageable pageable);
+    Page<Notification> findByUserIdAndIsReadFalseOrderBySentAtDesc(UserId userId,
+            Pageable pageable);
 
     /**
      * 특정 사용자의 특정 알림 ID 이후의 알림 목록을 조회
@@ -71,7 +72,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @param pageable 페이징 정보
      * @return ID 이후의 알림 목록
      */
-    List<Notification> findByUserIdAndIdGreaterThanOrderByIdAsc(UserId userId, Long id, Pageable pageable);
+    List<Notification> findByUserIdAndIdGreaterThanOrderByIdAsc(UserId userId, Long id,
+            Pageable pageable);
 
     /**
      * 특정 사용자의 알림 중 지정된 ID 목록에 해당하는 알림들을 조회
@@ -92,7 +94,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      */
     @Modifying
     @Query("UPDATE Notification n SET n.status = :status WHERE n.id = :notificationId")
-    int updateStatus(@Param("notificationId") Long notificationId, @Param("status") NotificationStatus status);
+    int updateStatus(@Param("notificationId") Long notificationId,
+            @Param("status") NotificationStatus status);
 
     /**
      * 배치 알림 상태 업데이트 (대량 알림 처리용)
@@ -103,6 +106,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      */
     @Modifying
     @Query("UPDATE Notification n SET n.status = :status WHERE n.id IN :notificationIds")
-    int updateStatusBatch(@Param("notificationIds") List<Long> notificationIds, @Param("status") NotificationStatus status);
+    int updateStatusBatch(@Param("notificationIds") List<Long> notificationIds,
+            @Param("status") NotificationStatus status);
 
 }

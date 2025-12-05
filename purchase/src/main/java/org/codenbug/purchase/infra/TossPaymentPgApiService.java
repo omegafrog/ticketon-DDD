@@ -4,7 +4,7 @@ import java.util.Base64;
 import java.util.Map;
 
 import org.codenbug.purchase.app.PGApiService;
-import org.springframework.beans.factory.annotation.Value;
+import org.codenbug.purchase.config.TossPaymentProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,11 +22,10 @@ public class TossPaymentPgApiService implements PGApiService {
 	private final String tossApiUrl;
 
 	public TossPaymentPgApiService(RestTemplate restTemplate,
-		@Value("${payment.toss.secret-key}") String secretKey,
-		@Value("${payment.toss.api-url}") String tossApiUrl){
+		TossPaymentProperties tossPaymentProperties){
 		this.restTemplate = restTemplate;
-		this.secretKey = secretKey;
-		this.tossApiUrl = tossApiUrl;
+		this.secretKey = tossPaymentProperties.getSecretKey();
+		this.tossApiUrl = tossPaymentProperties.getApiUrl();
 	}
 
 	private HttpHeaders createAuthHeaders() {

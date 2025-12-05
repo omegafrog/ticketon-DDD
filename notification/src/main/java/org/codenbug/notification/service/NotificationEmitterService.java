@@ -26,7 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class NotificationEmitterService {
     // 사용자별 연결 목록을 관리하는 맵
-    private final Map<String, List<NotificationSseConnection>> userConnectionsMap = new ConcurrentHashMap<>();
+    private final Map<String, List<NotificationSseConnection>> userConnectionsMap =
+            new ConcurrentHashMap<>();
 
     // SSE 연결 타임아웃 시간 (1시간)
     private static final long SSE_CONNECTION_TIMEOUT = 60 * 60 * 1000L;
@@ -52,11 +53,12 @@ public class NotificationEmitterService {
         SseEmitter emitter = new SseEmitter(SSE_CONNECTION_TIMEOUT);
 
         // 연결 객체 생성
-        NotificationSseConnection connection = new NotificationSseConnection(userId, emitter, lastEventId);
+        NotificationSseConnection connection =
+                new NotificationSseConnection(userId, emitter, lastEventId);
 
         // 사용자별 연결 목록 가져오기 (없으면 새로 생성)
-        List<NotificationSseConnection> connections = userConnectionsMap
-                .computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>());
+        List<NotificationSseConnection> connections =
+                userConnectionsMap.computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>());
 
         // 연결 이벤트 핸들러 등록
         emitter.onCompletion(() -> {
@@ -82,10 +84,7 @@ public class NotificationEmitterService {
         try {
             // 연결 성공 이벤트를 ID와 함께 전송
             String eventId = "connect-" + System.currentTimeMillis();
-            emitter.send(SseEmitter.event()
-                    .id(eventId)
-                    .name("connect")
-                    .data("알림 구독이 시작되었습니다."));
+            emitter.send(SseEmitter.event().id(eventId).name("connect").data("알림 구독이 시작되었습니다."));
 
             // 마지막 이벤트 ID가 있으면 그 이후의 알림을 전송
             if (lastEventId != null && !lastEventId.isEmpty()) {
@@ -137,29 +136,25 @@ public class NotificationEmitterService {
         List<NotificationSseConnection> connections = userConnectionsMap.get(userId);
         if (connections != null && !connections.isEmpty()) {
             // 해당 사용자의 모든 연결에 알림 전송
-            List<NotificationSseConnection> deadConnections = connections.stream()
-                    .filter(connection -> {
+            List<NotificationSseConnection> deadConnections =
+                    connections.stream().filter(connection -> {
                         try {
                             // 이벤트 ID 생성 (알림 ID 사용)
                             String eventId = "notification-" + notification.getId();
 
                             // 이벤트 ID를 포함하여 전송
-                            connection.getEmitter().send(
-                                    SseEmitter.event()
-                                            .id(eventId)
-                                            .name("notification")
-                                            .data(notification)
-                            );
+                            connection.getEmitter().send(SseEmitter.event().id(eventId)
+                                    .name("notification").data(notification));
 
                             // 마지막 이벤트 ID 업데이트
                             connection.setLastEventId(eventId);
                             return false; // 전송 성공, 제거하지 않음
                         } catch (IOException e) {
-                            log.error("알림 전송 실패: userId={}, notificationId={}", userId, notification.getId());
+                            log.error("알림 전송 실패: userId={}, notificationId={}", userId,
+                                    notification.getId());
                             return true; // 전송 실패, 제거 필요
                         }
-                    })
-                    .collect(Collectors.toList());
+                    }).collect(Collectors.toList());
 
             // 실패한 연결 제거
             if (!deadConnections.isEmpty()) {
@@ -182,22 +177,17 @@ public class NotificationEmitterService {
         }
 
         // 마지막 이벤트 ID 이후의 알림 조회 (최근 20개로 제한)
-        notificationRepository.findByUserIdAndIdGreaterThanOrderByIdAsc(
-                        new UserId(userId), lastNotificationId, PageRequest.of(0, 20)
-                )
-                .forEach(notification -> {
+        notificationRepository.findByUserIdAndIdGreaterThanOrderByIdAsc(new UserId(userId),
+                lastNotificationId, PageRequest.of(0, 20)).forEach(notification -> {
                     try {
                         String eventId = "notification-" + notification.getId();
-                            connection.getEmitter().send(
-                                    SseEmitter.event()
-                                            .id(eventId)
-                                            .name("notification")
-                                            .data(NotificationDto.from(notification))
-                            );
-                            connection.setLastEventId(eventId);
+                        connection.getEmitter().send(SseEmitter.event().id(eventId)
+                                .name("notification").data(NotificationDto.from(notification)));
+                        connection.setLastEventId(eventId);
 
                     } catch (IOException e) {
-                        log.error("누락된 알림 전송 실패: userId={}, notificationId={}", userId, notification.getId());
+                        log.error("누락된 알림 전송 실패: userId={}, notificationId={}", userId,
+                                notification.getId());
                     }
                 });
     }
@@ -224,23 +214,18 @@ public class NotificationEmitterService {
      */
     public void sendHeartbeat() {
         userConnectionsMap.forEach((userId, connections) -> {
-            List<NotificationSseConnection> deadConnections = connections.stream()
-                    .filter(connection -> {
+            List<NotificationSseConnection> deadConnections =
+                    connections.stream().filter(connection -> {
                         try {
                             String heartbeatId = "heartbeat-" + System.currentTimeMillis();
                             connection.getEmitter().send(
-                                    SseEmitter.event()
-                                            .id(heartbeatId)
-                                            .name("heartbeat")
-                                            .data(".")
-                            );
+                                    SseEmitter.event().id(heartbeatId).name("heartbeat").data("."));
                             return false; // 전송 성공, 제거하지 않음
                         } catch (IOException e) {
                             log.debug("하트비트 전송 실패: userId={}", userId);
                             return true; // 전송 실패, 제거 필요
                         }
-                    })
-                    .collect(Collectors.toList());
+                    }).collect(Collectors.toList());
 
             // 실패한 연결 제거
             if (!deadConnections.isEmpty()) {
@@ -264,9 +249,7 @@ public class NotificationEmitterService {
      * @return 총 활성 연결 수
      */
     public int getTotalConnectionCount() {
-        return userConnectionsMap.values().stream()
-                .mapToInt(List::size)
-                .sum();
+        return userConnectionsMap.values().stream().mapToInt(List::size).sum();
     }
 
     /**

@@ -2,10 +2,6 @@ package org.codenbug.broker.ui;
 
 import java.util.Map;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.broker.app.WaitingQueueEntryService;
 import org.codenbug.broker.service.SseEmitterService;
@@ -34,47 +30,48 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WaitingQueueController {
 
-	private final WaitingQueueEntryService waitingQueueEntryService;
-	private final SseEmitterService sseEmitterService;
-	private final MeterRegistry registry;
+  private final WaitingQueueEntryService waitingQueueEntryService;
+  private final SseEmitterService sseEmitterService;
+  private final MeterRegistry registry;
 
-	public WaitingQueueController(WaitingQueueEntryService waitingQueueEntryService,
-		SseEmitterService sseEmitterService, MeterRegistry registry) {
-		this.waitingQueueEntryService = waitingQueueEntryService;
-		this.sseEmitterService = sseEmitterService;
-		this.registry = registry;
-	}
+  public WaitingQueueController(WaitingQueueEntryService waitingQueueEntryService,
+      SseEmitterService sseEmitterService, MeterRegistry registry) {
+    this.waitingQueueEntryService = waitingQueueEntryService;
+    this.sseEmitterService = sseEmitterService;
+    this.registry = registry;
+  }
 
-	@PostConstruct
-	void bindGauge() {
-		Gauge.builder("sse_connections_active", sseEmitterService.getEmitterMap(), Map::size)
-			.description("Number of active SSE connections")
-			.register(registry);
-	}
+  @PostConstruct
+  void bindGauge() {
+    Gauge.builder("sse_connections_active", sseEmitterService.getEmitterMap(), Map::size)
+        .description("Number of active SSE connections").register(registry);
+  }
 
-	/**
-	 * 로그인한 유저가 행사 id가 {@code event-id}인 행사의 티켓 대기열에 진입합니다.
-	 * 대기열에 진입시 sse 연결을 진행합니다.
-	 * @param eventId
-	 */
-	@AuthNeeded
-	@RoleRequired({Role.USER})
-	@GetMapping(value = "/events/{id}/tickets/waiting", produces = MediaType.TEXT_EVENT_STREAM_VALUE
-		+ ";charset=UTF-8")
-	public SseEmitter entryWaiting(@PathVariable("id") String eventId) throws JsonProcessingException {
-		log.info("eventId : {}", eventId);
-		return waitingQueueEntryService.entry(eventId);
-	}
+  /**
+   * 로그인한 유저가 행사 id가 {@code event-id}인 행사의 티켓 대기열에 진입합니다. 대기열에 진입시 sse 연결을 진행합니다.
+   * 
+   * @param eventId
+   */
+  @AuthNeeded
+  @RoleRequired({Role.USER})
+  @GetMapping(value = "/events/{id}/tickets/waiting",
+      produces = MediaType.TEXT_EVENT_STREAM_VALUE + ";charset=UTF-8")
+  public SseEmitter entryWaiting(@PathVariable("id") String eventId)
+      throws JsonProcessingException {
+    log.info("eventId : {}", eventId);
+    return waitingQueueEntryService.entry(eventId);
+  }
 
-	/**
-	 * 로그인한 유저가 행사 id가 {@code event-id}인 행사의 티켓 대기열에서 명시적으로 연결을 해제합니다.
-	 * IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게 승급할 수 있도록 돕습니다.
-	 * @param eventId
-	 */
-	@AuthNeeded
-	@RoleRequired({Role.USER})
-	@PostMapping("/events/{id}/tickets/disconnect")
-	public ResponseEntity<Void> disconnectFromQueue(@PathVariable("id") String eventId) {
-		return waitingQueueEntryService.disconnect(eventId);
-	}
+  /**
+   * 로그인한 유저가 행사 id가 {@code event-id}인 행사의 티켓 대기열에서 명시적으로 연결을 해제합니다. IN_PROGRESS 상태에 도달한 후 즉시 호출하여
+   * 다음 사용자가 빠르게 승급할 수 있도록 돕습니다.
+   * 
+   * @param eventId
+   */
+  @AuthNeeded
+  @RoleRequired({Role.USER})
+  @PostMapping("/events/{id}/tickets/disconnect")
+  public ResponseEntity<Void> disconnectFromQueue(@PathVariable("id") String eventId) {
+    return waitingQueueEntryService.disconnect(eventId);
+  }
 }

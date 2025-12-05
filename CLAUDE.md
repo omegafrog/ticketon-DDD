@@ -151,4 +151,4 @@ Each business module should define its own:
 - mysql-replica에 접속하려면 mysql -h 127.0.0.1 -P 3307 -uroot -ppassword 으로 접근하면 돼.
 - "파일로 저장해"라고 할때, 형식이 코드가 아닌 텍스트 파일일 경우 docs/ 아래에 저장해야 해
 - scripts/ 아래의 py를 실행할 때는 venv를 활성화시키고 해야돼
-- 인증이 필요한 경우 유저는 user1@ticketon.site / password123 으로 로그인 후 응답 바디의 액세스토큰과 쿠키의 refreshToken을 요청 헤더의 Authorization에 액세스 토큰을 넣고, 쿠키로 refreshToken을 전달해야 해. 매니저 인증ㅇ ㅣ필요한 경우 maanger@example.com / password123 으로 로그인해서 똑같이 인증정보를 얻어.
+- 인증이 필요한 경우 유저는 user1@ticketon.site / password123 으로 로그인 후 응답 바디의 액세스토큰과 쿠키의 refreshToken을 요청 헤더의 Authorization에 액세스 토큰을 넣고, 쿠키로 refreshToken을 전달해야 해. 매니저 인증이 필요한 경우 maanger@example.com / password123 으로 로그인해서 똑같이 인증정보를 얻어.

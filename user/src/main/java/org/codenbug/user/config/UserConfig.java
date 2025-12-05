@@ -9,11 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 
 @Configuration
-@EnableJpaRepositories(
-    basePackages = {"org.codenbug.user.infra"},
-    entityManagerFactoryRef = "primaryEntityManagerFactory",
-    transactionManagerRef = "primaryTransactionManager"
-)
+@EnableJpaRepositories(basePackages = {"org.codenbug.user.infra"},
+        entityManagerFactoryRef = "primaryEntityManagerFactory",
+        transactionManagerRef = "primaryTransactionManager")
 @EntityScan(basePackages = {"org.codenbug.user"})
 @ComponentScan(basePackages = {"org.codenbug.user"})
 public class UserConfig {
