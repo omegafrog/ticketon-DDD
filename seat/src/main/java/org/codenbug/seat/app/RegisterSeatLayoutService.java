@@ -23,19 +23,19 @@ public class RegisterSeatLayoutService {
 	}
 
 	@Transactional
-	public SeatLayoutResponse registerSeatLayout(RegisterSeatLayoutDto seatLayout) {
+	public SeatLayoutResponse registerSeatLayout(RegisterSeatLayoutDto seatLayoutDto) {
 		SeatLayout layout;
-		if (seatLayout.getRegionLocation() != null) {
-			layout = new SeatLayout(seatLayout.getLayout(),
-				new Location(seatLayout.getLocation(), seatLayout.getHallName()), 
-				seatLayout.getRegionLocation(),
-				seatLayout.getSeats()
+		if (seatLayoutDto.getRegionLocation() != null) {
+			layout = new SeatLayout(seatLayoutDto.getLayout(),
+				new Location(seatLayoutDto.getLocation(), seatLayoutDto.getHallName()),
+				seatLayoutDto.getRegionLocation(),
+				seatLayoutDto.getSeats()
 				.stream().map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
 				.toList());
 		} else {
-			layout = new SeatLayout(seatLayout.getLayout(),
-				new Location(seatLayout.getLocation(), seatLayout.getHallName()), 
-				seatLayout.getSeats()
+			layout = new SeatLayout(seatLayoutDto.getLayout(),
+				new Location(seatLayoutDto.getLocation(), seatLayoutDto.getHallName()),
+				seatLayoutDto.getSeats()
 				.stream().map(seatDto -> new Seat(seatDto.getSignature(), seatDto.getPrice(), seatDto.getGrade()))
 				.toList());
 		}

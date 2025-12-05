@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -36,9 +37,9 @@ public class SeatLayout {
 	@Column(name = "region_location")
 	private RegionLocation regionLocation;
 
-	@OneToMany(mappedBy = "seatLayout", fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "seatLayout", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE,
+		CascadeType.REMOVE})
 	private Set<Seat> seats;
-
 
 	protected SeatLayout() {
 	}
@@ -47,7 +48,8 @@ public class SeatLayout {
 		this.location = location;
 		validate(layout, seats);
 		this.layout = convertLayout(layout);
-		this.seats = new HashSet<>(seats);
+		this.seats = new HashSet<>(seats)
+			.stream().map(seat -> seat.updateTarget(this)).collect(Collectors.toSet());
 	}
 
 	public SeatLayout(List<List<String>> layout, Location location, RegionLocation regionLocation, List<Seat> seats) {
@@ -55,7 +57,8 @@ public class SeatLayout {
 		this.regionLocation = regionLocation;
 		validate(layout, seats);
 		this.layout = convertLayout(layout);
-		this.seats = new HashSet<>(seats);
+		this.seats = new HashSet<>(seats)
+			.stream().map(seat -> seat.updateTarget(this)).collect(Collectors.toSet());
 	}
 
 	private String convertLayout(List<List<String>> layout) {
@@ -85,7 +88,7 @@ public class SeatLayout {
 		// ]
 		// layout has signature, so seats list item's signature must equal to layout's signature
 		// Check if all signatures in 'seats' are present in 'layout'
-		long size = layout.stream().flatMap(List::stream).filter(s -> s!=null).count();
+		long size = layout.stream().flatMap(List::stream).filter(s -> s != null).count();
 		if (seats.size() != size)
 			throw new IllegalArgumentException("layout's signature must match with seats");
 		for (Seat seat : seats) {
@@ -104,7 +107,7 @@ public class SeatLayout {
 		// Check if all signatures in 'layout' are present in 'seats'
 		for (List<String> row : layout) {
 			for (String signature : row) {
-				if(signature == null)
+				if (signature == null)
 					continue;
 				boolean found = false;
 				for (Seat seat : seats) {

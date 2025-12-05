@@ -2,6 +2,7 @@ package org.codenbug.purchase.ui.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.codenbug.purchase.domain.QPurchase;
 import org.codenbug.purchase.domain.QTicket;
@@ -34,20 +35,9 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
     
     @Override
     public Page<PurchaseListProjection> findUserPurchaseList(String userId, List<PaymentStatus> statuses, Pageable pageable) {
-        // 1. Purchase 기본 정보 조회
-        List<PurchaseListProjection> purchases = readOnlyQueryFactory
-            .select(Projections.constructor(PurchaseListProjection.class,
-                purchase.purchaseId.value,
-                purchase.orderId,
-                purchase.orderName,
-                purchase.eventId,
-                purchase.amount,
-                purchase.paymentMethod.stringValue(),
-                purchase.paymentStatus.stringValue(),
-                purchase.createdAt,
-                purchase.userId.value,
-                Projections.list(new ArrayList<>()) // 빈 리스트로 초기화
-            ))
+        // 1. Purchase ID만 먼저 조회 (커버링 인덱스 활용)
+        List<String> purchaseIds = readOnlyQueryFactory
+            .select(purchase.purchaseId.value)
             .from(purchase)
             .where(purchase.userId.value.eq(userId)
                 .and(purchase.paymentStatus.in(statuses)))
@@ -55,33 +45,61 @@ public class PurchaseViewRepositoryImpl implements PurchaseViewRepository {
             .limit(pageable.getPageSize())
             .orderBy(purchase.createdAt.desc())
             .fetch();
-        
-        // 2. Purchase ID 목록 추출
-        List<String> purchaseIds = purchases.stream()
-            .map(PurchaseListProjection::getPurchaseId)
-            .collect(Collectors.toList());
-        
-        // 3. Ticket 정보 조회 (한 번의 쿼리로)
+
+        // 2. Purchase ID로 상세 정보와 Ticket 조회
+        List<PurchaseListProjection> purchases = new ArrayList<>();
         if (!purchaseIds.isEmpty()) {
-            List<PurchaseListProjection.TicketProjection> tickets = readOnlyQueryFactory
-                .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
-                    ticket.id.value,
-                    ticket.location,
-                    ticket.purchase.eventId,
-                    ticket.seatId,
-                    ticket.purchase.purchaseId.value // Purchase ID 포함
+            purchases = readOnlyQueryFactory
+                .select(Projections.constructor(PurchaseListProjection.class,
+                    purchase.purchaseId.value,
+                    purchase.orderId,
+                    purchase.orderName,
+                    purchase.eventId,
+                    purchase.amount,
+                    purchase.paymentMethod.stringValue(),
+                    purchase.paymentStatus.stringValue(),
+                    purchase.createdAt,
+                    purchase.userId.value,
+                    Projections.list(Projections.constructor(PurchaseListProjection.TicketProjection.class,
+                        ticket.id.value,
+                        ticket.location,
+                        ticket.purchase.eventId,
+                        ticket.seatId,
+                        ticket.purchase.purchaseId.value
+                    ))
                 ))
-                .from(ticket)
-                .where(ticket.purchase.purchaseId.value.in(purchaseIds))
+                .from(purchase)
+                .join(purchase.tickets, ticket).fetchJoin()
+                .where(purchase.purchaseId.value.in(purchaseIds))
                 .fetch();
-            
-            // 4. Purchase별로 Ticket 그룹핑
-            Map<String, List<PurchaseListProjection.TicketProjection>> ticketsByPurchase = tickets.stream()
-                .collect(Collectors.groupingBy(t -> t.getPurchaseId()));
-            
-            // 5. Purchase에 Ticket 정보 설정
-            purchases.forEach(p -> p.setTickets(ticketsByPurchase.getOrDefault(p.getPurchaseId(), List.of())));
         }
+        
+        // // 2. Purchase ID 목록 추출
+        // List<String> purchaseIds = purchases.stream()
+        //     .map(PurchaseListProjection::getPurchaseId)
+        //     .collect(Collectors.toList());
+        //
+        // // 3. Ticket 정보 조회 (한 번의 쿼리로)
+        // if (!purchaseIds.isEmpty()) {
+        //     List<PurchaseListProjection.TicketProjection> tickets = readOnlyQueryFactory
+        //         .select(Projections.constructor(PurchaseListProjection.TicketProjection.class,
+        //             ticket.id.value,
+        //             ticket.location,
+        //             ticket.purchase.eventId,
+        //             ticket.seatId,
+        //             ticket.purchase.purchaseId.value // Purchase ID 포함
+        //         ))
+        //         .from(ticket)
+        //         .where(ticket.purchase.purchaseId.value.in(purchaseIds))
+        //         .fetch();
+        //
+        //     // 4. Purchase별로 Ticket 그룹핑
+        //     Map<String, List<PurchaseListProjection.TicketProjection>> ticketsByPurchase = tickets.stream()
+        //         .collect(Collectors.groupingBy(t -> t.getPurchaseId()));
+        //
+        //     // 5. Purchase에 Ticket 정보 설정
+        //     purchases.forEach(p -> p.setTickets(ticketsByPurchase.getOrDefault(p.getPurchaseId(), List.of())));
+        // }
         
         // COUNT 쿼리
         Long total = readOnlyQueryFactory

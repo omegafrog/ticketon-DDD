@@ -37,6 +37,10 @@ public class Seat {
 	private SeatId generateSeatId() {
 		return new SeatId(Util.ID.createUUID());
 	}
+	public Seat updateTarget(SeatLayout target){
+		this.seatLayout = target;
+		return this;
+	}
 
 	public void setAvailable(boolean b) {
 		this.available = b;
