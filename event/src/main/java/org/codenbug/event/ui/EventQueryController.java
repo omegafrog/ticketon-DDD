@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.EventQueryService;
@@ -58,7 +59,7 @@ public class EventQueryController {
 			"locationList: 지역 필터, costRange: 가격 범위, eventStatusList: 이벤트 상태, startDate/endDate: 날짜 범위)", 
 			required = false
 		)
-		@RequestBody(required = false) EventListFilter filter, 
+		@Valid @RequestBody(required = false) EventListFilter filter, 
 		@Parameter(description = "페이징 정보")
 		Pageable pageable){
 		// 최적화된 Projection 조회로 N+1 문제 해결 (Redis viewCount 포함)

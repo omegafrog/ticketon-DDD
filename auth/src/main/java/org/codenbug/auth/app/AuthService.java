@@ -27,68 +27,66 @@ import jakarta.persistence.EntityNotFoundException;
 @Service
 public class AuthService {
 
-	private final ObjectMapper objectMapper;
-	private SecurityUserRepository securityUserRepository;
-	private PasswordEncoder passwordEncoder;
-	private final ProviderFactory factory;
-	@Value("${custom.jwt.secret}")
-	private String key;
-	private final ApplicationEventPublisher publisher;
+  private final ObjectMapper objectMapper;
+  private SecurityUserRepository securityUserRepository;
+  private PasswordEncoder passwordEncoder;
+  private final ProviderFactory factory;
+  @Value("${custom.jwt.secret}")
+  private String key;
+  private final ApplicationEventPublisher publisher;
 
-	public AuthService(SecurityUserRepository securityUserRepository, PasswordEncoder passwordEncoder,
-		ApplicationEventPublisher publisher, ObjectMapper objectMapper, ProviderFactory factory) {
-		this.securityUserRepository = securityUserRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.publisher = publisher;
-		this.objectMapper = objectMapper;
-		this.factory = factory;
-	}
+  public AuthService(SecurityUserRepository securityUserRepository, PasswordEncoder passwordEncoder,
+      ApplicationEventPublisher publisher, ObjectMapper objectMapper, ProviderFactory factory) {
+    this.securityUserRepository = securityUserRepository;
+    this.passwordEncoder = passwordEncoder;
+    this.publisher = publisher;
+    this.objectMapper = objectMapper;
+    this.factory = factory;
+  }
 
-	public TokenInfo loginEmail(LoginRequest loginRequest) {
-		String email = loginRequest.getEmail();
-		String password = loginRequest.getPassword();
-		SecurityUser user = securityUserRepository.findSecurityUserByEmail(email)
-			.orElseThrow(() -> new EntityNotFoundException("Email or password is wrong."));
+  public TokenInfo loginEmail(LoginRequest loginRequest) {
+    String email = loginRequest.getEmail();
+    String password = loginRequest.getPassword();
+    SecurityUser user = securityUserRepository.findSecurityUserByEmail(email)
+        .orElseThrow(() -> new EntityNotFoundException("Email or password is wrong."));
 
-		user.match(password, passwordEncoder);
+    user.match(password, passwordEncoder);
 
-		TokenInfo tokenInfo = Util.generateTokens(
-			Map.of("userId", user.getUserId().getValue(), "role", Role.valueOf(user.getRole()), "email",
-				user.getEmail()),
-			Util.Key.convertSecretKey(key));
-		return tokenInfo;
-	}
+    TokenInfo tokenInfo = Util.generateTokens(Map.of("userId", user.getUserId().getValue(), "role",
+        Role.valueOf(user.getRole()), "email", user.getEmail()), Util.Key.convertSecretKey(key));
+    return tokenInfo;
+  }
 
-	// 이메일 회원가입
-	@Transactional
-	public SecurityUserId register(RegisterRequest request) {
-		SecurityUserId saved = securityUserRepository.save(new SecurityUser(new SocialInfo(null, null, false),
-			request.getEmail(), passwordEncoder.encode(request.getPassword()), Role.USER.toString()));
-		publisher.publishEvent(
-			new SecurityUserRegisteredEvent(saved.getValue(), request.getName(), request.getAge(), request.getSex(),
-				request.getPhoneNum(), request.getLocation()));
-		return saved;
-	}
+  // 이메일 회원가입
+  @Transactional
+  public SecurityUserId register(RegisterRequest request) {
+    SecurityUserId saved = securityUserRepository
+        .save(new SecurityUser(new SocialInfo(null, null, false), request.getEmail(),
+            passwordEncoder.encode(request.getPassword()), Role.USER.toString()));
+    publisher.publishEvent(new SecurityUserRegisteredEvent(saved.getValue(), request.getName(),
+        request.getAge(), request.getSex(), request.getPhoneNum(), request.getLocation()));
+    return saved;
+  }
 
-	public String request(SocialLoginType socialLoginType) {
-		SocialProvider provider = factory.getProvider(socialLoginType.name().toUpperCase());
-		return provider.getOauthLoginUri();
-	}
+  public String request(SocialLoginType socialLoginType) {
+    SocialProvider provider = factory.getProvider(socialLoginType.name().toUpperCase());
+    return provider.getOauthLoginUri();
+  }
 
-	public TokenInfo refreshTokens(jakarta.servlet.http.HttpServletRequest request) {
-		String userId = request.getHeader("User-Id");
-		String email = request.getHeader("Email");
-		String role = request.getHeader("Role");
-		
-		if (userId == null || email == null || role == null) {
-			throw new IllegalArgumentException("Missing required headers from gateway");
-		}
-		
-		TokenInfo tokenInfo = Util.generateTokens(
-			Map.of("userId", userId, "role", Role.valueOf(role), "email", email),
-			Util.Key.convertSecretKey(key));
-			
-		return tokenInfo;
-	}
+  public TokenInfo refreshTokens(jakarta.servlet.http.HttpServletRequest request) {
+    String userId = request.getHeader("User-Id");
+    String email = request.getHeader("Email");
+    String role = request.getHeader("Role");
+
+    if (userId == null || email == null || role == null) {
+      throw new IllegalArgumentException("Missing required headers from gateway");
+    }
+
+    TokenInfo tokenInfo =
+        Util.generateTokens(Map.of("userId", userId, "role", Role.valueOf(role), "email", email),
+            Util.Key.convertSecretKey(key));
+
+    return tokenInfo;
+  }
 
 }

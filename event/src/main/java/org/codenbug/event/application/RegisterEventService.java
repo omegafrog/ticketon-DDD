@@ -7,7 +7,7 @@ import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.MetaData;
-import org.codenbug.event.global.NewEventRequest;
+import org.codenbug.event.ui.NewEventRequest;
 import org.codenbug.message.EventCreatedEvent;
 import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.seat.global.SeatLayoutResponse;

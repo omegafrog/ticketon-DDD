@@ -10,16 +10,25 @@ import org.codenbug.seat.domain.RegionLocation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 
 @Getter
 public class EventListFilter {
+	
+	@Valid
 	private CostRange costRange;
-	private List<String> locationList;
-	private List<RegionLocation> regionLocationList; // RegionLocation enum 지원
-	private List<Long> eventCategoryList;
-	private List<EventStatus> eventStatusList;
+	private List<@NotBlank(message = "지역 이름은 공백일 수 없습니다.") String> locationList;
+	private List<@NotNull(message = "지역 Enum 값은 null일 수 없습니다.") RegionLocation> regionLocationList; // RegionLocation enum 지원
+	private List<@NotNull @Positive(message = "카테고리 ID는 양수여야 합니다.") Long> eventCategoryList;
+	private List<@NotNull(message = "이벤트 상태값은 null일 수 없습니다.") EventStatus> eventStatusList;
+	@FutureOrPresent(message = "시작일은 현재 또는 미래의 날짜여야 합니다.")
 	private LocalDateTime startDate;
+	@FutureOrPresent(message = "종료일은 현재 또는 미래의 날짜여야 합니다.")
 	private LocalDateTime endDate;
 	private Long categoryId; // 단일 카테고리 필터링 지원
 
