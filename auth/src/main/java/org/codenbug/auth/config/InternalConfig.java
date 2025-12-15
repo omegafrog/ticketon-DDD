@@ -8,9 +8,5 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
 @Configuration
 class InternalConfig {
-	@Bean
-	public PasswordEncoder passwordEncoder(@Value("${custom.password.secret}") String secret) {
-		return new Pbkdf2PasswordEncoder(secret, 16, 10,
-			Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
-	}
+	
 }

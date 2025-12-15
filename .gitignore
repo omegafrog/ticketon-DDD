@@ -50,3 +50,4 @@ out/
 /pyscript/
 /static/
 **/application-secret.yml
+AGENTS.md
