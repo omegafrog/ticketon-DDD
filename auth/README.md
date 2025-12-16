@@ -1,374 +1,117 @@
-# Auth Service
+# Auth (인증) 서비스
 
-The Auth Service handles authentication, authorization, and user security management in the Ticketon system. It provides comprehensive authentication capabilities including traditional email/password login, OAuth integration with Google and Kakao, JWT token management, and user registration with event-driven user profile creation.
+## 1. 개요
 
-## 🎯 Purpose and Responsibilities
+Ticketon DDD 프로젝트의 인증 및 인가 기능을 담당하는 마이크로서비스입니다. 사용자 회원가입, 로그인, JWT 토큰 기반 인증, 소셜 로그인 등의 핵심 보안 기능을 제공합니다. 또한, 다른 서비스와의 비동기 통신을 위해 Kafka를 사용하여 `UserRegisteredEvent`와 같은 이벤트를 발행하고 수신합니다.
 
-- **User Authentication**: Email/password and social OAuth login (Google, Kakao)
-- **JWT Token Management**: Access token generation, refresh token handling, and token blacklisting
-- **User Registration**: Account creation with validation and event publishing
-- **Security Context**: User session management and security validation
-- **OAuth Integration**: Social login provider abstraction and user info parsing
-- **Event Publishing**: Domain events for user registration across services
+## 2. 패키지 구조
 
-## 🏗️ Architecture
+`org.codenbug.auth`를 루트 패키지로 사용하며, 주요 하위 패키지의 역할은 다음과 같습니다.
 
-### Domain Structure
 ```
-auth/
-├── domain/                       # Core security entities
-│   ├── SecurityUser.java        # Main user entity with authentication info
-│   ├── SecurityUserId.java      # Value object identifier
-│   ├── SocialInfo.java          # Social login information
-│   ├── Provider.java            # OAuth provider interface
-│   ├── RefreshTokenBlackList.java # Token blacklist management
-│   └── SecurityUserRepository.java
-├── app/                          # Application services
-│   ├── AuthService.java          # Core authentication logic
-│   ├── OAuthService.java         # OAuth provider integration
-│   ├── ProviderFactory.java     # Provider selection factory
-│   └── *EventListener.java      # Event processing
-├── ui/                          # REST controllers
-│   ├── SecurityController.java  # Authentication endpoints
-│   └── *Request.java           # Request/response DTOs
-├── infra/                       # Infrastructure implementations
-│   ├── GoogleProvider.java     # Google OAuth implementation
-│   ├── KakaoProvider.java      # Kakao OAuth implementation
-│   ├── RefreshTokenBlackListImpl.java
-│   └── SecurityUserRepositoryImpl.java
-├── consumer/                    # Event consumers
-│   ├── UserRegisteredEventConsumer.java
-│   └── UserRegisteredFailedEventConsumer.java
-└── config/                      # Security configurations
-    ├── SecurityConfig.java     # Spring Security setup
-    ├── RedisConfig.java        # Redis token blacklist
-    └── AuthConfig.java         # JWT settings
+.
+├── app/              # 애플리케이션 서비스, 인바운드/아웃바운드 포트
+├── config/           # Security, Kafka, Redis 등 주요 설정 클래스
+├── consumer/         # Kafka 메시지 컨슈머
+├── domain/           # 핵심 도메인 모델 (예: Member, Role)
+├── global/           # 전역적으로 사용되는 예외 처리, 유틸리티 등
+├── infra/            # 외부 시스템 연동 (예: DB Repository, Kafka Producer)
+├── ui/               # 외부 세계와의 인터페이스 (예: REST 컨트롤러)
+└── AuthApplication.java # Spring Boot 시작 클래스
 ```
 
-### Key Domain Concepts
+## 3. 주요 의존성 (Dependencies)
 
-**SecurityUser Aggregate**
-- Root entity for authentication and authorization
-- Contains both local (email/password) and social login information
-- Manages account status, expiration, and login attempts
-- Links to User domain through UserId
+`build.gradle`에 명시된 주요 의존성은 다음과 같습니다.
 
-**Social Provider Strategy**
-- Abstracted OAuth provider implementations
-- Factory pattern for provider selection
-- Standardized user info parsing across providers
+-   **Spring Boot Starter Security**: 스프링 기반의 인증 및 인가 기능 제공
+-   **Spring Boot Starter Web**: RESTful API 개발을 위한 웹 프레임워크
+-   **Spring Boot Starter Data JPA**: 데이터베이스 연동을 위한 ORM
+-   **Spring Boot Starter Data Redis**: Redis 연동을 위한 라이브러리 (예: 토큰 저장, 캐싱)
+-   **Spring Kafka**: Apache Kafka와의 연동 지원
+-   **QueryDSL**: 타입-세이프(Type-safe)한 동적 쿼리 생성을 위한 라이브러리
+-   **MySQL Connector/J**: MySQL 데이터베이스 드라이버
+-   **JJWT**: JWT(JSON Web Token) 생성 및 검증 라이브러리
+-   **SpringDoc OpenAPI**: API 문서 자동화를 위한 Swagger UI 제공
+-   **Project Modules**: `:common`, `:message`, `:security-aop` 등 내부 공통 모듈
 
-**Token Management**
-- JWT-based access tokens with user claims
-- Refresh token rotation and blacklisting
-- Secure cookie-based token storage
+## 4. application.yml 구조
 
-## 🔌 API Endpoints
+`application.yml` 파일은 주요 설정 정보를 포함하며, 환경별(`dev`, `prod` 등) 프로필을 통해 설정을 분리합니다. (`secret` 프로필 포함)
 
-### Authentication Operations
-```
-POST   /api/v1/auth/register                      # Email registration
-POST   /api/v1/auth/login                         # Email/password login
-GET    /api/v1/auth/logout                        # User logout
-GET    /api/v1/auth/social/{socialLoginType}      # Social login request
-GET    /api/v1/auth/social/{socialLoginType}/callback # OAuth callback
-```
-
-### Authentication Flow
-
-**Email Registration & Login:**
-```
-1. POST /register → Creates SecurityUser → Publishes SecurityUserRegisteredEvent
-2. POST /login → Validates credentials → Returns JWT tokens
-3. Tokens stored: Access token in Authorization header, Refresh token in HttpOnly cookie
-```
-
-**Social Login Flow:**
-```
-1. GET /social/google → Returns OAuth authorization URL
-2. User authorizes on provider → Redirected to callback
-3. GET /social/google/callback → Exchanges code for tokens → Returns JWT
-```
-
-### Request/Response Examples
-
-**Email Registration:**
-```json
-{
-  "email": "user@example.com",
-  "password": "secure_password",
-  "name": "John Doe",
-  "age": 25,
-  "sex": "M",
-  "phoneNum": "010-1234-5678",
-  "location": "Seoul"
-}
-```
-
-**Login Response:**
-```json
-{
-  "resultCode": "200",
-  "message": "login success",
-  "data": "Bearer eyJhbGciOiJIUzI1NiJ9..."
-}
-```
-
-**Social Login Response:**
-```json
-{
-  "resultCode": "200-SUCCESS",
-  "message": "소셜 로그인 성공",
-  "data": "Bearer eyJhbGciOiJIUzI1NiJ9..."
-}
-```
-
-## 🔧 Configuration
-
-### Dependencies (build.gradle)
-```gradle
-dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.kafka:spring-kafka'
-    
-    implementation project(':common')      # JWT utilities and shared code
-    implementation project(':message')     # Domain events
-    implementation project(':security-aop') # Security annotations
-}
-```
-
-### Application Configuration
 ```yaml
-# application.yml
 spring:
-  application:
-    name: auth-service
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            redirect-uri: ${GOOGLE_CALLBACK_URL}
-          kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: ${KAKAO_CALLBACK_URL}
+  # Kafka 설정 (Bootstrap 서버, Producer/Consumer 설정)
+  kafka:
+    bootstrap-servers: <kafka_bootstrap_servers>
+    consumer:
+      group-id: <consumer_group_id>
+      # ...
+    producer:
+      # ...
 
+  # 활성 프로필 및 외부 설정 파일 포함
+  profiles:
+    include: secret
+    active: dev
+
+  # 데이터베이스 설정 (Primary/Readonly 분리)
+  datasource:
+    primary:
+      jdbc-url: <primary_db_url>
+      username: <db_username>
+      password: <db_password>
+      # ...
+    readonly:
+      jdbc-url: <readonly_db_url>
+      # ...
+  
+  # JPA 및 Hibernate 설정
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update # 개발 환경에서는 update 사용
+
+  # Redis 설정
+  data:
+    redis:
+      port: <redis_port>
+      host: <redis_host>
+
+# SpringDoc (Swagger) 설정
+springdoc:
+  override-with-generic-response: false
+
+# 내장 웹 서버 설정
+server:
+  port: <server_port>
+  tomcat:
+    threads:
+      # ...
+    # ...
+
+# 로깅 레벨 설정
+logging:
+  level:
+    org.codenbug: DEBUG
+    org.springframework.security: DEBUG
+
+# 커스텀 속성
 custom:
-  jwt:
-    secret: ${JWT_SECRET}
   cookie:
-    domain: ${COOKIE_DOMAIN:localhost}
+    domain: <cookie_domain>
+  sns:
+    google:
+      url: <google_oauth_url>
 
-# Social login URLs
-sns:
-  google:
-    url: https://accounts.google.com/oauth/v2/auth
-    token.url: https://oauth2.googleapis.com/token
-    client.id: ${GOOGLE_CLIENT_ID}
-    client.secret: ${GOOGLE_CLIENT_SECRET}
-    callback.url: ${GOOGLE_CALLBACK_URL}
-  kakao:
-    url: https://kauth.kakao.com/oauth/authorize
-    token.url: https://kauth.kakao.com/oauth/token
-    user.url: https://kapi.kakao.com/v2/user/me
-    client.id: ${KAKAO_CLIENT_ID}
-    client.secret: ${KAKAO_CLIENT_SECRET}
-    callback.url: ${KAKAO_CALLBACK_URL}
+# Actuator 및 Prometheus 설정
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 ```
-
-## 🔗 Integration Points
-
-### Internal Service Dependencies
-- **Common Module**: JWT utilities, token generation, shared types
-- **Message Module**: Domain event definitions and publishing
-- **Security AOP**: Authentication annotations and context
-
-### Domain Events Published
-```java
-// Email registration
-SecurityUserRegisteredEvent {
-    String securityUserId;
-    String name;
-    Integer age;
-    String sex;
-    String phoneNum;
-    String location;
-}
-
-// Social registration
-SnsUserRegisteredEvent {
-    String securityUserId;
-    String name;
-    Integer age;
-    String sex;
-}
-```
-
-### Event Consumption
-The service consumes user registration completion events:
-```java
-@KafkaListener(topics = "user-registered-success")
-public void handleUserRegisteredSuccess(UserRegisteredEvent event) {
-    // Update SecurityUser with User domain ID
-}
-```
-
-## 💼 Business Rules and Validations
-
-### Registration Rules
-1. **Email Uniqueness**: Each email can only be used once
-2. **Password Security**: Passwords are BCrypt encoded
-3. **Social Account Linking**: Social accounts automatically create SecurityUser
-4. **Event Publishing**: Registration triggers user profile creation
-
-### Authentication Rules
-1. **Account Status**: Must be enabled and not locked
-2. **Password Matching**: BCrypt validation for password login
-3. **Login Attempts**: Failed attempts tracking (future implementation)
-4. **Token Expiration**: JWT tokens have configurable expiration
-
-### Token Management Rules
-1. **Access Token**: Short-lived, contains user claims
-2. **Refresh Token**: Longer-lived, stored in HttpOnly cookie
-3. **Token Blacklisting**: Logout adds tokens to Redis blacklist
-4. **Secure Cookies**: Production uses secure, SameSite=None cookies
-
-## 🎮 Usage Examples
-
-### Email Authentication
-```java
-@PostMapping("/login")
-public ResponseEntity<RsData<String>> login(@RequestBody LoginRequest request, HttpServletResponse resp) {
-    TokenInfo tokenInfo = authService.loginEmail(request);
-    
-    // Set Authorization header
-    resp.setHeader(HttpHeaders.AUTHORIZATION, 
-        tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
-    
-    // Set refresh token cookie
-    Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
-    resp.addCookie(refreshToken);
-    
-    return ResponseEntity.ok(new RsData<>("200", "login success", 
-        tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
-}
-```
-
-### OAuth Provider Implementation
-```java
-@Component("GOOGLE")
-public class GoogleProvider implements SocialProvider {
-    
-    @Override
-    public String getOauthLoginUri() {
-        Map<String, Object> params = new HashMap<>();
-        params.put("scope", "profile email");
-        params.put("response_type", "code");
-        params.put("client_id", GOOGLE_CLIENT_ID);
-        params.put("redirect_uri", GOOGLE_CALLBACK_URL);
-        
-        return GOOGLE_SNS_BASE_URL + "?" + buildQueryString(params);
-    }
-    
-    @Override
-    public UserInfo parseUserInfo(String userInfo, SocialLoginType socialLoginType) {
-        JsonNode jsonNode = objectMapper.readTree(userInfo);
-        String socialId = jsonNode.get("sub").asText();
-        String name = jsonNode.get("name").asText();
-        String email = jsonNode.get("email").asText();
-        
-        return new UserInfo(socialId, name, socialLoginType.getName(), email, Role.USER.name(), 0, "ETC");
-    }
-}
-```
-
-## 🏃 Running the Service
-
-The Auth service runs as a standalone Spring Boot application:
-
-```bash
-# Build the service
-./gradlew :auth:build
-
-# Run the service
-./gradlew :auth:bootRun
-
-# Build Docker image
-./gradlew :auth:bootBuildImage
-
-# Run with Docker
-docker run -p 9001:9001 auth-service
-```
-
-### Service Port
-- **Port 9001**: Auth service endpoint
-- **Database**: MySQL for user storage
-- **Cache**: Redis for token blacklisting
-
-## 🔄 Event-Driven Architecture
-
-### Event Flow
-1. **Registration**: SecurityUser created → SecurityUserRegisteredEvent published
-2. **User Service**: Consumes event → Creates User profile → UserRegisteredEvent published
-3. **Auth Service**: Consumes completion event → Updates SecurityUser with User ID
-
-### Event Processing
-```java
-@EventListener
-@Async
-@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-public void handleSecurityUserRegistered(SecurityUserRegisteredEvent event) {
-    // Process user registration after transaction commit
-}
-```
-
-## 🔍 Monitoring and Observability
-
-### Key Metrics to Monitor
-- Login success/failure rates
-- OAuth callback success rates
-- Token generation and validation times
-- User registration completion rates
-- Social provider response times
-
-### Security Logging
-- Authentication attempts and failures
-- Token blacklisting operations
-- OAuth authorization flows
-- Account lockout events
-- Social provider API failures
-
-## ⚠️ Security Considerations
-
-### Password Security
-- BCrypt hashing with salt rounds
-- Password strength validation
-- Secure password reset flow
-
-### Token Security
-- JWT signature validation
-- Token expiration enforcement
-- Refresh token rotation
-- Blacklist cleanup processes
-
-### OAuth Security
-- State parameter validation (future implementation)
-- Secure redirect URI validation
-- Provider response validation
-- Error handling without information leakage
-
-### Cookie Security
-- HttpOnly refresh tokens
-- Secure flag in production
-- SameSite=None for cross-origin requests
-- Domain-specific cookie scoping
-
----
-
-The Auth Service provides robust, secure authentication capabilities while maintaining clear separation of concerns and supporting both traditional and modern authentication patterns through its flexible OAuth provider system.
