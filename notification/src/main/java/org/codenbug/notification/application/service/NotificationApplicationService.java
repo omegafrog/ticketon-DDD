@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional()
+@Transactional
 public class NotificationApplicationService {
 
     private final NotificationRepository notificationRepository;

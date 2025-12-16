@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.event.application.FindEventService;
@@ -12,7 +13,6 @@ import org.codenbug.event.application.ImageUploadService;
 import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;
 import org.codenbug.event.domain.EventId;
-import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
@@ -56,7 +56,7 @@ public class EventCommandController {
 	@PostMapping
 	public ResponseEntity<RsData<EventId>> eventRegister(
 		@Parameter(description = "이벤트 등록 정보", required = true)
-		@RequestBody NewEventRequest request) {
+		@Valid @RequestBody NewEventRequest request) {
 
 		// register event
 		EventId eventId = registerEventService.registerNewEvent(request);

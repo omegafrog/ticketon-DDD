@@ -2,25 +2,22 @@ package org.codenbug.auth.consumer;
 
 import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.message.UserRegisteredFailedEvent;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
+@Component
 public class UserRegisteredFailedEventConsumer {
 	private final SecurityUserRepository repository;
-	private final KafkaTemplate<String, Object> kafkaTemplate;
 
-	public UserRegisteredFailedEventConsumer( SecurityUserRepository repository, KafkaTemplate<String, Object> kafkaTemplate) {
+	public UserRegisteredFailedEventConsumer(SecurityUserRepository repository) {
 		this.repository = repository;
-		this.kafkaTemplate = kafkaTemplate;
 	}
 
-	@KafkaListener(topics = "user-registered-failed", groupId = "user-registered-failed-group")
+	@RabbitListener(queues = "user-created-failed")
 	@Transactional
 	public void consume(UserRegisteredFailedEvent event) {
 		try {

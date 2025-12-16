@@ -1,10 +1,8 @@
 package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
-
-import org.codenbug.event.global.NewEventRequest;
 import org.codenbug.event.global.UpdateEventRequest;
-
+import org.codenbug.event.ui.NewEventRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;

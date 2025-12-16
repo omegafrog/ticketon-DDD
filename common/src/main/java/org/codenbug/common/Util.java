@@ -21,7 +21,7 @@ public class Util {
 	public static final long REFRESH_TOKEN_EXP = 60 * 60 * 24 * 7;
 
 	public static RefreshToken parseRefreshToken(String cookies) {
-		if(cookies == null){
+		if (cookies == null) {
 			throw new IllegalArgumentException("RefreshToken Cookie is null");
 		}
 		return new RefreshToken(cookies);
@@ -29,7 +29,8 @@ public class Util {
 
 	/**
 	 * Get Access token key-value string from Authorization header
-	 * @param authHeader http header value that has "Authorization" as  key
+	 * 
+	 * @param authHeader http header value that has "Authorization" as key
 	 * @return {@link AccessToken}
 	 */
 	public static AccessToken parseAccessToken(String authHeader) {
@@ -41,26 +42,29 @@ public class Util {
 	}
 
 	public static Claims getClaims(String jwt, SecretKey secretKey) {
-		return (Claims)Jwts.parser().verifyWith(secretKey).build()
-			.parse(jwt)
-			.getPayload();
+		return (Claims) Jwts.parser().verifyWith(secretKey).build().parse(jwt).getPayload();
+	}
+
+	public static String createJwt(Claims payload, SecretKey secretKey) {
+		return Jwts.builder().claims(payload).expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
+				.signWith(secretKey, Jwts.SIG.HS256).compact();
 	}
 
 	public static void validate(String rawValue, SecretKey secretKey) {
 		try {
 			Jwts.parser().verifyWith(secretKey).build().parse(rawValue);
-		}catch (ExpiredJwtException e){
-			throw new org.codenbug.common.exception.ExpiredJwtException(
-				"401", "Jwt is expired", e
-			);
-		}catch (SignatureException e){
+		} catch (ExpiredJwtException e) {
+			throw new org.codenbug.common.exception.ExpiredJwtException("401", "Jwt is expired", e);
+		} catch (SignatureException e) {
 			throw new org.codenbug.common.exception.SignatureException();
 		}
 	}
 
-	public static TokenInfo refresh( RefreshToken refreshToken, SecretKey secretKey, Throwable e) {
-		if(e instanceof ExpiredJwtException){
-			ExpiredJwtException ex = (ExpiredJwtException)e;
+
+
+	public static TokenInfo refresh(RefreshToken refreshToken, SecretKey secretKey, Throwable e) {
+		if (e instanceof ExpiredJwtException) {
+			ExpiredJwtException ex = (ExpiredJwtException) e;
 			Claims claims = ex.getClaims();
 			String userId = claims.get("userId", String.class);
 			String role = claims.get("role", String.class);
@@ -69,23 +73,18 @@ public class Util {
 			// boolean isSocialUser = claims.get("isSocialUser", Boolean.class);
 			refreshToken.verify(jti, secretKey);
 
-			Claims payload = Jwts.claims()
-				.add("userId", userId)
-				.add("role", role)
-				.add("email", email)
-				// .add("isSocialUser", isSocialUser)
-				.build();
+			Claims payload = Jwts.claims().add("userId", userId).add("role", role).add("email", email)
+					// .add("isSocialUser", isSocialUser)
+					.build();
 
-			String newtokenString = Jwts.builder()
-				.claims(payload)
-				.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
-				.signWith(secretKey, Jwts.SIG.HS256)
-				.compact();
+			String newtokenString =
+					Jwts.builder().claims(payload).expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
+							.signWith(secretKey, Jwts.SIG.HS256).compact();
 
 			RefreshToken newRefreshToken = getRefreshToken(Map.of("userId", userId), secretKey);
 
 			return new TokenInfo(new AccessToken(newtokenString, "Bearer"), newRefreshToken);
-		}else{
+		} else {
 			throw new RuntimeException("expired token's claim not usable.");
 		}
 	}
@@ -95,6 +94,7 @@ public class Util {
 			return Keys.hmacShaKeyFor(key.getBytes());
 		}
 	}
+
 	public static TokenInfo generateTokens(Map<String, Object> claims, SecretKey secretKey) {
 		return generateTokens(Jwts.claims(claims), secretKey);
 	}
@@ -102,42 +102,34 @@ public class Util {
 	public static TokenInfo generateTokens(Claims claims, SecretKey secretKey) {
 		AccessToken accessToken = getAccessToken(claims, secretKey);
 
-		RefreshToken refreshToken = getRefreshToken(Map.of("access-jti", accessToken.getClaims().getId()), secretKey);
+		RefreshToken refreshToken =
+				getRefreshToken(Map.of("access-jti", accessToken.getClaims().getId()), secretKey);
 
 		return new TokenInfo(accessToken, refreshToken);
 	}
 
 	private static RefreshToken getRefreshToken(Map<String, Object> claims, SecretKey secretKey) {
 
-		String refreshvalue = Jwts.builder()
-			.claims(claims)
-			.signWith(secretKey, Jwts.SIG.HS256)
-			.expiration(Date.from(Instant.now().plusSeconds(60 * 60 * 24 * 7)))
-			.compact();
+		String refreshvalue = Jwts.builder().claims(claims).signWith(secretKey, Jwts.SIG.HS256)
+				.expiration(Date.from(Instant.now().plusSeconds(60 * 60 * 24 * 7))).compact();
 
 		RefreshToken refreshToken = new RefreshToken(refreshvalue);
 		return refreshToken;
 	}
 
 	private static AccessToken getAccessToken(Claims claims, SecretKey secretKey) {
-		String token = Jwts.builder()
-			.claims(claims)
-			.signWith(secretKey, Jwts.SIG.HS256)
-			.id(java.util.UUID.randomUUID().toString())
-			.expiration(Date.from(Instant.now().plusSeconds(60 * 30)))
-			.compact();
+		String token = Jwts.builder().claims(claims).signWith(secretKey, Jwts.SIG.HS256)
+				.id(java.util.UUID.randomUUID().toString())
+				.expiration(Date.from(Instant.now().plusSeconds(60 * 30))).compact();
 		AccessToken accessToken = new AccessToken(token, "Bearer");
-		Claims payload = (Claims)Jwts.parser()
-			.verifyWith(secretKey)
-			.build()
-			.parse(accessToken.getRawValue())
-			.getPayload();
+		Claims payload = (Claims) Jwts.parser().verifyWith(secretKey).build()
+				.parse(accessToken.getRawValue()).getPayload();
 		accessToken.setClaims(payload);
 		return accessToken;
 	}
-	
-	public static class ID{
-		public static String createUUID(){
+
+	public static class ID {
+		public static String createUUID() {
 			return Generators.timeBasedGenerator().generate().toString();
 		}
 	}
