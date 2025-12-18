@@ -39,6 +39,7 @@ dependencies {
     implementation project(':app:purchase')
     implementation project(':security-aop')
     implementation project(':app:notification')
+    implementation project(':cache')
 }
 
 tasks.named('test') {

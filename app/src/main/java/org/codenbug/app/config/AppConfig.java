@@ -1,5 +1,6 @@
 package org.codenbug.app.config;
 
+import org.codenbug.cache.CacheConfiguration;
 import org.codenbug.event.config.EventConfig;
 import org.codenbug.notification.config.NotificationConfig;
 import org.codenbug.purchase.config.PurchaseConfig;
@@ -18,7 +19,8 @@ import org.springframework.data.web.config.EnableSpringDataWebSupport;
 	PurchaseConfig.class,
 	SeatLayoutConfig.class,
 	NotificationConfig.class,
-	AopConfig.class})
+	AopConfig.class,
+		CacheConfiguration.class})
 @EnableSpringDataWebSupport(
 	pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO
 )

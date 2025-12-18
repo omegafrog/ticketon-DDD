@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.event.application.EventQueryService;
+import org.codenbug.event.application.EventViewService;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
@@ -31,16 +31,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/events")
 @Tag(name = "Event Query", description = "이벤트 조회 API")
 public class EventQueryController {
-	private final EventQueryService eventQueryService;
 	private final EventViewRepository eventViewRepository;
 	private final EventViewCountService eventViewCountService;
+	private final EventViewService eventViewService;
 
-	public EventQueryController(EventQueryService service, EventViewRepository eventViewRepository, 
-	                           EventViewCountService eventViewCountService){
-		this.eventQueryService = service;
+	public EventQueryController(EventViewRepository eventViewRepository,
+                                EventViewCountService eventViewCountService, EventViewService eventViewService){
 		this.eventViewRepository = eventViewRepository;
 		this.eventViewCountService = eventViewCountService;
-	}
+        this.eventViewService = eventViewService;
+    }
 	@Operation(
 		summary = "이벤트 목록 조회", 
 		description = "필터와 키워드를 기반으로 이벤트 목록을 조회합니다. " +
@@ -62,8 +62,7 @@ public class EventQueryController {
 		@Valid @RequestBody(required = false) EventListFilter filter, 
 		@Parameter(description = "페이징 정보")
 		Pageable pageable){
-		// 최적화된 Projection 조회로 N+1 문제 해결 (Redis viewCount 포함)
-		Page<EventListProjection> eventList = eventViewRepository.findEventList(keyword, filter, pageable);
+		Page<EventListProjection> eventList = eventViewService.getEventSearchResult(keyword, filter, pageable);
 
 		return ResponseEntity.ok(new RsData("200","event list 조회 성공.", eventList));
 	}

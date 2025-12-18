@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.codenbug.event.application.EventListSearchCache;
+import org.codenbug.event.application.EventListSearchCacheKey;
+import org.codenbug.event.application.EventListSearchCacheValue;
 import org.codenbug.event.domain.QEvent;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
@@ -19,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
@@ -43,26 +47,24 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	private final RedisViewCountService redisViewCountService;
 	private final QEvent event = QEvent.event;
 	private final QSeatLayout seatLayout = QSeatLayout.seatLayout;
-	private final RedissonClient redissonClient;
 	private final ObjectMapper objectMapper;
+	private final EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> searchCache;
 
 	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory,
-		RedisViewCountService redisViewCountService, RedissonClient redissonClient, ObjectMapper objectMapper) {
+                                   RedisViewCountService redisViewCountService, ObjectMapper objectMapper, EventListSearchCache searchCache) {
 		this.readOnlyQueryFactory = readOnlyQueryFactory;
 		this.redisViewCountService = redisViewCountService;
-		this.redissonClient = redissonClient;
 		this.objectMapper = objectMapper;
-	}
+        this.searchCache = searchCache;
+    }
 
 	@Override
 	public Page<EventListProjection> findEventList(String keyword, EventListFilter filter, Pageable pageable) {
-		String cacheKey = generateCacheKey(keyword, filter, pageable);
-		RBucket< Page<EventListProjection>> bucket = redissonClient.getBucket(cacheKey);
+		EventListSearchCacheKey cacheKey = new EventListSearchCacheKey( filter, keyword, pageable);
 
-		Page<EventListProjection> cachedResult = bucket.get();
-		if (cachedResult != null) {
-			log.info("Cache hit for event list: {}", cacheKey);
-			return cachedResult;
+		if(searchCache.exist(cacheKey)){
+			EventListSearchCacheValue result = searchCache.get(cacheKey);
+			return new PageImpl<>(result.eventListProjection(), pageable, result.total());
 		}
 
 		// 동적 조건 생성
@@ -113,6 +115,12 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 					} else {
 						query.orderBy(event.eventInformation.eventStart.desc());
 					}
+				} else if ("viewCount".equals(order.getProperty())){
+					if(order.isAscending()){
+						query.orderBy(event.eventInformation.viewCount.asc());
+					}else{
+						query.orderBy(event.eventInformation.viewCount.desc());
+					}
 				}
 			});
 		} else {
@@ -141,7 +149,10 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			.fetchOne();
 
 		PageImpl<EventListProjection> result = new PageImpl<>(results, pageable, total != null ? total : 0);
-		bucket.set(result, calculateTTL(keyword, filter), TimeUnit.MINUTES);
+
+		if(searchCache.isCacheable(cacheKey)){
+			searchCache.put(cacheKey, new EventListSearchCacheValue(result.getContent(), (int) result.getTotalElements()));
+		}
 
 		return result;
 	}
