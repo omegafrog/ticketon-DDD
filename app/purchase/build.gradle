@@ -28,7 +28,7 @@ dependencies {
     implementation project(':common')
     implementation project(':security-aop')
     implementation project(':message')
-    implementation project(':notification')
+    implementation project(':app:notification')
     implementation project(':redislock')
 
 }

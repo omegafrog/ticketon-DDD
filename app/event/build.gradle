@@ -27,12 +27,12 @@ dependencies {
     // https://mvnrepository.com/artifact/com.googlecode.owasp-java-html-sanitizer/owasp-java-html-sanitizer
     implementation("com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1")
 
-    implementation project(':seat')
-    implementation project(':category-id')
+    implementation project(':app:seat')
+    implementation project(':app:category-id')
     implementation project(':common')
     implementation project(':security-aop')
     implementation project(':message')
-    implementation project(':notification')
+    implementation project(':app:notification')
 
 }
 

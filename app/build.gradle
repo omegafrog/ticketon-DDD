@@ -32,13 +32,13 @@ dependencies {
 
 
 
-    implementation project(':event')
-    implementation project(':user')
+    implementation project(':app:event')
+    implementation project(':app:user')
     implementation project(':common')
-    implementation project(':seat')
-    implementation project(':purchase')
+    implementation project(':app:seat')
+    implementation project(':app:purchase')
     implementation project(':security-aop')
-    implementation project(':notification')
+    implementation project(':app:notification')
 }
 
 tasks.named('test') {
