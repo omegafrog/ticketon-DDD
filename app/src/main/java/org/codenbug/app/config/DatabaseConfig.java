@@ -1,22 +1,21 @@
 package org.codenbug.app.config;
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import java.util.HashMap;
+import java.util.Map;
+import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
-
-import javax.sql.DataSource;
-import jakarta.persistence.EntityManagerFactory;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.querydsl.jpa.impl.JPAQueryFactory;
 
 
 @Configuration
@@ -26,35 +25,35 @@ public class DatabaseConfig {
     @Bean(name = {"primaryDataSource", "dataSource"})
     public DataSource primaryDataSource(PrimaryDataSourceProperties properties) {
         return DataSourceBuilder.create().driverClassName(properties.getDriverClassName())
-                .url(properties.getUrl()).password(properties.getPassword())
-                .username(properties.getUsername()).build();
+            .url(properties.getUrl()).password(properties.getPassword())
+            .username(properties.getUsername()).build();
     }
 
     @Bean(name = "readOnlyDataSource")
     public DataSource readOnlyDataSource(ReadOnlyDataSourceProperties properties) {
         return DataSourceBuilder.create().driverClassName(properties.getDriverClassName())
-                .url(properties.getUrl()).username(properties.getUsername())
-                .password(properties.getPassword()).build();
+            .url(properties.getUrl()).username(properties.getUsername())
+            .password(properties.getPassword()).build();
     }
 
     @Primary
     @Bean(name = "primaryEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean primaryEntityManagerFactory(
-            @Qualifier("primaryDataSource") DataSource primaryDataSource) {
+        @Qualifier("primaryDataSource") DataSource primaryDataSource) {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(primaryDataSource);
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
-                "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
-                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
-                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
+            "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
+            "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
+            "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.physical_naming_strategy",
-                "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
         properties.put("hibernate.hbm2ddl.auto", "update");
         properties.put("hibernate.jdbc.batch_size", 100);
         em.setJpaPropertyMap(properties);
@@ -64,23 +63,23 @@ public class DatabaseConfig {
 
     @Bean(name = "readOnlyEntityManagerFactory")
     public LocalContainerEntityManagerFactoryBean readOnlyEntityManagerFactory(
-            @Qualifier("readOnlyDataSource") DataSource readOnlyDataSource) {
+        @Qualifier("readOnlyDataSource") DataSource readOnlyDataSource) {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(readOnlyDataSource);
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
-                "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
-                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
-                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
+            "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
+            "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
+            "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.physical_naming_strategy",
-                "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
+            "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy");
 
-        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.hbm2ddl.auto", "validate");
         properties.put("hibernate.jdbc.batch_size", 100);
         em.setJpaPropertyMap(properties);
 
@@ -88,28 +87,41 @@ public class DatabaseConfig {
     }
 
     @Primary
+    @Bean(name = "primaryEntityManager")
+    public EntityManager primaryEntityManager(
+        @Qualifier("primaryEntityManagerFactory") EntityManagerFactory emf) {
+        return SharedEntityManagerCreator.createSharedEntityManager(emf);
+    }
+
+    @Bean(name = "readOnlyEntityManager")
+    public EntityManager readOnlyEntityManager(
+        @Qualifier("readOnlyEntityManagerFactory") EntityManagerFactory emf) {
+        return SharedEntityManagerCreator.createSharedEntityManager(emf);
+    }
+
+    @Primary
     @Bean(name = {"transactionManager", "primaryTransactionManager"})
     public PlatformTransactionManager primaryTransactionManager(
-            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory primaryEntityManagerFactory) {
+        @Qualifier("primaryEntityManagerFactory") EntityManagerFactory primaryEntityManagerFactory) {
         return new JpaTransactionManager(primaryEntityManagerFactory);
     }
 
     @Bean(name = "readOnlyTransactionManager")
     public PlatformTransactionManager readOnlyTransactionManager(
-            @Qualifier("readOnlyEntityManagerFactory") EntityManagerFactory readOnlyEntityManagerFactory) {
+        @Qualifier("readOnlyEntityManagerFactory") EntityManagerFactory readOnlyEntityManagerFactory) {
         return new JpaTransactionManager(readOnlyEntityManagerFactory);
     }
 
     @Primary
     @Bean(name = "primaryQueryFactory")
     public JPAQueryFactory primaryQueryFactory(
-            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory primaryEntityManagerFactory) {
-        return new JPAQueryFactory(() -> primaryEntityManagerFactory.createEntityManager());
+        @Qualifier("primaryEntityManagerFactory") EntityManager primaryEntityManagerFactory) {
+        return new JPAQueryFactory(primaryEntityManagerFactory);
     }
 
     @Bean(name = "readOnlyQueryFactory")
     public JPAQueryFactory readOnlyQueryFactory(
-            @Qualifier("readOnlyEntityManagerFactory") EntityManagerFactory readOnlyEntityManagerFactory) {
-        return new JPAQueryFactory(() -> readOnlyEntityManagerFactory.createEntityManager());
+        @Qualifier("readOnlyEntityManagerFactory") EntityManager readOnlyEntityManagerFactory) {
+        return new JPAQueryFactory(readOnlyEntityManagerFactory);
     }
 }
