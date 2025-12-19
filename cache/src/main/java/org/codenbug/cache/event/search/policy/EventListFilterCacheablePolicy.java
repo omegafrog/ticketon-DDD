@@ -2,9 +2,11 @@ package org.codenbug.cache.event.search.policy;
 
 import java.time.LocalDate;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.codenbug.event.global.CostRange;
 import org.codenbug.event.global.EventListFilter;
 
+@Slf4j
 public class EventListFilterCacheablePolicy implements CacheablePolicy<EventListFilter> {
 
     private static final LocalDate today = LocalDate.now();
@@ -23,13 +25,24 @@ public class EventListFilterCacheablePolicy implements CacheablePolicy<EventList
         if (value == null) {
             return true;
         }
+        boolean cacheable = true;
+        if (value.getStartDate() != null) {
+            cacheable &= startDateFilterOptions.contains(value.getStartDate().toLocalDate());
+        }
 
-        LocalDate startDate = value.getStartDate() == null ? null : value.getStartDate()
-            .toLocalDate();
+        if (value.getCostRange() != null) {
+            cacheable &= costRangeFilterOptions.contains(value.getCostRange());
+        }
+        if (value.getRegionLocationList() != null) {
+            cacheable &= value.getRegionLocationList().size() == 1;
+        }
+        if (value.getEventCategoryList() != null) {
+            cacheable &= value.getEventCategoryList().size() == 1;
+        }
 
-        return startDateFilterOptions.contains(startDate) &&
-            (value.getRegionLocationList().size() == 1) &&
-            costRangeFilterOptions.contains(value.getCostRange()) &&
-            (value.getEventCategoryList().size() == 1);
+        if (cacheable) {
+            log.info("캐싱됨");
+        }
+        return cacheable;
     }
 }
