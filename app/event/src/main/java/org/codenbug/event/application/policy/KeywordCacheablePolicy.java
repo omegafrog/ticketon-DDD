@@ -1,4 +1,4 @@
-package org.codenbug.cache.event.search.policy;
+package org.codenbug.event.application.policy;
 
 public class KeywordCacheablePolicy implements CacheablePolicy<String> {
 

@@ -1,4 +1,4 @@
-package org.codenbug.cache.event.search;
+package org.codenbug.cache;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package org.codenbug.cache.event.search.policy;
+package org.codenbug.event.application.policy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,8 +19,8 @@ import org.junit.jupiter.api.Test;
 
 class EventListSearchCacheablePolicyDispatcherTest {
 
-    private final EventListSearchCacheablePolicyDispatcher dispatcher =
-        new EventListSearchCacheablePolicyDispatcher();
+    private final org.codenbug.event.application.policy.EventListSearchCacheablePolicyDispatcher dispatcher =
+        new org.codenbug.event.application.policy.EventListSearchCacheablePolicyDispatcher();
     private final Field filterField;
     private final Field keywordField;
     private final Field pageOptionField;

@@ -1,4 +1,4 @@
-package org.codenbug.cache.event.search.policy;
+package org.codenbug.event.application.policy;
 
 import org.codenbug.event.application.PageOption;
 import org.codenbug.event.application.SortMethod;
