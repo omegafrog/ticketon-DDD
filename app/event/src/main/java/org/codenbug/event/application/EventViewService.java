@@ -1,7 +1,10 @@
 package org.codenbug.event.application;
 
 import jakarta.validation.Valid;
-import org.codenbug.event.global.EventListFilter;
+import org.codenbug.event.application.cache.EventListSearchCache;
+import org.codenbug.event.application.cache.EventListSearchCacheKey;
+import org.codenbug.event.application.cache.EventListSearchCacheValue;
+import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
 import org.springframework.data.domain.Page;

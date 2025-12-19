@@ -1,4 +1,4 @@
-package org.codenbug.event.application;
+package org.codenbug.event.application.cache;
 
 public enum SortMethod {
     VIEW_COUNT("viewCount"), DATETIME("createdAt"), EVENT_START("eventStart");

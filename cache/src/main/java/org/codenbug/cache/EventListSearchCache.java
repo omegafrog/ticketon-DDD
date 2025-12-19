@@ -2,14 +2,14 @@ package org.codenbug.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import java.lang.reflect.Field;
-import org.codenbug.event.application.EventListSearchCacheKey;
-import org.codenbug.event.application.EventListSearchCacheValue;
-import org.codenbug.event.application.policy.EventListSearchCacheablePolicyDispatcher;
+import org.codenbug.event.application.cache.EventListSearchCacheKey;
+import org.codenbug.event.application.cache.EventListSearchCacheValue;
+import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventListSearchCache implements
-    org.codenbug.event.application.EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> {
+    org.codenbug.event.application.cache.EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> {
 
     private final Cache cache;
     private final EventListSearchCacheablePolicyDispatcher cacheablePolicyDispatcher;

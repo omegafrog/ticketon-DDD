@@ -1,4 +1,4 @@
-package org.codenbug.event.application.policy;
+package org.codenbug.event.application.cache.policy;
 
 public class KeywordCacheablePolicy implements CacheablePolicy<String> {
 

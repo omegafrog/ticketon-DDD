@@ -9,10 +9,10 @@
 //import org.codenbug.event.domain.EventId;
 //import org.codenbug.event.domain.EventRepository;
 //import org.codenbug.event.domain.ManagerId;
-//import org.codenbug.event.global.EventInfoResponse;
-//import org.codenbug.event.global.EventListFilter;
-//import org.codenbug.event.global.EventListResponse;
-//import org.codenbug.event.global.EventManagerListResponse;
+//import org.codenbug.event.global.dto.response.EventInfoResponse;
+//import org.codenbug.event.global.dto.EventListFilter;
+//import org.codenbug.event.global.dto.response.EventListResponse;
+//import org.codenbug.event.global.dto.response.EventManagerListResponse;
 //import org.codenbug.seat.domain.SeatLayout;
 //import org.codenbug.seat.domain.SeatLayoutRepository;
 //import org.codenbug.seat.global.SeatDto;

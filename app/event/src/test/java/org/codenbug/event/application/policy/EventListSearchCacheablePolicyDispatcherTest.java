@@ -7,20 +7,21 @@ import java.time.LocalDate;
 import java.util.List;
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
-import org.codenbug.event.application.EventListSearchCacheKey;
-import org.codenbug.event.application.PageOption;
-import org.codenbug.event.application.SortMethod;
-import org.codenbug.event.application.SortOption;
+import org.codenbug.event.application.cache.EventListSearchCacheKey;
+import org.codenbug.event.application.cache.PageOption;
+import org.codenbug.event.application.cache.SortMethod;
+import org.codenbug.event.application.cache.SortOption;
+import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
 import org.codenbug.event.domain.EventStatus;
-import org.codenbug.event.global.CostRange;
-import org.codenbug.event.global.EventListFilter;
+import org.codenbug.event.global.dto.CostRange;
+import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.seat.domain.RegionLocation;
 import org.junit.jupiter.api.Test;
 
 class EventListSearchCacheablePolicyDispatcherTest {
 
-    private final org.codenbug.event.application.policy.EventListSearchCacheablePolicyDispatcher dispatcher =
-        new org.codenbug.event.application.policy.EventListSearchCacheablePolicyDispatcher();
+    private final EventListSearchCacheablePolicyDispatcher dispatcher =
+        new EventListSearchCacheablePolicyDispatcher();
     private final Field filterField;
     private final Field keywordField;
     private final Field pageOptionField;

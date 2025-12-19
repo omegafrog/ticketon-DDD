@@ -1,10 +1,10 @@
-package org.codenbug.event.application.policy;
+package org.codenbug.event.application.cache.policy;
 
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.codenbug.event.global.CostRange;
-import org.codenbug.event.global.EventListFilter;
+import org.codenbug.event.global.dto.CostRange;
+import org.codenbug.event.global.dto.EventListFilter;
 
 @Slf4j
 public class EventListFilterCacheablePolicy implements CacheablePolicy<EventListFilter> {

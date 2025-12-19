@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import org.codenbug.event.global.PresignedUrlResponse;
+import org.codenbug.event.global.dto.response.PresignedUrlResponse;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class DevImageUploadService implements ImageUploadService {
     private PresignedUrlResponse generatePresignedUrl(String originalFileName) {
         String hashedFileName = generateHashedFileName(originalFileName);
         String presignedUrl = BASE_URL + hashedFileName + FILE_EXTENSION;
-        
+
         return new PresignedUrlResponse(originalFileName, presignedUrl);
     }
 
@@ -33,7 +33,7 @@ public class DevImageUploadService implements ImageUploadService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest((originalFileName + System.currentTimeMillis()).getBytes());
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -42,14 +42,14 @@ public class DevImageUploadService implements ImageUploadService {
                 }
                 hexString.append(hex);
             }
-            
+
             // 적당한 길이로 자르기 (16자리)
             return hexString.toString().substring(0, 16);
-            
+
         } catch (NoSuchAlgorithmException e) {
             // 해싱 실패 시 현재 시간 기반 랜덤 문자열 사용
-            return String.valueOf(System.currentTimeMillis()).substring(5) + 
-                   Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
+            return String.valueOf(System.currentTimeMillis()).substring(5) +
+                Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
         }
     }
 }

@@ -1,4 +1,4 @@
-package org.codenbug.event.global;
+package org.codenbug.event.global.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 public class EventManagerListResponse {
+
     private final String eventId;
     private final String title;
     private final EventCategoryId category;

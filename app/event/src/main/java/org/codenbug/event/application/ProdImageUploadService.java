@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import org.codenbug.event.global.PresignedUrlResponse;
+import org.codenbug.event.global.dto.response.PresignedUrlResponse;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +27,13 @@ public class ProdImageUploadService implements ImageUploadService {
     private PresignedUrlResponse generateS3PresignedUrl(String originalFileName) {
         String hashedFileName = generateHashedFileName(originalFileName);
         String s3Key = "events/images/" + hashedFileName + ".webp";
-        
+
         // TODO: AWS S3 presigned URL 생성 로직 구현
         // URL presignedUrl = s3Client.generatePresignedUrl(bucketName, s3Key, expiration);
-        
+
         // 임시로 S3 URL 형태로 반환 (실제 구현 시 위의 코드로 교체)
         String tempS3Url = "https://your-bucket.s3.amazonaws.com/" + s3Key;
-        
+
         return new PresignedUrlResponse(originalFileName, tempS3Url);
     }
 
@@ -41,7 +41,7 @@ public class ProdImageUploadService implements ImageUploadService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest((originalFileName + System.currentTimeMillis()).getBytes());
-            
+
             StringBuilder hexString = new StringBuilder();
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
@@ -50,14 +50,14 @@ public class ProdImageUploadService implements ImageUploadService {
                 }
                 hexString.append(hex);
             }
-            
+
             // 적당한 길이로 자르기 (16자리)
             return hexString.toString().substring(0, 16);
-            
+
         } catch (NoSuchAlgorithmException e) {
             // 해싱 실패 시 현재 시간 기반 랜덤 문자열 사용
-            return String.valueOf(System.currentTimeMillis()).substring(5) + 
-                   Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
+            return String.valueOf(System.currentTimeMillis()).substring(5) +
+                Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
         }
     }
 }

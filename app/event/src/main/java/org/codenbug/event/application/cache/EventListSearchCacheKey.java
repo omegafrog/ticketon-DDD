@@ -1,7 +1,7 @@
-package org.codenbug.event.application;
+package org.codenbug.event.application.cache;
 
 import java.util.Objects;
-import org.codenbug.event.global.EventListFilter;
+import org.codenbug.event.global.dto.EventListFilter;
 import org.springframework.data.domain.Pageable;
 
 public record EventListSearchCacheKey(EventListFilter filter, String keyword,

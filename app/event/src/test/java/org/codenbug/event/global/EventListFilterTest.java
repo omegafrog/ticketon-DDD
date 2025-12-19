@@ -10,6 +10,8 @@ import java.util.List;
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.event.domain.EventStatus;
+import org.codenbug.event.global.dto.CostRange;
+import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.seat.domain.Location;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -1,9 +1,10 @@
-package org.codenbug.event.global;
+package org.codenbug.event.global.dto.response;
 
 import lombok.Getter;
 
 @Getter
 public class PresignedUrlResponse {
+
     private final String fileName;
     private final String url;
 

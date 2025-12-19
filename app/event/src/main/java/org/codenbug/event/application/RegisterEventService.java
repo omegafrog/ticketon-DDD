@@ -7,69 +7,71 @@ import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.MetaData;
-import org.codenbug.event.ui.NewEventRequest;
+import org.codenbug.event.global.dto.request.NewEventRequest;
 import org.codenbug.message.EventCreatedEvent;
 import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.seat.global.SeatLayoutResponse;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RegisterEventService {
-	private final EventRepository eventRepository;
-	private final EventCategoryService eventCategoryService;
-	private final RegisterSeatLayoutService seatLayoutService;
-	private final ApplicationEventPublisher eventPublisher;
 
-	public RegisterEventService(EventRepository eventRepository, EventCategoryService eventCategoryService,
-		RegisterSeatLayoutService seatLayoutService, ApplicationEventPublisher eventPublisher) {
-		this.eventRepository = eventRepository;
-		this.eventCategoryService = eventCategoryService;
-		this.seatLayoutService = seatLayoutService;
-		this.eventPublisher = eventPublisher;
-	}
+    private final EventRepository eventRepository;
+    private final EventCategoryService eventCategoryService;
+    private final RegisterSeatLayoutService seatLayoutService;
+    private final ApplicationEventPublisher eventPublisher;
 
-	@Transactional
-	public EventId registerNewEvent(NewEventRequest request) {
+    public RegisterEventService(EventRepository eventRepository,
+        EventCategoryService eventCategoryService,
+        RegisterSeatLayoutService seatLayoutService, ApplicationEventPublisher eventPublisher) {
+        this.eventRepository = eventRepository;
+        this.eventCategoryService = eventCategoryService;
+        this.seatLayoutService = seatLayoutService;
+        this.eventPublisher = eventPublisher;
+    }
 
-		eventCategoryService.validateExist(request.getCategoryId().getValue());
+    @Transactional
+    public EventId registerNewEvent(NewEventRequest request) {
 
-		SeatLayoutResponse seatLayoutResponse = seatLayoutService.registerSeatLayout(request.getSeatLayout());
+        eventCategoryService.validateExist(request.getCategoryId().getValue());
 
-		EventInformation eventInformation = new EventInformation(request);
+        SeatLayoutResponse seatLayoutResponse = seatLayoutService.registerSeatLayout(
+            request.getSeatLayout());
 
-		MetaData metaData = new MetaData();
+        EventInformation eventInformation = new EventInformation(request);
 
-		ManagerId managerId = getLoggedInManager();
+        MetaData metaData = new MetaData();
 
-		Event event = new Event(eventInformation, managerId, seatLayoutResponse.getId(), metaData);
-		eventRepository.save(event);
+        ManagerId managerId = getLoggedInManager();
 
-		// Publish event after transaction success using Spring's ApplicationEventPublisher
-		EventCreatedEvent eventCreatedEvent = new EventCreatedEvent(
-			event.getEventId().getEventId(),
-			event.getEventInformation().getTitle(),
-			event.getManagerId().getManagerId(),
-			event.getSeatLayoutId().getValue(),
-			event.getEventInformation().getSeatSelectable(),
-			seatLayoutResponse.getLocationName(),
-			event.getEventInformation().getEventStart().toString(),
-			event.getEventInformation().getEventEnd().toString(),
-			event.getEventInformation().getMinPrice(),
-			event.getEventInformation().getMaxPrice(),
-			event.getEventInformation().getCategoryId().getValue()
-		);
-		eventPublisher.publishEvent(eventCreatedEvent);
+        Event event = new Event(eventInformation, managerId, seatLayoutResponse.getId(), metaData);
+        eventRepository.save(event);
 
-		return event.getEventId();
-	}
+        // Publish event after transaction success using Spring's ApplicationEventPublisher
+        EventCreatedEvent eventCreatedEvent = new EventCreatedEvent(
+            event.getEventId().getEventId(),
+            event.getEventInformation().getTitle(),
+            event.getManagerId().getManagerId(),
+            event.getSeatLayoutId().getValue(),
+            event.getEventInformation().getSeatSelectable(),
+            seatLayoutResponse.getLocationName(),
+            event.getEventInformation().getEventStart().toString(),
+            event.getEventInformation().getEventEnd().toString(),
+            event.getEventInformation().getMinPrice(),
+            event.getEventInformation().getMaxPrice(),
+            event.getEventInformation().getCategoryId().getValue()
+        );
+        eventPublisher.publishEvent(eventCreatedEvent);
 
-	private ManagerId getLoggedInManager() {
-		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
-		return new ManagerId(userSecurityToken.getUserId());
-	}
+        return event.getEventId();
+    }
+
+    private ManagerId getLoggedInManager() {
+        UserSecurityToken userSecurityToken = LoggedInUserContext.get();
+        return new ManagerId(userSecurityToken.getUserId());
+    }
 }

@@ -1,4 +1,4 @@
-package org.codenbug.event.application;
+package org.codenbug.event.application.cache;
 
 import java.util.Objects;
 

@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.event.global.FileUploadRequest;
-import org.codenbug.event.global.PresignedUrlResponse;
+import org.codenbug.event.global.dto.request.FileUploadRequest;
+import org.codenbug.event.global.dto.response.PresignedUrlResponse;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.ResponseEntity;
@@ -27,9 +27,9 @@ public class ImageUploadController {
     @RoleRequired(Role.MANAGER)
     @PostMapping("/image/url")
     public ResponseEntity<RsData<List<PresignedUrlResponse>>> generateImageUploadUrls(
-            @RequestBody FileUploadRequest request) {
+        @RequestBody FileUploadRequest request) {
         List<PresignedUrlResponse> presignedUrls =
-                request.getFileNames().stream().map(this::generatePresignedUrl).toList();
+            request.getFileNames().stream().map(this::generatePresignedUrl).toList();
 
         return ResponseEntity.ok(new RsData<>("200", "presigned URL 생성 성공", presignedUrls));
     }
@@ -39,7 +39,7 @@ public class ImageUploadController {
         String presignedUrl = BASE_URL + hashedFileName + FILE_EXTENSION;
 
         System.out.println(
-                "Generated presigned URL: " + presignedUrl + " for file: " + originalFileName);
+            "Generated presigned URL: " + presignedUrl + " for file: " + originalFileName);
 
         return new PresignedUrlResponse(originalFileName, presignedUrl);
     }
@@ -64,7 +64,7 @@ public class ImageUploadController {
         } catch (NoSuchAlgorithmException e) {
             // 해싱 실패 시 현재 시간 기반 랜덤 문자열 사용
             return String.valueOf(System.currentTimeMillis()).substring(5)
-                    + Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
+                + Integer.toHexString(originalFileName.hashCode()).substring(0, 6);
         }
     }
 }

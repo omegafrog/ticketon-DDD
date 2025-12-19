@@ -1,7 +1,7 @@
-package org.codenbug.event.application.policy;
+package org.codenbug.event.application.cache.policy;
 
-import org.codenbug.event.application.PageOption;
-import org.codenbug.event.application.SortMethod;
+import org.codenbug.event.application.cache.PageOption;
+import org.codenbug.event.application.cache.SortMethod;
 
 public class PageOptionCacheablePolicy implements CacheablePolicy<PageOption> {
 
