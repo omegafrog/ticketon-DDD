@@ -1,31 +1,25 @@
 package org.codenbug.cache.event.search;
 
-import ch.qos.logback.core.util.TimeUtil;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import org.codenbug.event.application.*;
-import org.codenbug.event.global.CostRange;
-import org.codenbug.event.global.EventListFilter;
+import java.lang.reflect.Field;
+import org.codenbug.cache.event.search.policy.EventListSearchCacheablePolicyDispatcher;
+import org.codenbug.event.application.EventListSearchCacheKey;
+import org.codenbug.event.application.EventListSearchCacheValue;
+import org.codenbug.event.application.PageOption;
+import org.codenbug.event.application.SortMethod;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Component;
 
-import javax.swing.*;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
-import java.util.List;
-import java.util.Set;
-
 @Component
-public class EventListSearchCache implements org.codenbug.event.application.EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> {
-    private final Cache cache;
-    private static final LocalDate today = LocalDate.now();
-    private static final Set<LocalDate> startDateFilterOptions = Set.of(today.minusDays(30), today.minusDays(7), today.minusDays(1));
-    private static final Set<CostRange> costRangeFilterOptions = Set.of(new CostRange(0, 10000), new CostRange(10001, 30000), new CostRange(30001, 50000));
+public class EventListSearchCache implements
+    org.codenbug.event.application.EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> {
 
-    public EventListSearchCache(Cache cache) {
+    private final Cache cache;
+    private final EventListSearchCacheablePolicyDispatcher cacheablePolicyDispatcher;
+
+    public EventListSearchCache(Cache cache,
+        EventListSearchCacheablePolicyDispatcher cacheablePolicyDispatcher) {
         this.cache = cache;
+        this.cacheablePolicyDispatcher = cacheablePolicyDispatcher;
     }
 
     @Override
@@ -42,28 +36,33 @@ public class EventListSearchCache implements org.codenbug.event.application.Even
 
     @Override
     public boolean isCacheable(EventListSearchCacheKey cacheKey) {
-        EventListFilter filter = cacheKey.filter();
-        String keyword = cacheKey.keyword();
-        PageOption pageOption = cacheKey.pageOption();
+        Class<? extends EventListSearchCacheKey> targetClass = cacheKey.getClass();
+        Field[] fields = targetClass.getDeclaredFields();
 
-        return isCacheable(filter) && isCacheable(keyword) && isCacheable(pageOption);
-    }
+        try {
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object val = field.get(cacheKey);
 
-    private static boolean isCacheable(EventListFilter filter){
-        return startDateFilterOptions.contains(filter.getStartDate()) &&
-                (filter.getRegionLocationList().size() == 1) &&
-                costRangeFilterOptions.contains(filter.getCostRange()) &&
-                (filter.getEventCategoryList().size() == 1);
-    }
-    private static boolean isCacheable(String keyword){
+                if (val == null) {
+                    return true;
+                }
+                if (!cacheablePolicyDispatcher.isCacheable(field, val)) {
+                    return false;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            return false;
+        }
         return true;
     }
-    private static boolean isCacheable(PageOption pageOption){
+
+    private static boolean isCacheable(PageOption pageOption) {
         return pageOption.page() < 5 &&
-                pageOption.sortOptions().stream().allMatch(option ->
-                        option.sortMethod().equals(SortMethod.DATETIME) ||
-                                option.sortMethod().equals(SortMethod.VIEW_COUNT) ||
-                                option.sortMethod().equals(SortMethod.EVENT_START));
+            pageOption.sortOptions().stream().allMatch(option ->
+                option.sortMethod().equals(SortMethod.DATETIME) ||
+                    option.sortMethod().equals(SortMethod.VIEW_COUNT) ||
+                    option.sortMethod().equals(SortMethod.EVENT_START));
     }
 
 
