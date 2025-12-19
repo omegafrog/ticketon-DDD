@@ -1,12 +1,10 @@
 package org.codenbug.cache.event.search;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import java.lang.reflect.Field;
 import org.codenbug.cache.event.search.policy.EventListSearchCacheablePolicyDispatcher;
 import org.codenbug.event.application.EventListSearchCacheKey;
 import org.codenbug.event.application.EventListSearchCacheValue;
-import org.codenbug.event.application.PageOption;
-import org.codenbug.event.application.SortMethod;
-import org.springframework.cache.Cache;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -29,7 +27,7 @@ public class EventListSearchCache implements
 
     @Override
     public EventListSearchCacheValue get(EventListSearchCacheKey key) {
-        EventListSearchCacheValue result = (EventListSearchCacheValue) cache.get(key).get();
+        EventListSearchCacheValue result = (EventListSearchCacheValue) cache.getIfPresent(key);
         return result;
     }
 
@@ -44,9 +42,6 @@ public class EventListSearchCache implements
                 field.setAccessible(true);
                 Object val = field.get(cacheKey);
 
-                if (val == null) {
-                    return true;
-                }
                 if (!cacheablePolicyDispatcher.isCacheable(field, val)) {
                     return false;
                 }
@@ -57,17 +52,9 @@ public class EventListSearchCache implements
         return true;
     }
 
-    private static boolean isCacheable(PageOption pageOption) {
-        return pageOption.page() < 5 &&
-            pageOption.sortOptions().stream().allMatch(option ->
-                option.sortMethod().equals(SortMethod.DATETIME) ||
-                    option.sortMethod().equals(SortMethod.VIEW_COUNT) ||
-                    option.sortMethod().equals(SortMethod.EVENT_START));
-    }
-
 
     @Override
     public boolean exist(EventListSearchCacheKey cacheKey) {
-        return false;
+        return cache.getIfPresent(cacheKey) != null;
     }
 }

@@ -7,6 +7,7 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
 
     implementation project(':app:event')
+    implementation project(':app:seat')
     testImplementation project(':app:seat')
     testImplementation project(':app:category-id')
 }
