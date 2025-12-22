@@ -1,8 +1,7 @@
 package org.codenbug.event.application;
 
 import java.util.List;
-
-import org.codenbug.event.global.dto.response.PresignedUrlResponse;
+import org.codenbug.event.application.dto.response.PresignedUrlResponse;
 
 public interface ImageUploadService {
 

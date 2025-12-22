@@ -3,11 +3,10 @@ package org.codenbug.app.ui;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.event.global.dto.request.FileUploadRequest;
-import org.codenbug.event.global.dto.response.PresignedUrlResponse;
+import org.codenbug.event.application.dto.request.FileUploadRequest;
+import org.codenbug.event.application.dto.response.PresignedUrlResponse;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.ResponseEntity;

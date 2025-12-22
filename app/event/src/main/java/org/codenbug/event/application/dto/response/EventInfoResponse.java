@@ -1,16 +1,14 @@
-package org.codenbug.event.global.dto.response;
+package org.codenbug.event.application.dto.response;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Value;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.seat.global.SeatLayoutResponse;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Value;
 
 @Getter
 @NoArgsConstructor

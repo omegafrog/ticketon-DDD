@@ -1,11 +1,9 @@
-package org.codenbug.event.global.dto.request;
+package org.codenbug.event.application.dto.request;
 
 import java.time.LocalDateTime;
-
+import lombok.Getter;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.seat.global.RegisterSeatLayoutDto;
-
-import lombok.Getter;
 
 @Getter
 public class UpdateEventRequest {

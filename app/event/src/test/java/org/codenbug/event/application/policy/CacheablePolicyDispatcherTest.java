@@ -12,13 +12,13 @@ import org.codenbug.event.application.cache.PageOption;
 import org.codenbug.event.application.cache.SortMethod;
 import org.codenbug.event.application.cache.SortOption;
 import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
+import org.codenbug.event.application.dto.CostRange;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.domain.EventStatus;
-import org.codenbug.event.global.dto.CostRange;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.seat.domain.RegionLocation;
 import org.junit.jupiter.api.Test;
 
-class EventListSearchCacheablePolicyDispatcherTest {
+class CacheablePolicyDispatcherTest {
 
     private final EventListSearchCacheablePolicyDispatcher dispatcher =
         new EventListSearchCacheablePolicyDispatcher();
@@ -26,7 +26,7 @@ class EventListSearchCacheablePolicyDispatcherTest {
     private final Field keywordField;
     private final Field pageOptionField;
 
-    EventListSearchCacheablePolicyDispatcherTest() throws NoSuchFieldException {
+    CacheablePolicyDispatcherTest() throws NoSuchFieldException {
         this.filterField = EventListSearchCacheKey.class.getDeclaredField("filter");
         this.keywordField = EventListSearchCacheKey.class.getDeclaredField("keyword");
         this.pageOptionField = EventListSearchCacheKey.class.getDeclaredField("pageOption");

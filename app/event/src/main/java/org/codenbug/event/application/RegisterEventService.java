@@ -1,13 +1,13 @@
 package org.codenbug.event.application;
 
 import org.codenbug.categoryid.app.EventCategoryService;
+import org.codenbug.event.application.dto.request.NewEventRequest;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.MetaData;
-import org.codenbug.event.global.dto.request.NewEventRequest;
 import org.codenbug.message.EventCreatedEvent;
 import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.seat.global.SeatLayoutResponse;

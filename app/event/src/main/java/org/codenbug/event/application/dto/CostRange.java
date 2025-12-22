@@ -1,4 +1,4 @@
-package org.codenbug.event.global.dto;
+package org.codenbug.event.application.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,9 +11,9 @@ public class CostRange {
     private Integer max = 0;
 
     public CostRange(Integer min, Integer max) {
-		if (min > max) {
-			throw new IllegalArgumentException("min should be less than max");
-		}
+        if (min > max) {
+            throw new IllegalArgumentException("min should be less than max");
+        }
         this.min = min;
         this.max = max;
 

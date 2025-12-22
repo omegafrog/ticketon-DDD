@@ -8,8 +8,10 @@ dependencies {
 
     implementation project(':app:event')
     implementation project(':app:seat')
+    implementation project(':cache-core')
     testImplementation project(':app:seat')
     testImplementation project(':app:category-id')
+
 }
 
 tasks.named('test') {

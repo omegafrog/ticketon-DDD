@@ -1,17 +1,20 @@
 package org.codenbug.event.global;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
+import org.codenbug.event.application.dto.CostRange;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.domain.EventStatus;
-import org.codenbug.event.global.dto.CostRange;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.seat.domain.Location;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

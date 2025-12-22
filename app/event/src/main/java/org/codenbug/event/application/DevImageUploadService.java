@@ -3,8 +3,7 @@ package org.codenbug.event.application;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import org.codenbug.event.global.dto.response.PresignedUrlResponse;
+import org.codenbug.event.application.dto.response.PresignedUrlResponse;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 

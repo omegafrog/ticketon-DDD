@@ -1,25 +1,47 @@
 package org.codenbug.event.application.cache.policy;
 
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.Set;
+import org.codenbug.cachecore.event.search.CacheablePolicy;
+import org.codenbug.cachecore.event.search.CacheablePolicyDispatcher;
+import org.codenbug.event.application.cache.EventListSearchCacheKey;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EventListSearchCacheablePolicyDispatcher {
-
-    private final List<CacheablePolicy<?>> eventListFilterPolicies;
+public class EventListSearchCacheablePolicyDispatcher extends
+    CacheablePolicyDispatcher<EventListSearchCacheKey> {
 
     public EventListSearchCacheablePolicyDispatcher() {
-        this.eventListFilterPolicies = List.of(new EventListFilterCacheablePolicy(),
-            new KeywordCacheablePolicy(), new PageOptionCacheablePolicy());
+        super(Set.of(new EventListFilterCacheablePolicy(),
+            new KeywordCacheablePolicy(), new PageOptionCacheablePolicy()));
     }
 
-    public boolean isCacheable(Field field, Object value) {
+    @Override
+    public boolean isCacheable(EventListSearchCacheKey cacheKey) {
+        Class<? extends EventListSearchCacheKey> targetClass = cacheKey.getClass();
+        Field[] fields = targetClass.getDeclaredFields();
+
+        try {
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Object val = field.get(cacheKey);
+
+                if (!fieldIsCacheable(field, val)) {
+                    return false;
+                }
+            }
+        } catch (IllegalAccessException e) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean fieldIsCacheable(Field field, Object value) {
         if (value == null) {
             return true;
         }
 
-        for (CacheablePolicy<?> policy : eventListFilterPolicies) {
+        for (CacheablePolicy<?> policy : policies) {
             if (policy.support(field.getType())) {
                 return invoke(policy, value);
             }
@@ -27,7 +49,8 @@ public class EventListSearchCacheablePolicyDispatcher {
         return false;
     }
 
-    private <T> boolean invoke(CacheablePolicy<T> policy, Object value) {
+    private <T> boolean invoke(CacheablePolicy<T> policy,
+        Object value) {
         return policy.isCacheable((T) value);
     }
 }

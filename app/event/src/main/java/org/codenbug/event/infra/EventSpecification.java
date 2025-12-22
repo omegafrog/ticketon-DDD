@@ -4,11 +4,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
-
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.ManagerId;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
@@ -69,38 +68,38 @@ public class EventSpecification {
     // --- 개별 필터 조건 (기존과 동일) ---
 
     private static Specification<Event> locationIn(List<String> locations) {
-		if (locations == null || locations.isEmpty()) {
-			return null;
-		}
+        if (locations == null || locations.isEmpty()) {
+            return null;
+        }
         return (root, query, builder) -> root.get("eventInformation").get("location").in(locations);
     }
 
     private static Specification<Event> categoryIn(List<Long> categories) {
-		if (categories == null || categories.isEmpty()) {
-			return null;
-		}
+        if (categories == null || categories.isEmpty()) {
+            return null;
+        }
         return (root, query, builder) -> root.get("category").in(categories);
     }
 
     private static Specification<Event> statusIn(List<EventStatus> statuses) {
-		if (statuses == null || statuses.isEmpty()) {
-			return null;
-		}
+        if (statuses == null || statuses.isEmpty()) {
+            return null;
+        }
         return (root, query, builder) -> root.get("status").in(statuses
             .stream().map(status -> status.name()).toList());
     }
 
     private static Specification<Event> dateBetween(LocalDateTime start, LocalDateTime end) {
-		if (start == null || end == null) {
-			return null;
-		}
+        if (start == null || end == null) {
+            return null;
+        }
         return (root, query, builder) -> builder.between(root.get("bookingStart"), start, end);
     }
 
     private static Specification<Event> costInRange(Integer minCost, Integer maxCost) {
-		if (minCost == null && maxCost == null) {
-			return null;
-		}
+        if (minCost == null && maxCost == null) {
+            return null;
+        }
 
         return (root, query, builder) -> {
             if (minCost != null && maxCost != null) {

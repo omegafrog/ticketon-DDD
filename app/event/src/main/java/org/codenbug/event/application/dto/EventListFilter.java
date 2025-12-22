@@ -1,4 +1,4 @@
-package org.codenbug.event.global.dto;
+package org.codenbug.event.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;

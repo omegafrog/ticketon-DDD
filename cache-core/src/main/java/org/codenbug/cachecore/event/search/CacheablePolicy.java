@@ -1,4 +1,4 @@
-package org.codenbug.event.application.cache.policy;
+package org.codenbug.cachecore.event.search;
 
 public interface CacheablePolicy<T> {
 

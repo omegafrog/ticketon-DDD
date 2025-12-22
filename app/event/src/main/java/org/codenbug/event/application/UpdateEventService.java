@@ -1,19 +1,18 @@
 package org.codenbug.event.application;
 
+import jakarta.transaction.Transactional;
+import org.codenbug.event.application.dto.request.UpdateEventRequest;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.ManagerId;
-import org.codenbug.event.global.dto.request.UpdateEventRequest;
 import org.codenbug.seat.app.UpdateSeatLayoutService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
 
 @Service
 public class UpdateEventService {

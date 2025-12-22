@@ -9,12 +9,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.codenbug.event.application.cache.EventListSearchCache;
+import org.codenbug.cachecore.event.search.CacheClient;
+import org.codenbug.cachecore.event.search.CacheKeyVersionManager;
 import org.codenbug.event.application.cache.EventListSearchCacheKey;
 import org.codenbug.event.application.cache.EventListSearchCacheValue;
+import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.domain.QEvent;
 import org.codenbug.event.domain.QSeatLayoutStats;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
@@ -40,22 +42,29 @@ public class EventViewRepositoryImpl implements EventViewRepository {
     private final QEvent event = QEvent.event;
     private final QSeatLayout seatLayout = QSeatLayout.seatLayout;
     private final ObjectMapper objectMapper;
-    private final EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> searchCache;
+    private final CacheClient<EventListSearchCacheKey, EventListSearchCacheValue> searchCache;
+    private final CacheKeyVersionManager versionManager;
+    private final EventListSearchCacheablePolicyDispatcher policyDispatcher;
 
     public EventViewRepositoryImpl(
         @Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory,
         RedisViewCountService redisViewCountService, ObjectMapper objectMapper,
-        EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> searchCache) {
+        CacheClient<EventListSearchCacheKey, EventListSearchCacheValue> searchCache,
+        CacheKeyVersionManager versionManager,
+        EventListSearchCacheablePolicyDispatcher policyDispatcher) {
         this.readOnlyQueryFactory = readOnlyQueryFactory;
         this.redisViewCountService = redisViewCountService;
         this.objectMapper = objectMapper;
         this.searchCache = searchCache;
+        this.versionManager = versionManager;
+        this.policyDispatcher = policyDispatcher;
     }
 
     @Override
     public Page<EventListProjection> findEventList(String keyword, EventListFilter filter,
         Pageable pageable) {
-        EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(filter, keyword, pageable);
+        EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(versionManager.getVersion(),
+            filter, keyword, pageable);
 
         if (searchCache.exist(cacheKey)) {
             EventListSearchCacheValue result = searchCache.get(cacheKey);
@@ -146,7 +155,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
         PageImpl<EventListProjection> result = new PageImpl<>(results, pageable,
             total != null ? total : 0);
 
-        if (searchCache.isCacheable(cacheKey)) {
+        if (policyDispatcher.isCacheable(cacheKey)) {
             searchCache.put(cacheKey, new EventListSearchCacheValue(result.getContent(),
                 (int) result.getTotalElements()));
         }

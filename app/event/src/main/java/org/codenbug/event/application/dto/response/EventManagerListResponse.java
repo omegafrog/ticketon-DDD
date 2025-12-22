@@ -1,11 +1,9 @@
-package org.codenbug.event.global.dto.response;
+package org.codenbug.event.application.dto.response;
 
 import java.time.LocalDateTime;
-
+import lombok.Getter;
 import org.codenbug.event.domain.EventCategoryId;
 import org.codenbug.event.domain.EventStatus;
-
-import lombok.Getter;
 
 @Getter
 public class EventManagerListResponse {

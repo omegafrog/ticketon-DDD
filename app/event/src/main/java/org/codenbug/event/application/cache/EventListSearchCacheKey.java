@@ -1,14 +1,15 @@
 package org.codenbug.event.application.cache;
 
 import java.util.Objects;
-import org.codenbug.event.global.dto.EventListFilter;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.springframework.data.domain.Pageable;
 
-public record EventListSearchCacheKey(EventListFilter filter, String keyword,
+public record EventListSearchCacheKey(long version, EventListFilter filter, String keyword,
                                       PageOption pageOption) {
 
-    public EventListSearchCacheKey(EventListFilter filter, String keyword, Pageable pageable) {
-        this(filter, keyword,
+    public EventListSearchCacheKey(long version, EventListFilter filter, String keyword,
+        Pageable pageable) {
+        this(version, filter, keyword,
             new PageOption(pageable.getPageNumber(), pageable.getSort().stream().map(sort -> {
                 if (sort.getProperty().equals(SortMethod.DATETIME.columnName)) {
                     return new SortOption(SortMethod.DATETIME, sort.isAscending());

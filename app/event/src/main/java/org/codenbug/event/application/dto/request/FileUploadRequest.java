@@ -1,7 +1,6 @@
-package org.codenbug.event.global.dto.request;
+package org.codenbug.event.application.dto.request;
 
 import java.util.List;
-
 import lombok.Getter;
 
 @Getter

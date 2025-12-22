@@ -2,7 +2,7 @@ package org.codenbug.cache;
 
 import org.junit.jupiter.api.Test;
 
-class EventListSearchCacheTest {
+class CacheClientImplTest {
 
     @Test
     void put() {

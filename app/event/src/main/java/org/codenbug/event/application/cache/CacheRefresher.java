@@ -4,11 +4,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import org.codenbug.cachecore.event.search.CacheClient;
+import org.codenbug.cachecore.event.search.CacheKeyVersionManager;
 import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.event.application.cache.policy.EventListFilterCacheablePolicy;
-import org.codenbug.event.global.dto.CostRange;
-import org.codenbug.event.global.dto.EventListFilter;
+import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
+import org.codenbug.event.application.dto.CostRange;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.seat.domain.RegionLocation;
@@ -23,13 +26,19 @@ public class CacheRefresher {
 
     private static final int DEFAULT_PAGE_SIZE = 30;
 
-    private final EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> eventListSearchCache;
+    private final CacheClient<EventListSearchCacheKey, EventListSearchCacheValue> eventListSearchCache;
+    private final CacheKeyVersionManager versionManager;
+    private final EventListSearchCacheablePolicyDispatcher dispatcher;
     private final EventViewRepository eventViewRepository;
 
     public CacheRefresher(
-        EventListSearchCache<EventListSearchCacheKey, EventListSearchCacheValue> eventListSearchCache,
+        CacheClient<EventListSearchCacheKey, EventListSearchCacheValue> eventListSearchCache,
+        CacheKeyVersionManager versionManager,
+        EventListSearchCacheablePolicyDispatcher dispatcher,
         EventViewRepository eventViewRepository) {
         this.eventListSearchCache = eventListSearchCache;
+        this.versionManager = versionManager;
+        this.dispatcher = dispatcher;
         this.eventViewRepository = eventViewRepository;
     }
 
@@ -41,7 +50,8 @@ public class CacheRefresher {
                 target.keyword(), target.filter(), pageable);
 
             EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(
-                target.filter(), target.keyword(), target.pageOption());
+                versionManager.getVersion(), target.filter(), target.keyword(),
+                target.pageOption());
 
             if (!eventListSearchCache.exist(cacheKey)) {
                 eventListSearchCache.put(cacheKey,
@@ -60,9 +70,9 @@ public class CacheRefresher {
         for (EventListFilter filter : filters) {
             for (String keyword : keywords) {
                 for (PageOption pageOption : pageOptions) {
-                    EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(filter,
-                        keyword, pageOption);
-                    if (eventListSearchCache.isCacheable(cacheKey)) {
+                    EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(
+                        versionManager.getVersion(), filter, keyword, pageOption);
+                    if (dispatcher.isCacheable(cacheKey)) {
                         targets.add(new CacheWarmupTarget(filter, keyword, pageOption));
                     }
                 }

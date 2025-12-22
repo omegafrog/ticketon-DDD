@@ -1,7 +1,7 @@
 package org.codenbug.event.domain;
 
-import org.codenbug.event.global.dto.response.EventInfoResponse;
-import org.codenbug.event.global.dto.EventListFilter;
+import org.codenbug.event.application.dto.EventListFilter;
+import org.codenbug.event.application.dto.response.EventInfoResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

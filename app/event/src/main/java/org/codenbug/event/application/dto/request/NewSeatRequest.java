@@ -1,11 +1,9 @@
-package org.codenbug.event.global.dto.request;
+package org.codenbug.event.application.dto.request;
 
 import java.util.List;
-
-import org.codenbug.seat.global.SeatDto;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.codenbug.seat.global.SeatDto;
 
 @Getter
 @NoArgsConstructor

@@ -1,8 +1,5 @@
 package org.codenbug.event.domain;
 
-import java.time.LocalDateTime;
-import org.codenbug.event.global.dto.request.UpdateEventRequest;
-import org.codenbug.event.global.dto.request.NewEventRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -11,7 +8,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import lombok.Getter;
+import org.codenbug.event.application.dto.request.NewEventRequest;
+import org.codenbug.event.application.dto.request.UpdateEventRequest;
 
 /**
  * 유저에게 노출되는 event 객체의 정보가 포함된 객체
@@ -135,39 +135,39 @@ public class EventInformation {
     }
 
     private void validateNumericColumn() {
-		if (ageLimit != null && ageLimit < 0) {
-			throw new IllegalStateException("age limit must be at least 0");
-		}
+        if (ageLimit != null && ageLimit < 0) {
+            throw new IllegalStateException("age limit must be at least 0");
+        }
     }
 
     private void validateStringColumn() {
-		if (title == null || title.isEmpty() ||
-			thumbnailUrl == null || thumbnailUrl.isEmpty() ||
-			description == null || description.isEmpty()) {
-			throw new IllegalStateException("value must not be null or empty");
-		}
+        if (title == null || title.isEmpty() ||
+            thumbnailUrl == null || thumbnailUrl.isEmpty() ||
+            description == null || description.isEmpty()) {
+            throw new IllegalStateException("value must not be null or empty");
+        }
 
-		if (title.length() < 3) {
-			throw new IllegalStateException("title must be at least 3 characters");
-		}
+        if (title.length() < 3) {
+            throw new IllegalStateException("title must be at least 3 characters");
+        }
     }
 
     private void validateBookingNEventDate() {
-		if (bookingStart == null || bookingEnd == null || eventStart == null || eventEnd == null) {
-			throw new IllegalStateException("datetime must not be null or empty");
-		}
+        if (bookingStart == null || bookingEnd == null || eventStart == null || eventEnd == null) {
+            throw new IllegalStateException("datetime must not be null or empty");
+        }
 
-		if (bookingStart.isAfter(bookingEnd)) {
-			throw new IllegalStateException("booking start date must be before booking end date");
-		}
+        if (bookingStart.isAfter(bookingEnd)) {
+            throw new IllegalStateException("booking start date must be before booking end date");
+        }
 
-		if (eventStart.isAfter(eventEnd)) {
-			throw new IllegalStateException("event start date must be before event end date");
-		}
+        if (eventStart.isAfter(eventEnd)) {
+            throw new IllegalStateException("event start date must be before event end date");
+        }
 
-		if (bookingEnd.isAfter(eventStart)) {
-			throw new IllegalStateException("booking end date must be before event start date");
-		}
+        if (bookingEnd.isAfter(eventStart)) {
+            throw new IllegalStateException("booking end date must be before event start date");
+        }
     }
 
 }

@@ -2,7 +2,7 @@ package org.codenbug.cache;
 
 import org.junit.jupiter.api.Test;
 
-class CacheApplicationTests {
+class CacheClientApplicationTests {
 
     @Test
     void contextLoads() {

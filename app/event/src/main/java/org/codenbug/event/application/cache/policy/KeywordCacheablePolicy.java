@@ -1,6 +1,9 @@
 package org.codenbug.event.application.cache.policy;
 
-public class KeywordCacheablePolicy implements CacheablePolicy<String> {
+import org.codenbug.cachecore.event.search.CacheablePolicy;
+
+public class KeywordCacheablePolicy implements
+    CacheablePolicy<String> {
 
     @Override
     public boolean support(Class<?> type) {

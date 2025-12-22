@@ -4,11 +4,13 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
-import org.codenbug.event.global.dto.CostRange;
-import org.codenbug.event.global.dto.EventListFilter;
+import org.codenbug.cachecore.event.search.CacheablePolicy;
+import org.codenbug.event.application.dto.CostRange;
+import org.codenbug.event.application.dto.EventListFilter;
 
 @Slf4j
-public class EventListFilterCacheablePolicy implements CacheablePolicy<EventListFilter> {
+public class EventListFilterCacheablePolicy implements
+    CacheablePolicy<EventListFilter> {
 
     public static final Supplier<Set<LocalDate>> START_DATE_FILTER_OPTIONS =
         () -> {
@@ -53,7 +55,7 @@ public class EventListFilterCacheablePolicy implements CacheablePolicy<EventList
         }
 
         if (cacheable) {
-            log.info("캐싱됨");
+            log.debug("캐싱됨");
         }
         return cacheable;
     }

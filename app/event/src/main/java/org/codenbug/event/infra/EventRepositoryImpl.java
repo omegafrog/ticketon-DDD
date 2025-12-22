@@ -1,12 +1,12 @@
 package org.codenbug.event.infra;
 
+import org.codenbug.event.application.dto.EventListFilter;
+import org.codenbug.event.application.dto.response.EventInfoResponse;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.SeatLayoutId;
-import org.codenbug.event.global.dto.response.EventInfoResponse;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

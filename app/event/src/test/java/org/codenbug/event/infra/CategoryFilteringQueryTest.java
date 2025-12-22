@@ -1,17 +1,18 @@
 package org.codenbug.event.infra;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.querydsl.core.BooleanBuilder;
 import java.util.Arrays;
-
+import org.codenbug.event.application.dto.EventListFilter;
 import org.codenbug.event.domain.QEvent;
-import org.codenbug.event.global.dto.EventListFilter;
 import org.codenbug.seat.domain.QSeatLayout;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
-import com.querydsl.core.BooleanBuilder;
 
 /**
  * EventViewRepositoryImpl의 buildWhereClause 메서드에서 카테고리 필터링 로직이 올바르게 작동하는지 테스트

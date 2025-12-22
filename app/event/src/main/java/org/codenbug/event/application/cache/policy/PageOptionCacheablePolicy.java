@@ -1,9 +1,11 @@
 package org.codenbug.event.application.cache.policy;
 
+import org.codenbug.cachecore.event.search.CacheablePolicy;
 import org.codenbug.event.application.cache.PageOption;
 import org.codenbug.event.application.cache.SortMethod;
 
-public class PageOptionCacheablePolicy implements CacheablePolicy<PageOption> {
+public class PageOptionCacheablePolicy implements
+    CacheablePolicy<PageOption> {
 
     @Override
     public boolean support(Class<?> type) {

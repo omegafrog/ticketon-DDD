@@ -1,4 +1,4 @@
-package org.codenbug.event.global.dto.response;
+package org.codenbug.event.application.dto.response;
 
 import lombok.Getter;
 

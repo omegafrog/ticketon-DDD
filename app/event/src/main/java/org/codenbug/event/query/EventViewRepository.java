@@ -1,6 +1,6 @@
 package org.codenbug.event.query;
 
-import org.codenbug.event.global.dto.EventListFilter;
+import org.codenbug.event.application.dto.EventListFilter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
