@@ -1,6 +1,7 @@
 package org.codenbug.event.ui;
 
 import org.codenbug.message.EventCreatedEvent;
+import org.codenbug.cachecore.event.search.CacheKeyVersionManager;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class CacheTestController {
     
     private final ApplicationEventPublisher eventPublisher;
+    private final CacheKeyVersionManager versionManager;
     
-    public CacheTestController(ApplicationEventPublisher eventPublisher) {
+    public CacheTestController(ApplicationEventPublisher eventPublisher,
+        CacheKeyVersionManager versionManager) {
         this.eventPublisher = eventPublisher;
+        this.versionManager = versionManager;
     }
     
     @PostMapping("/cache-invalidation")
@@ -37,5 +41,11 @@ public class CacheTestController {
         eventPublisher.publishEvent(testEvent);
         
         return ResponseEntity.ok("Cache invalidation event published successfully");
+    }
+
+    @PostMapping("/cache-epoch/bump")
+    public ResponseEntity<String> bumpCacheEpoch() {
+        long version = versionManager.bumpVersion(null);
+        return ResponseEntity.ok("Cache epoch bumped to " + version);
     }
 }

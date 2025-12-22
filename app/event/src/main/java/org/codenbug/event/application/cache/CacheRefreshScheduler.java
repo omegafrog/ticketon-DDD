@@ -19,5 +19,6 @@ public class CacheRefreshScheduler {
     public void refresh() {
         log.debug("Cache refreshing...");
         cacheRefresher.refreshAllCaches();
+        log.debug("Cache refreshed.");
     }
 }

@@ -2,8 +2,8 @@ package org.codenbug.cachecore.event.search;
 
 public interface CacheKeyVersionManager {
 
-    public long getVersion();
+    long getVersion(String regionKey);
 
-    public long bumpVersion();
+    long bumpVersion(String regionKey);
 
 }

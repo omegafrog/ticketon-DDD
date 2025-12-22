@@ -1,5 +1,6 @@
 package org.codenbug.event.application;
 
+import org.codenbug.cachecore.event.search.CacheKeyVersionManager;
 import org.codenbug.categoryid.app.EventCategoryService;
 import org.codenbug.event.application.dto.request.NewEventRequest;
 import org.codenbug.event.domain.Event;
@@ -10,6 +11,7 @@ import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.MetaData;
 import org.codenbug.message.EventCreatedEvent;
 import org.codenbug.seat.app.RegisterSeatLayoutService;
+import org.codenbug.seat.domain.RegionLocation;
 import org.codenbug.seat.global.SeatLayoutResponse;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
@@ -24,14 +26,17 @@ public class RegisterEventService {
     private final EventCategoryService eventCategoryService;
     private final RegisterSeatLayoutService seatLayoutService;
     private final ApplicationEventPublisher eventPublisher;
+    private final CacheKeyVersionManager versionManager;
 
     public RegisterEventService(EventRepository eventRepository,
         EventCategoryService eventCategoryService,
-        RegisterSeatLayoutService seatLayoutService, ApplicationEventPublisher eventPublisher) {
+        RegisterSeatLayoutService seatLayoutService, ApplicationEventPublisher eventPublisher,
+        CacheKeyVersionManager versionManager) {
         this.eventRepository = eventRepository;
         this.eventCategoryService = eventCategoryService;
         this.seatLayoutService = seatLayoutService;
         this.eventPublisher = eventPublisher;
+        this.versionManager = versionManager;
     }
 
     @Transactional
@@ -51,6 +56,8 @@ public class RegisterEventService {
         Event event = new Event(eventInformation, managerId, seatLayoutResponse.getId(), metaData);
         eventRepository.save(event);
 
+        bumpCacheEpoch(seatLayoutResponse.getRegionLocation());
+
         // Publish event after transaction success using Spring's ApplicationEventPublisher
         EventCreatedEvent eventCreatedEvent = new EventCreatedEvent(
             event.getEventId().getEventId(),
@@ -65,7 +72,7 @@ public class RegisterEventService {
             event.getEventInformation().getMaxPrice(),
             event.getEventInformation().getCategoryId().getValue()
         );
-        eventPublisher.publishEvent(eventCreatedEvent);
+//        eventPublisher.publishEvent(eventCreatedEvent);
 
         return event.getEventId();
     }
@@ -73,5 +80,12 @@ public class RegisterEventService {
     private ManagerId getLoggedInManager() {
         UserSecurityToken userSecurityToken = LoggedInUserContext.get();
         return new ManagerId(userSecurityToken.getUserId());
+    }
+
+    private void bumpCacheEpoch(RegionLocation regionLocation) {
+        versionManager.bumpVersion(null);
+        if (regionLocation != null) {
+            versionManager.bumpVersion(regionLocation.name());
+        }
     }
 }

@@ -22,6 +22,7 @@ import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
 import org.codenbug.seat.domain.QSeat;
 import org.codenbug.seat.domain.QSeatLayout;
+import org.codenbug.seat.domain.RegionLocation;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -63,13 +64,6 @@ public class EventViewRepositoryImpl implements EventViewRepository {
     @Override
     public Page<EventListProjection> findEventList(String keyword, EventListFilter filter,
         Pageable pageable) {
-        EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(versionManager.getVersion(),
-            filter, keyword, pageable);
-
-        if (searchCache.exist(cacheKey)) {
-            EventListSearchCacheValue result = searchCache.get(cacheKey);
-            return new PageImpl<>(result.eventListProjection(), pageable, result.total());
-        }
 
         // 동적 조건 생성
         BooleanBuilder whereClause = buildWhereClause(keyword, filter);
@@ -154,11 +148,6 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 
         PageImpl<EventListProjection> result = new PageImpl<>(results, pageable,
             total != null ? total : 0);
-
-        if (policyDispatcher.isCacheable(cacheKey)) {
-            searchCache.put(cacheKey, new EventListSearchCacheValue(result.getContent(),
-                (int) result.getTotalElements()));
-        }
 
         return result;
     }
@@ -433,5 +422,9 @@ public class EventViewRepositoryImpl implements EventViewRepository {
     public void incrementViewCount(String eventId) {
         // Redis에서 조회수 증가 (DB 업데이트 대신)
         redisViewCountService.incrementViewCount(eventId);
+    }
+
+    private String resolveRegionKey(RegionLocation regionLocation) {
+        return regionLocation != null ? regionLocation.name() : null;
     }
 }

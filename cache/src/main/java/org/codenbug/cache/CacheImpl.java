@@ -1,16 +1,34 @@
 package org.codenbug.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
 import org.codenbug.cachecore.event.search.CacheClient;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class CacheImpl<K, V> implements CacheClient<K, V> {
 
     private final Cache cache;
 
-    public CacheImpl(Cache cache) {
+    private final ConcurrentHashMap<K, CompletableFuture<V>> loaderMap = new ConcurrentHashMap();
+    private final Executor cacheLoaderExecutor;
+    private static final Duration TIMEOUT = Duration.ofMillis(1000);
+    private final AtomicLong singleFlightJoinCount = new AtomicLong(0);
+
+    public CacheImpl(Cache cache, Executor cacheLoaderExecutor) {
         this.cache = cache;
+        this.cacheLoaderExecutor = cacheLoaderExecutor;
     }
 
 
@@ -26,8 +44,70 @@ public class CacheImpl<K, V> implements CacheClient<K, V> {
     }
 
     @Override
+    public V get(K key, Supplier<V> loader) {
+        V cached = (V) cache.getIfPresent(key);
+        if (cached != null) {
+            return cached;
+        }
+        CompletableFuture<V> inFlight = loaderMap.get(key);
+        if (inFlight != null) {
+            long count = singleFlightJoinCount.incrementAndGet();
+            log.debug("cache single-flight joined count: {}", count);
+            return awaitResult(inFlight, key);
+        }
+
+        CompletableFuture<V> future = new CompletableFuture<>();
+        CompletableFuture<V> existing = loaderMap.putIfAbsent(key, future);
+        if (existing != null) {
+            long count = singleFlightJoinCount.incrementAndGet();
+            log.debug("cache single-flight joined count: {}", count);
+            return awaitResult(existing, key);
+        }
+
+        cacheLoaderExecutor.execute(() -> {
+            try {
+                V loaded = loader.get();
+                if (loaded != null) {
+                    put(key, loaded);
+                    future.complete(loaded);
+                }
+            } catch (Throwable t) {
+                future.completeExceptionally(t);
+            } finally {
+                loaderMap.remove(key);
+            }
+        });
+
+        return awaitResult(future, key);
+
+    }
+
+    @Override
     public boolean exist(K cacheKey) {
         return cache.getIfPresent(cacheKey) != null;
     }
 
+    @Scheduled(cron = "*/30 * * * * *")
+    public void cacheStat() {
+        log.debug("cache size: {}", cache.estimatedSize());
+        log.debug("cache hit rate: {}", cache.stats().hitRate());
+        log.debug("cache miss rate: {}", cache.stats().missRate());
+    }
+
+    private V awaitResult(CompletableFuture<V> result, K key) {
+        try {
+            return result.get(TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (TimeoutException te) {
+            throw new RuntimeException("Cache load timeout key=" + key, te);
+        } catch (ExecutionException ee) {
+            Throwable c = ee.getCause();
+            if (c instanceof RuntimeException re) {
+                throw re;
+            }
+            throw new RuntimeException(c);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(ie);
+        }
+    }
 }

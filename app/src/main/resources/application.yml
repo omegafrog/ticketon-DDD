@@ -7,7 +7,7 @@ spring:
   rabbitmq:
     host: localhost # RabbitMQ host ip
     port: 5672 # RabbitMQ port
-    username : root # RabbitMQ 웹 관리 콘솔 아이디
+    username: root # RabbitMQ 웹 관리 콘솔 아이디
     password: root # RabbitMQ 웹 관리 콘솔 비밀번호
 
   datasource:
@@ -46,8 +46,8 @@ spring:
         jdbc:
           batch_size: 100
         format_sql: true
-        show_sql: true
-        use_sql_comments: true
+  #        show_sql: true
+  #        use_sql_comments: true
   # H2 Database Configuration (commented out)
   # h2:
   #   console:
@@ -91,14 +91,6 @@ server:
     max-connections: 2000
     accept-count: 500
 
-logging:
-  level:
-    org.codenbug: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.orm.jpa: DEBUG
-    org.apache.kafka: off
 management:
   endpoints:
     web:

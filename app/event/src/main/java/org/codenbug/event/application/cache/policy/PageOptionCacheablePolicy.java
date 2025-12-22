@@ -17,7 +17,9 @@ public class PageOptionCacheablePolicy implements
         if (value == null) {
             return true;
         }
-
+        if (value.sortOptions() == null || value.sortOptions().isEmpty()) {
+            return true;
+        }
         return value.page() < 5 &&
             value.sortOptions().stream().allMatch(option ->
                 option.sortMethod().equals(SortMethod.DATETIME) ||

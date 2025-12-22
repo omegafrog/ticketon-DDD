@@ -57,6 +57,13 @@ public class EventListFilter {
             || categoryId != null;
     }
 
+    public RegionLocation getSingleRegionLocation() {
+        if (regionLocationList == null || regionLocationList.size() != 1) {
+            return null;
+        }
+        return regionLocationList.get(0);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof EventListFilter that)) {
@@ -141,4 +148,17 @@ public class EventListFilter {
 
     }
 
+    @Override
+    public String toString() {
+        return "EventListFilter{" +
+            "costRange=" + costRange +
+            ", locationList=" + locationList +
+            ", regionLocationList=" + regionLocationList +
+            ", eventCategoryList=" + eventCategoryList +
+            ", eventStatusList=" + eventStatusList +
+            ", startDate=" + startDate +
+            ", endDate=" + endDate +
+            ", categoryId=" + categoryId +
+            '}';
+    }
 }

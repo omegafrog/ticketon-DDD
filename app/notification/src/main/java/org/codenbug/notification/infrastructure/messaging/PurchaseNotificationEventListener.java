@@ -1,14 +1,11 @@
 package org.codenbug.notification.infrastructure.messaging;
 
-import org.codenbug.notification.application.service.NotificationApplicationService;
-import org.codenbug.notification.domain.entity.NotificationType;
-import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.codenbug.notification.application.service.NotificationApplicationService;
+import org.codenbug.notification.domain.entity.NotificationType;
+import org.springframework.stereotype.Component;
 
 /**
  * 구매 관련 이벤트를 수신하여 알림을 생성하는 리스너
@@ -24,25 +21,25 @@ public class PurchaseNotificationEventListener {
     /**
      * 환불 완료 이벤트 수신 및 알림 생성
      */
-    @KafkaListener(topics = "notification.refund.completed", groupId = "app-notification-service")
+    //@KafkaListener(topics = "notification.refund.completed", groupId = "app-notification-service")
     public void handleRefundCompletedEvent(String message) {
         try {
             RefundCompletedEventDto event =
-                    objectMapper.readValue(message, RefundCompletedEventDto.class);
+                objectMapper.readValue(message, RefundCompletedEventDto.class);
 
             String title = "[티켓온] 환불 완료";
             String content = String.format(
-                    "주문번호: %s\n공연명: %s\n환불 금액: %s원\n환불 사유: %s\n\n환불이 완료되었습니다. 환불 금액은 결제 수단에 따라 3~7일 내에 처리됩니다.",
-                    event.getOrderId(),
-                    event.getEventName() != null ? event.getEventName() : event.getOrderName(),
-                    String.format("%,d", event.getRefundAmount()), event.getRefundReason());
+                "주문번호: %s\n공연명: %s\n환불 금액: %s원\n환불 사유: %s\n\n환불이 완료되었습니다. 환불 금액은 결제 수단에 따라 3~7일 내에 처리됩니다.",
+                event.getOrderId(),
+                event.getEventName() != null ? event.getEventName() : event.getOrderName(),
+                String.format("%,d", event.getRefundAmount()), event.getRefundReason());
             String targetUrl = "/my-account/refund-history";
 
             notificationApplicationService.createNotification(event.getUserId(),
-                    NotificationType.PAYMENT, title, content, targetUrl);
+                NotificationType.PAYMENT, title, content, targetUrl);
 
             log.info("환불 완료 이벤트 처리 및 알림 생성 완료: userId={}, purchaseId={}, refundAmount={}",
-                    event.getUserId(), event.getPurchaseId(), event.getRefundAmount());
+                event.getUserId(), event.getPurchaseId(), event.getRefundAmount());
 
         } catch (Exception e) {
             log.error("환불 완료 이벤트 처리 실패: message={}", message, e);
@@ -52,27 +49,27 @@ public class PurchaseNotificationEventListener {
     /**
      * 매니저 환불 완료 이벤트 수신 및 알림 생성
      */
-    @KafkaListener(topics = "notification.manager.refund.completed",
-            groupId = "app-notification-service")
+    //@KafkaListener(topics = "notification.manager.refund.completed",
+//    groupId ="app-notification-service")
     public void handleManagerRefundCompletedEvent(String message) {
         try {
             ManagerRefundCompletedEventDto event =
-                    objectMapper.readValue(message, ManagerRefundCompletedEventDto.class);
+                objectMapper.readValue(message, ManagerRefundCompletedEventDto.class);
 
             String title = "[티켓온] 매니저 환불 처리";
             String content = String.format(
-                    "주문번호: %s\n공연명: %s\n환불 금액: %s원\n환불 사유: %s\n처리자: %s\n\n매니저에 의해 환불이 처리되었습니다. 환불 금액은 결제 수단에 따라 3~7일 내에 처리됩니다.",
-                    event.getOrderId(),
-                    event.getEventName() != null ? event.getEventName() : event.getOrderName(),
-                    String.format("%,d", event.getRefundAmount()), event.getRefundReason(),
-                    event.getManagerName());
+                "주문번호: %s\n공연명: %s\n환불 금액: %s원\n환불 사유: %s\n처리자: %s\n\n매니저에 의해 환불이 처리되었습니다. 환불 금액은 결제 수단에 따라 3~7일 내에 처리됩니다.",
+                event.getOrderId(),
+                event.getEventName() != null ? event.getEventName() : event.getOrderName(),
+                String.format("%,d", event.getRefundAmount()), event.getRefundReason(),
+                event.getManagerName());
             String targetUrl = "/my-account/refund-history";
 
             notificationApplicationService.createNotification(event.getUserId(),
-                    NotificationType.PAYMENT, title, content, targetUrl);
+                NotificationType.PAYMENT, title, content, targetUrl);
 
             log.info("매니저 환불 완료 이벤트 처리 및 알림 생성 완료: userId={}, purchaseId={}, managerName={}",
-                    event.getUserId(), event.getPurchaseId(), event.getManagerName());
+                event.getUserId(), event.getPurchaseId(), event.getManagerName());
 
         } catch (Exception e) {
             log.error("매니저 환불 완료 이벤트 처리 실패: message={}", message, e);
@@ -83,6 +80,7 @@ public class PurchaseNotificationEventListener {
      * 환불 완료 이벤트 DTO (내부 클래스)
      */
     public static class RefundCompletedEventDto {
+
         private String userId;
         private String purchaseId;
         private String orderId;
@@ -92,7 +90,8 @@ public class PurchaseNotificationEventListener {
         private String refundedAt;
         private String eventName;
 
-        public RefundCompletedEventDto() {}
+        public RefundCompletedEventDto() {
+        }
 
         public String getUserId() {
             return userId;
@@ -163,6 +162,7 @@ public class PurchaseNotificationEventListener {
      * 매니저 환불 완료 이벤트 DTO (내부 클래스)
      */
     public static class ManagerRefundCompletedEventDto {
+
         private String userId;
         private String purchaseId;
         private String orderId;
@@ -173,7 +173,8 @@ public class PurchaseNotificationEventListener {
         private String eventName;
         private String managerName;
 
-        public ManagerRefundCompletedEventDto() {}
+        public ManagerRefundCompletedEventDto() {
+        }
 
         public String getUserId() {
             return userId;

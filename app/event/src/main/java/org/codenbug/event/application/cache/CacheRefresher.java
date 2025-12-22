@@ -4,9 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
 import org.codenbug.cachecore.event.search.CacheClient;
 import org.codenbug.cachecore.event.search.CacheKeyVersionManager;
-import org.codenbug.categoryid.domain.CategoryId;
 import org.codenbug.categoryid.domain.EventCategory;
 import org.codenbug.event.application.cache.policy.EventListFilterCacheablePolicy;
 import org.codenbug.event.application.cache.policy.EventListSearchCacheablePolicyDispatcher;
@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class CacheRefresher {
 
@@ -44,13 +45,17 @@ public class CacheRefresher {
 
     public void refreshAllCaches() {
         for (CacheWarmupTarget target : buildCacheableTargets()) {
+            log.debug("Warming up cache: {}", target);
             Pageable pageable = toPageable(target.pageOption());
 
             Page<EventListProjection> result = eventViewRepository.findEventList(
                 target.keyword(), target.filter(), pageable);
 
+            RegionLocation regionLocation =
+                target.filter() != null ? target.filter().getSingleRegionLocation() : null;
             EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(
-                versionManager.getVersion(), target.filter(), target.keyword(),
+                versionManager.getVersion(resolveRegionKey(regionLocation)), target.filter(),
+                target.keyword(),
                 target.pageOption());
 
             if (!eventListSearchCache.exist(cacheKey)) {
@@ -63,18 +68,18 @@ public class CacheRefresher {
 
     private List<CacheWarmupTarget> buildCacheableTargets() {
         List<EventListFilter> filters = buildCacheableFilters();
-        List<String> keywords = List.of("");
         List<PageOption> pageOptions = buildCacheablePageOptions();
 
         List<CacheWarmupTarget> targets = new ArrayList<>();
         for (EventListFilter filter : filters) {
-            for (String keyword : keywords) {
-                for (PageOption pageOption : pageOptions) {
-                    EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(
-                        versionManager.getVersion(), filter, keyword, pageOption);
-                    if (dispatcher.isCacheable(cacheKey)) {
-                        targets.add(new CacheWarmupTarget(filter, keyword, pageOption));
-                    }
+            for (PageOption pageOption : pageOptions) {
+                RegionLocation regionLocation =
+                    filter != null ? filter.getSingleRegionLocation() : null;
+                EventListSearchCacheKey cacheKey = new EventListSearchCacheKey(
+                    versionManager.getVersion(resolveRegionKey(regionLocation)), filter,
+                    null, pageOption);
+                if (dispatcher.isCacheable(cacheKey)) {
+                    targets.add(new CacheWarmupTarget(filter, null, pageOption));
                 }
             }
         }
@@ -83,35 +88,24 @@ public class CacheRefresher {
 
     private List<EventListFilter> buildCacheableFilters() {
         List<EventListFilter> filters = new ArrayList<>();
-        filters.add(null);
 
         List<LocalDate> startDates = EventListFilterCacheablePolicy.START_DATE_FILTER_OPTIONS.get()
             .stream().toList();
         Set<CostRange> costRanges = EventListFilterCacheablePolicy.COST_RANGE_FILTER_OPTIONS.get();
+        List<RegionLocation> regionOptions = buildRegionOptions();
+
+        addFiltersWithRegion(filters, regionOptions, null, null, null);
         for (CostRange costRange : costRanges) {
-            filters.add(new EventListFilter.Builder().costRange(costRange).build());
+            addFiltersWithRegion(filters, regionOptions, costRange, null, null);
         }
         for (LocalDate startDate : startDates) {
-            filters.add(new EventListFilter.Builder().startDate(startDate.atStartOfDay()).build());
+            addFiltersWithRegion(filters, regionOptions, null, startDate, null);
         }
-
-        RegionLocation regionLocation = RegionLocation.SEOUL;
-        EventCategory category = new EventCategory(new CategoryId(1L), null, null);
-        filters.add(new EventListFilter.Builder()
-            .regionLocationList(List.of(regionLocation))
-            .build());
-        filters.add(new EventListFilter.Builder()
-            .eventCategoryList(List.of(category))
-            .build());
 
         for (LocalDate startDate : startDates) {
             for (CostRange costRange : costRanges) {
-                filters.add(new EventListFilter.Builder()
-                    .startDate(startDate.atStartOfDay())
-                    .costRange(costRange)
-                    .regionLocationList(List.of(regionLocation))
-                    .eventCategoryList(List.of(category))
-                    .build());
+                addFiltersWithRegion(filters, regionOptions, costRange, startDate,
+                    List.of());
             }
         }
 
@@ -120,6 +114,7 @@ public class CacheRefresher {
 
     private List<PageOption> buildCacheablePageOptions() {
         List<SortOption> sortOptions = new ArrayList<>();
+        sortOptions.add(null);
         for (SortMethod method : List.of(SortMethod.DATETIME, SortMethod.VIEW_COUNT,
             SortMethod.EVENT_START)) {
             sortOptions.add(new SortOption(method, true));
@@ -129,7 +124,11 @@ public class CacheRefresher {
         List<PageOption> pageOptions = new ArrayList<>();
         for (int page = 0; page < 5; page++) {
             for (SortOption sortOption : sortOptions) {
-                pageOptions.add(new PageOption(page, List.of(sortOption)));
+                if (sortOption == null) {
+                    pageOptions.add(new PageOption(page, null));
+                } else {
+                    pageOptions.add(new PageOption(page, List.of(sortOption)));
+                }
             }
         }
         return pageOptions;
@@ -151,8 +150,49 @@ public class CacheRefresher {
         return PageRequest.of(page, DEFAULT_PAGE_SIZE, sort);
     }
 
+    private List<RegionLocation> buildRegionOptions() {
+        List<RegionLocation> options = new ArrayList<>();
+        options.add(null);
+        options.addAll(List.of(RegionLocation.values()));
+        return options;
+    }
+
+    private void addFiltersWithRegion(List<EventListFilter> filters,
+        List<RegionLocation> regionOptions, CostRange costRange, LocalDate startDate,
+        List<EventCategory> eventCategories) {
+        for (RegionLocation regionLocation : regionOptions) {
+            EventListFilter.Builder builder = new EventListFilter.Builder()
+                .costRange(costRange)
+                .startDate(startDate == null ? null : startDate.atStartOfDay())
+                .eventCategoryList(eventCategories);
+
+            if (regionLocation != null) {
+                builder.regionLocationList(List.of(regionLocation));
+            }
+
+            EventListFilter filter = builder.build();
+            if (filter.canFiltered()) {
+                filters.add(filter);
+            } else if (regionLocation == null) {
+                filters.add(null);
+            }
+        }
+    }
+
+    private String resolveRegionKey(RegionLocation regionLocation) {
+        return regionLocation != null ? regionLocation.name() : null;
+    }
+
     private record CacheWarmupTarget(EventListFilter filter, String keyword,
                                      PageOption pageOption) {
 
+        @Override
+        public String toString() {
+            return "CacheWarmupTarget{" +
+                "filter=" + filter +
+                ", keyword='" + keyword + '\'' +
+                ", pageOption=" + pageOption +
+                '}';
+        }
     }
 }
