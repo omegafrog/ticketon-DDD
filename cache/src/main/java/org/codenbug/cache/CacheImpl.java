@@ -49,6 +49,7 @@ public class CacheImpl<K, V> implements CacheClient<K, V> {
         if (cached != null) {
             return cached;
         }
+        // 키에 해당하는 CompletableFuture가 이미 있으면 그것을 받아서 처리를 대기함
         CompletableFuture<V> inFlight = loaderMap.get(key);
         if (inFlight != null) {
             long count = singleFlightJoinCount.incrementAndGet();
@@ -56,7 +57,9 @@ public class CacheImpl<K, V> implements CacheClient<K, V> {
             return awaitResult(inFlight, key);
         }
 
+        // 키에 해당하는 CompletableFuture가 없으면 새로 생성
         CompletableFuture<V> future = new CompletableFuture<>();
+        // 키에 해당하는 value가 없을 경우 existing이 null이 되어 로더가 실행됨
         CompletableFuture<V> existing = loaderMap.putIfAbsent(key, future);
         if (existing != null) {
             long count = singleFlightJoinCount.incrementAndGet();
