@@ -34,14 +34,9 @@ public class RabbitMqConfig {
     return new Queue("user-created");
   }
 
-  @Bean("security-user-created")
-  public Queue securityUserCreatedQueue() {
-    return new Queue("security-user-created");
-  }
-
-  @Bean("sns-user-created")
-  public Queue snsUserCreatedQueue() {
-    return new Queue("sns-user-created");
+  @Bean("user-created-failed")
+  public Queue userCreatedFailedQueue() {
+    return new Queue("user-created-failed");
   }
 
 
@@ -53,6 +48,12 @@ public class RabbitMqConfig {
   @Bean
   public Binding userQueueBinding(@Qualifier("user-created") Queue queue, DirectExchange exchange) {
     return BindingBuilder.bind(queue).to(exchange).with("user.created");
+  }
+
+  @Bean
+  public Binding userCreatedFailedQueueBinding(@Qualifier("user-created-failed") Queue queue,
+      DirectExchange exchange) {
+    return BindingBuilder.bind(queue).to(exchange).with("user.created-failed");
   }
 
   @Bean

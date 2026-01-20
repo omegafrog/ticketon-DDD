@@ -30,11 +30,6 @@ public class RabbitMqConfig {
   private String password;
 
 
-  @Bean("user-created")
-  public Queue userCreatedQueue() {
-    return new Queue("user-created");
-  }
-
   @Bean("sns-user-created")
   public Queue snsUsercreatedQueue() {
     return new Queue("sns-user-created");
@@ -43,11 +38,6 @@ public class RabbitMqConfig {
   @Bean("security-user-created")
   public Queue securityUserCreatedQueue() {
     return new Queue("security-user-created");
-  }
-
-  @Bean("user-created-failed")
-  public Queue userCreatedFailedQueue() {
-    return new Queue("user-created-failed");
   }
 
   @Bean

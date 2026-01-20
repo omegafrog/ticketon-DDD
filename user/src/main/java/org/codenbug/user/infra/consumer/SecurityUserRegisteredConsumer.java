@@ -11,7 +11,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +30,6 @@ public class SecurityUserRegisteredConsumer {
   }
 
   @RabbitListener(queues = "security-user-created")
-  @Transactional
   public void consume(SecurityUserRegisteredEvent event) {
     try {
       // securityUser로 user를 생성
