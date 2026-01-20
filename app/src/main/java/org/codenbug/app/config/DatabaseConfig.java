@@ -1,7 +1,11 @@
 package org.codenbug.app.config;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +15,9 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-import jakarta.persistence.EntityManagerFactory;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import jakarta.persistence.EntityManagerFactory;
 
 
 @Configuration
@@ -46,8 +47,7 @@ public class DatabaseConfig {
         em.setDataSource(primaryDataSource);
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
                 "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
-                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
-                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
+                "org.codenbug.notification.domain.entity", "org.codenbug.event.category.domain");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
@@ -70,8 +70,7 @@ public class DatabaseConfig {
         em.setDataSource(readOnlyDataSource);
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
                 "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
-                "org.codenbug.notification.domain.entity", "org.codenbug.categoryid.domain",
-                "org.codenbug.seat.query.model", "org.codenbug.purchase.query.model");
+                "org.codenbug.notification.domain.entity", "org.codenbug.event.category.domain");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);

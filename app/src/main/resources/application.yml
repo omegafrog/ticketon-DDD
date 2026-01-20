@@ -67,19 +67,11 @@ spring:
       - "optional:../purchase/src/main/resources/application.yml"
       - "optional:../notification/src/main/resources/application.yml"
 
-  # Kafka Configuration for notification events
-  kafka:
-    bootstrap-servers: localhost:29092
-    consumer:
-      group-id: app-notification-service
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "org.codenbug.message"
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+services:
+  event:
+    base-url: http://localhost:9002
+  seat:
+    base-url: http://localhost:9005
 
 server:
   port: 9000
@@ -98,7 +90,6 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.orm.jpa: DEBUG
-    org.apache.kafka: off
 management:
   endpoints:
     web:
