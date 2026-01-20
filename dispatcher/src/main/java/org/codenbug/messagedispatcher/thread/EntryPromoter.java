@@ -93,7 +93,7 @@ public class EntryPromoter {
     }
   }
 
-  @Scheduled(cron = "* * * * * *")
+  @Scheduled(fixedRate = 1000)
   public void promoteToEntryQueue() {
     try {
       // 1) waiting 스트림의 모든 레코드를 조회
