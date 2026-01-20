@@ -26,22 +26,21 @@ seat/
 │   ├── RegisterSeatLayoutService.java
 │   ├── FindSeatLayoutService.java
 │   ├── UpdateSeatLayoutService.java
-│   ├── SeatTransactionService.java
-│   └── EventProjectionRepository.java
+│   └── SeatTransactionService.java
 ├── ui/                       # REST controllers
 │   └── SeatController.java   # Seat operations API
 ├── infra/                    # Infrastructure layer
 │   ├── SeatLayoutRepositoryImpl.java
 │   ├── JpaSeatRepository.java
-│   ├── EventProjectionRepositoryImpl.java
+│   ├── EventServiceClient.java
 │   └── SeatPurchasedEventConsumer.java
 ├── global/                   # DTOs and configurations
 │   ├── SeatLayoutResponse.java
 │   ├── SeatSelectRequest.java
 │   ├── SeatCancelRequest.java
 │   └── RegisterSeatLayoutDto.java
-└── query/model/              # Query projections
-    └── EventProjection.java
+└── config/                   # Module configurations
+    └── RabbitMqConfig.java
 ```
 
 ### Key Domain Concepts
@@ -129,7 +128,7 @@ DELETE /api/v1/events/{event-id}/seats     # Cancel seat selection
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
     
     implementation project(':message')      # Domain events
     implementation project(':common')       # Redis locks and utilities
@@ -144,8 +143,9 @@ spring.application.name=seat-service
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=false
 
-# Kafka configuration for event consumption
-spring.kafka.consumer.group-id=seat-service
+# RabbitMQ configuration for event consumption
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
 ```
 
 ## 🔗 Integration Points
@@ -156,9 +156,9 @@ spring.kafka.consumer.group-id=seat-service
 - **Message Module**: Domain event consumption
 
 ### Event Consumption
-The service consumes purchase-related events via Kafka:
+The service consumes purchase-related events via RabbitMQ:
 ```java
-@KafkaListener(topics = "seat-purchased-event")
+@RabbitListener(queues = "seat-purchased")
 public void handleSeatPurchasedEvent(SeatPurchasedEvent event) {
     // Update seat availability after purchase
 }
@@ -246,20 +246,10 @@ The Seat service runs as part of the microservices ecosystem:
 
 ### Events Consumed
 - **SeatPurchasedEvent**: Updates seat status after successful purchase
-- **PaymentFailedEvent**: Releases reserved seats on payment failure
 
-### Integration with Event Projections
-The service maintains event projections for efficient querying:
-```java
-@Entity
-public class EventProjection {
-    private String eventId;
-    private String title;
-    private Long seatLayoutId;
-    private Boolean seatSelectable;
-    // ... other fields
-}
-```
+### Integration with Event Service
+The service resolves event metadata through the internal Event summary API, so it can
+look up `seatLayoutId` and `seatSelectable` without maintaining local projections.
 
 ## 🔍 Monitoring and Observability
 

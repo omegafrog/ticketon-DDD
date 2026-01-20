@@ -10,7 +10,8 @@ import java.util.List;
 import org.codenbug.common.exception.AccessDeniedException;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.purchase.domain.EventChangeDetectedException;
-import org.codenbug.purchase.domain.EventProjectionRepository;
+import org.codenbug.purchase.domain.EventInfoProvider;
+import org.codenbug.purchase.domain.EventSummary;
 import org.codenbug.purchase.domain.MessagePublisher;
 import org.codenbug.purchase.domain.PaymentMethod;
 import org.codenbug.purchase.domain.PaymentStatus;
@@ -39,7 +40,6 @@ import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.codenbug.purchase.infra.PurchaseCancelRepository;
 import org.codenbug.purchase.infra.PurchaseRepository;
-import org.codenbug.purchase.query.model.EventProjection;
 import org.codenbug.redislock.RedisLockService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
@@ -64,7 +64,7 @@ public class PurchaseService {
 	private final NotificationEventPublisher notificationEventPublisher;
 	private final RefundDomainService refundDomainService;
 	private final RefundRepository refundRepository;
-	private final EventProjectionRepository eventProjectionRepository;
+	private final EventInfoProvider eventInfoProvider;
 	private final PlatformTransactionManager transactionManager;
 
 	public PurchaseService(PGApiService pgApiService, PurchaseRepository purchaseRepository,
@@ -72,7 +72,7 @@ public class PurchaseService {
 		RedisLockService redisLockService, MessagePublisher publisher, PurchaseDomainService purchaseDomainService,
 		PaymentValidationService paymentValidationService, NotificationEventPublisher notificationEventPublisher,
 		RefundDomainService refundDomainService, RefundRepository refundRepository,
-		EventProjectionRepository eventProjectionRepository,
+		EventInfoProvider eventInfoProvider,
 		@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager) {
 		this.pgApiService = pgApiService;
 		this.purchaseRepository = purchaseRepository;
@@ -85,7 +85,7 @@ public class PurchaseService {
 		this.notificationEventPublisher = notificationEventPublisher;
 		this.refundDomainService = refundDomainService;
 		this.refundRepository = refundRepository;
-		this.eventProjectionRepository = eventProjectionRepository;
+		this.eventInfoProvider = eventInfoProvider;
 		this.transactionManager = transactionManager;
 	}
 
@@ -116,7 +116,7 @@ public class PurchaseService {
 		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
 			.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
 
-		EventProjection event = eventProjectionRepository.findByEventId(purchase.getEventId());
+		EventSummary event = eventInfoProvider.getEventSummary(purchase.getEventId());
 		if (event == null) {
 			throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
 		}
@@ -146,10 +146,10 @@ public class PurchaseService {
 	) {
 		try {
 			// Event version 재검증
-			EventProjection currentEvent = eventProjectionRepository.findByEventId(preResult.getEventId());
-			if (currentEvent == null) {
-				throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
-			}
+		EventSummary currentEvent = eventInfoProvider.getEventSummary(preResult.getEventId());
+		if (currentEvent == null) {
+			throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
+		}
 
 			// Version이 변경되었거나 상태가 OPEN이 아니면 예외 발생
 			if (!preResult.getEventVersion().equals(currentEvent.getVersion()) ||

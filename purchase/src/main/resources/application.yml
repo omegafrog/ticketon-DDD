@@ -22,6 +22,11 @@ spring:
     redis:
       host: localhost
       port: 6379
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: root
+    password: root
 
 springdoc:
   api-docs:
@@ -31,6 +36,12 @@ springdoc:
 payment:
   toss:
     api-url: https://api.tosspayments.com/v1/payments
+
+services:
+  event:
+    base-url: http://localhost:9002
+  seat:
+    base-url: http://localhost:9005
 
 # Purchase 모듈 관련 설정
 # custom:

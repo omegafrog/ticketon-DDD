@@ -118,7 +118,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     
     implementation project(':seat')        # Seat layout integration
-    implementation project(':category-id') # Category validation
+    // category is now part of event module
     implementation project(':common')      # Shared utilities
     implementation project(':security-aop') # Authentication/authorization
     implementation project(':message')     # Domain events

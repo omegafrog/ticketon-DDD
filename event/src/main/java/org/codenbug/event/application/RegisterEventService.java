@@ -1,6 +1,6 @@
 package org.codenbug.event.application;
 
-import org.codenbug.categoryid.app.EventCategoryService;
+import org.codenbug.event.category.app.EventCategoryService;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
@@ -13,7 +13,6 @@ import org.codenbug.seat.app.RegisterSeatLayoutService;
 import org.codenbug.seat.global.SeatLayoutResponse;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

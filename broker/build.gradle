@@ -29,7 +29,7 @@ dependencies {
     testImplementation 'io.rest-assured:rest-assured'  // REST API 테스트용
     testImplementation 'org.springframework.security:spring-security-test'
 
-    implementation project(':common')
+    implementation project(':platform:common')
     implementation project(':security-aop')
     implementation project(':redislock')
     // runtimeOnly 'com.h2database:h2'

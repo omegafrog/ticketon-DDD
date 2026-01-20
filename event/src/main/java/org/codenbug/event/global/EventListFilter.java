@@ -3,7 +3,7 @@ package org.codenbug.event.global;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.codenbug.categoryid.domain.EventCategory;
+import org.codenbug.event.category.domain.EventCategory;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.seat.domain.Location;
 import org.codenbug.seat.domain.RegionLocation;
@@ -11,8 +11,8 @@ import org.codenbug.seat.domain.RegionLocation;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Getter;

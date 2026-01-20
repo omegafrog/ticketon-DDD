@@ -2,7 +2,7 @@ package org.codenbug.notification.infrastructure.event;
 
 import org.codenbug.notification.application.service.NotificationApplicationService;
 import org.codenbug.notification.domain.entity.NotificationType;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +24,7 @@ public class PurchaseEventListener {
     /**
      * 결제 완료 이벤트 수신 및 알림 생성
      */
-    @KafkaListener(topics = "payment.completed", groupId = "notification-service")
+    @RabbitListener(queues = "payment.completed")
     public void handlePaymentCompletedEvent(String message) {
         try {
             PaymentCompletedEventDto event =
@@ -51,7 +51,7 @@ public class PurchaseEventListener {
     /**
      * 환불 완료 이벤트 수신 및 알림 생성
      */
-    @KafkaListener(topics = "refund.completed", groupId = "notification-service")
+    @RabbitListener(queues = "refund.completed")
     public void handleRefundCompletedEvent(String message) {
         try {
             RefundCompletedEventDto event =

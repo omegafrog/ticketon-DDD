@@ -13,6 +13,7 @@ import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.RegisterSeatLayoutDto;
 import org.codenbug.seat.global.SeatDto;
+import org.codenbug.seat.infra.EventServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ class UpdateSeatLayoutServiceTest {
     private SeatLayoutRepository seatLayoutRepository;
 
     @Mock
-    private EventProjectionRepository eventProjectionRepository;
+    private EventServiceClient eventServiceClient;
 
     @Mock
     private SeatTransactionService seatTransactionService;

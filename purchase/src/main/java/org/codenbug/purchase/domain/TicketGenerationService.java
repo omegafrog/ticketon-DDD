@@ -2,9 +2,6 @@ package org.codenbug.purchase.domain;
 
 import java.util.List;
 
-import org.codenbug.purchase.query.model.EventProjection;
-import org.codenbug.purchase.query.model.Seat;
-import org.codenbug.purchase.query.model.SeatLayoutProjection;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -22,10 +19,10 @@ public class TicketGenerationService {
 	public List<Ticket> generateTickets(
 		Purchase purchase, 
 		List<String> seatIds, 
-		EventProjection eventProjection,
-		SeatLayoutProjection seatLayout
+		EventSummary eventSummary,
+		SeatLayoutInfo seatLayout
 	) {
-		List<Seat> seats = seatLayout.getSeats().stream()
+		List<SeatInfo> seats = seatLayout.getSeats().stream()
 			.filter(seat -> seatIds.contains(seat.getSeatId()))
 			.toList();
 
@@ -41,8 +38,8 @@ public class TicketGenerationService {
 	/**
 	 * 구매 이름을 생성합니다.
 	 */
-	public String generateOrderName(EventProjection eventProjection, int seatCount) {
-		return eventProjection.isSeatSelectable() 
+	public String generateOrderName(EventSummary eventSummary, int seatCount) {
+		return eventSummary.isSeatSelectable() 
 			? "지정석 %d매".formatted(seatCount)
 			: "미지정석 %d매".formatted(seatCount);
 	}

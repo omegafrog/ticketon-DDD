@@ -52,15 +52,14 @@ The system follows a multi-module Gradle project structure with these core servi
 - `dispatcher` - Redis-based queue promotion with multithreading
 
 **Infrastructure Services:**
-- `gateway` - API Gateway with Spring Cloud Gateway (port 8080)
-- `eureka` - Service discovery server
+- `platform/gateway` - API Gateway with Spring Cloud Gateway (port 8080)
+- `platform/eureka` - Service discovery server
 - `app` - Main application orchestrator (IMPORTS ONLY - no business logic or infrastructure code)
 
 **Shared Modules:**
-- `common` - Shared utilities, exceptions, and Redis services
-- `message` - Event messages for inter-service communication
+- `platform/common` - Shared utilities, exceptions, and Redis services
+- `platform/message` - Event messages for inter-service communication
 - `security-aop` - AOP-based security annotations and user context
-- `category-id` - Event category management
 
 ### Domain Architecture
 Every Domain module's app package does not contain any class of web(ServletRequet, resp, etc...)
@@ -73,7 +72,7 @@ Based on DDD principles with clear aggregate boundaries:
 
 ### Communication Patterns
 - **Synchronous**: REST APIs through Gateway
-- **Asynchronous**: Kafka for event-driven communication
+- **Asynchronous**: RabbitMQ for event-driven communication
 - **Real-time**: SSE for queue notifications
 - **Caching/State**: Redis for distributed locking and session management
 

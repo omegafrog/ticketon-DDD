@@ -187,7 +187,7 @@ if availableCapacity <= 0 then
 end
 
 -- Get waiting users (ordered by timestamp)
-local waitingUsers = redis.call('ZRANGE', waitingKey, 0, availableCapacity - 1, 'WITHSCORES')
+    local waitingUsers = redis.call('ZRANGE', waitingKey, 0, availableCapacity - 1, 'WITHSCORES')
 
 if #waitingUsers == 0 then
     return {0, "No waiting users"}  
@@ -230,6 +230,24 @@ redis.call('INCRBY', entryCountKey, promotedCount)
 
 return {promotedCount, promotedUsers}
 ```
+
+### 문제와 해결 방법
+
+**문제(고부하 위험)**  
+- 기존 스크립트가 `ZRANGE 0 -1`로 대기열 전체를 읽고 순회하여, 특정 이벤트 대기열이 커질수록 Redis 단일 스레드를 장시간 점유할 수 있습니다.  
+- 중간에 자리가 부족해지면 `return 0`으로 종료하면서도 앞선 승격은 이미 반영되어, “리턴값 vs 실제 승격 수”가 어긋날 수 있습니다.
+
+**해결 방법(현재 적용됨)**  
+- `ENTRY_QUEUE_COUNT[eventId]`를 읽어 **승격 가능한 수(capacity)** 만큼만 가져오고 처리합니다.  
+- `ZRANGE 0 (capacity-1)`로 제한하여 **필요한 만큼만** 처리하며, 리턴값은 실제 승격 수와 일치합니다.  
+- 결과적으로 이벤트 단위 처리이더라도 **대기열 크기에 비례한 선형 스캔**을 피하고, 고부하 상황에서 Redis 블로킹 시간을 줄입니다.
+
+**문제(고부하 위험: 전수 키 스캔)**  
+- 기존 구현은 `KEYS WAITING:*`로 모든 대기열 키를 조회하여, Redis 전체 키스페이스를 블로킹 스캔했습니다.
+
+**해결 방법(현재 적용됨)**  
+- `SCAN` 기반 조회로 전환하여 커서 방식의 비블로킹 스캔을 사용합니다.  
+- 전체 조회는 유지하면서도 Redis 단일 스레드 점유 시간을 줄여 고부하 상황의 응답 지연을 완화합니다.
 
 **Key Features:**
 - **Atomic Execution**: All operations execute atomically

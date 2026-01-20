@@ -1,7 +1,6 @@
 package org.codenbug.event.application;
 
 import org.codenbug.event.query.EventViewRepository;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +18,6 @@ public class EventViewCountService {
     
     private final EventViewRepository eventViewRepository;
     
-    /**
-     * 이벤트 조회수를 비동기적으로 증가
-     * 메인 조회 로직과 분리하여 성능 영향 최소화
-     */
-    @Async("taskExecutor")
     @Transactional
     public void incrementViewCountAsync(String eventId) {
         try {
@@ -35,17 +29,4 @@ public class EventViewCountService {
         }
     }
     
-    /**
-     * 동기적 조회수 증가 (필요 시 사용)
-     */
-    @Transactional
-    public void incrementViewCount(String eventId) {
-        try {
-            eventViewRepository.incrementViewCount(eventId);
-            log.debug("Successfully incremented view count for event: {}", eventId);
-        } catch (Exception e) {
-            log.warn("Failed to increment view count for event: {}, error: {}", eventId, e.getMessage());
-            // 비즈니스 로직에 영향주지 않도록 예외를 다시 던지지 않음
-        }
-    }
 }

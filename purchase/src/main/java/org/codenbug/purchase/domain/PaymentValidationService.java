@@ -2,9 +2,6 @@ package org.codenbug.purchase.domain;
 
 import java.util.List;
 
-import org.codenbug.purchase.query.model.EventProjection;
-import org.codenbug.purchase.query.model.Seat;
-import org.codenbug.purchase.query.model.SeatLayoutProjection;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -15,16 +12,14 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class PaymentValidationService {
-	private final EventProjectionRepository eventProjectionRepository;
-	private final SeatLayoutProjectionRepository seatLayoutProjectionRepository;
+	private final EventInfoProvider eventInfoProvider;
+	private final SeatLayoutProvider seatLayoutProvider;
 
 	/**
 	 * 결제 요청의 기본 유효성을 검증합니다.
 	 */
 	public void validatePaymentRequest(String eventId, int amount) {
-		if (!eventProjectionRepository.existById(eventId)) {
-			throw new IllegalArgumentException("해당 이벤트가 존재하지 않습니다.");
-		}
+		eventInfoProvider.getEventSummary(eventId);
 
 		if (amount <= 0) {
 			throw new IllegalArgumentException("결제 금액이 잘못되었습니다.");
@@ -35,10 +30,9 @@ public class PaymentValidationService {
 	 * 좌석 선택이 유효한지 검증합니다.
 	 */
 	public void validateSeatSelection(String eventId, List<String> seatIds) {
-		EventProjection eventProjection = eventProjectionRepository.findByEventId(eventId);
-		SeatLayoutProjection seatLayout = seatLayoutProjectionRepository.findById(
-			eventProjection.getSeatLayoutId());
-		List<Seat> seats = seatLayout.getSeats().stream().toList();
+		EventSummary eventSummary = eventInfoProvider.getEventSummary(eventId);
+		SeatLayoutInfo seatLayout = seatLayoutProvider.getSeatLayout(eventSummary.getSeatLayoutId());
+		List<SeatInfo> seats = seatLayout.getSeats().stream().toList();
 		
 		for (String seatId : seatIds) {
 			if (seats.stream().noneMatch(seat -> seat.getSeatId().equals(seatId))) {
@@ -50,14 +44,14 @@ public class PaymentValidationService {
 	/**
 	 * 이벤트 정보를 조회합니다.
 	 */
-	public EventProjection getEventProjection(String eventId) {
-		return eventProjectionRepository.findByEventId(eventId);
+	public EventSummary getEventSummary(String eventId) {
+		return eventInfoProvider.getEventSummary(eventId);
 	}
 
 	/**
 	 * 좌석 레이아웃 정보를 조회합니다.
 	 */
-	public SeatLayoutProjection getSeatLayoutProjection(Long seatLayoutId) {
-		return seatLayoutProjectionRepository.findById(seatLayoutId);
+	public SeatLayoutInfo getSeatLayout(Long seatLayoutId) {
+		return seatLayoutProvider.getSeatLayout(seatLayoutId);
 	}
 }

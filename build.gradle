@@ -44,6 +44,17 @@ subprojects {
 
 }
 
+if (project.findProject(":platform") != null) {
+    project(":platform") {
+        tasks.named('bootJar') {
+            enabled = false
+        }
+        tasks.named('jar') {
+            enabled = true
+        }
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }

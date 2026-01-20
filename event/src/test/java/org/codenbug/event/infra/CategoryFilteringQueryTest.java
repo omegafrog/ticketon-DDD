@@ -176,9 +176,9 @@ class CategoryFilteringQueryTest {
         return whereClause;
     }
 
-    private org.codenbug.categoryid.domain.EventCategory createMockEventCategory(Long id) {
-        org.codenbug.categoryid.domain.EventCategory category = mock(org.codenbug.categoryid.domain.EventCategory.class);
-        org.codenbug.categoryid.domain.CategoryId categoryId = mock(org.codenbug.categoryid.domain.CategoryId.class);
+    private org.codenbug.event.category.domain.EventCategory createMockEventCategory(Long id) {
+        org.codenbug.event.category.domain.EventCategory category = mock(org.codenbug.event.category.domain.EventCategory.class);
+        org.codenbug.event.category.domain.CategoryId categoryId = mock(org.codenbug.event.category.domain.CategoryId.class);
         when(categoryId.getId()).thenReturn(id);
         when(category.getId()).thenReturn(categoryId);
         return category;

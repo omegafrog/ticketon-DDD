@@ -13,23 +13,23 @@
 -- 만약 자리가 부족하거나 JSON 파싱 중 예외가 발생할 경우, 전체 롤백 후 0을 리턴
 -- ==================================================================================
 
-local eventId     = string.gsub(ARGV[1], '"', '')
+local eventId = string.gsub(ARGV[1], '"', '')
 
 -- 1) 현재 남은 자리 읽기
 local rawCount = redis.call("HGET", KEYS[1], eventId)
 if (not rawCount) or (tonumber(rawCount) < 1) then
     return 0
 end
---
--- 2) waiting ZSet에서 모든 대기 아이템(itemJson) 가져오기
+
+local capacity = tonumber(rawCount)
+-- 2) waiting ZSet에서 승격 가능한 만큼만 가져오기
 --    각 itemJson 형태: "{\"userId\":123}"
-local waitingItems = redis.call("ZRANGE", KEYS[3], 0, -1)
--- 만약 ZSet이 비어 있으면, 실행할 필요 없이 그냥 1 리턴
+local waitingItems = redis.call("ZRANGE", KEYS[3], 0, capacity - 1)
 if (#waitingItems == 0) then
-    return 1
+    return 0
 end
 
-local cnt = #waitingItems
+local cnt = 0
 -- 3) 각 waitingItem마다 순차 처리
 for idx = 1, #waitingItems do
     local itemJson = waitingItems[idx]
@@ -45,17 +45,10 @@ for idx = 1, #waitingItems do
         error("userId 없음: " .. itemJson)
     end
 
-    -- 3-1) 다시 count를 체크해서, 중간에 부족해진 경우 전체 롤백
-    rawCount = redis.call("HGET", KEYS[1], eventId)
-    if (not rawCount) or (tonumber(rawCount) < 1) then
-        -- 남은 자리가 0 이하이면 전체 롤백
-        return 0
-    end
-
-    -- 3-2) entry queue count를 -1 감소
+    -- 3-1) entry queue count를 -1 감소
     redis.call("HINCRBY", KEYS[1], eventId, -1)
 
-    -- 3-3) waiting record 해시에서 해당 record JSON 가져오기
+    -- 3-2) waiting record 해시에서 해당 record JSON 가져오기
     local waitingHashKey = KEYS[2]         -- "WAITING_QUEUE_RECORD:{eventId}"
     local recordJson = redis.call("HGET", waitingHashKey, userId)
     if not recordJson then
@@ -63,7 +56,7 @@ for idx = 1, #waitingItems do
         error("Waiting record가 없음 for userId=" .. userId)
     end
 
-    -- 3-4) recordJson도 JSON 파싱 ({"userId":.., "eventId":.., "instanceId":..} 형태라고 가정)
+    -- 3-3) recordJson도 JSON 파싱 ({"userId":.., "eventId":.., "instanceId":..} 형태라고 가정)
     local ok, recordObj = pcall(cjson.decode, recordJson)
     if not ok then
         error("Record JSON 파싱 실패: " .. recordJson)
@@ -74,18 +67,20 @@ for idx = 1, #waitingItems do
         error("instanceId 없음 in record: " .. recordJson)
     end
 
-    -- 3-5) ENTRY_QUEUE 스트림에 XADD (with ID="*")
+    -- 3-4) ENTRY_QUEUE 스트림에 XADD (with ID="*")
     local entryMsg = { "userId", userId, "eventId", eventId, "instanceId", instanceId }
     redis.call("XADD", KEYS[5], "*", unpack(entryMsg))
 
-    -- 3-6) waiting ZSet(KEYS[3])에서 해당 itemJson 제거
+    -- 3-5) waiting ZSet(KEYS[3])에서 해당 itemJson 제거
     redis.call("ZREM", KEYS[3], itemJson)
 
-    -- 3-7) WAITING_QUEUE_RECORD 해시(KEYS[2])에서 userId 필드 삭제
+    -- 3-6) WAITING_QUEUE_RECORD 해시(KEYS[2])에서 userId 필드 삭제
     redis.call("HDEL", KEYS[2], userId)
 
-    -- 3-8) WAITING_QUEUE_IN_USER_RECORD 해시(KEYS[4])에서 userId 삭제
+    -- 3-7) WAITING_QUEUE_IN_USER_RECORD 해시(KEYS[4])에서 userId 삭제
     redis.call("HDEL", KEYS[4], userId)
+
+    cnt = cnt + 1
 end
 
 -- 모든 사용자 프로모션 성공

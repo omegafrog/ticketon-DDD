@@ -1,6 +1,5 @@
 package org.codenbug.event.config;
 
-import org.codenbug.categoryid.global.EventCategoryConfig;
 import org.codenbug.seat.global.SeatLayoutConfig;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
@@ -10,13 +9,12 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @EnableJpaRepositories(
-    basePackages = {"org.codenbug.event.infra"},
+    basePackages = {"org.codenbug.event.infra", "org.codenbug.event.category.infra"},
     entityManagerFactoryRef = "primaryEntityManagerFactory",
     transactionManagerRef = "primaryTransactionManager"
 )
 @EntityScan(basePackages = {"org.codenbug.event"})
 @ComponentScan(basePackages = {"org.codenbug.event"})
-@Import({SeatLayoutConfig.class,
-	EventCategoryConfig.class})
+@Import({SeatLayoutConfig.class})
 public class EventConfig {
 }

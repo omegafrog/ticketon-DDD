@@ -7,8 +7,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
-import org.codenbug.categoryid.domain.CategoryId;
-import org.codenbug.categoryid.domain.EventCategory;
+import org.codenbug.event.category.domain.CategoryId;
+import org.codenbug.event.category.domain.EventCategory;
 import org.codenbug.event.domain.EventStatus;
 import org.codenbug.seat.domain.Location;
 import org.junit.jupiter.api.DisplayName;

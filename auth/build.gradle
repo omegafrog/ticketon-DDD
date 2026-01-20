@@ -36,8 +36,8 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 
-    implementation project(':common')
-    implementation project(':message')
+    implementation project(':platform:common')
+    implementation project(':platform:message')
     implementation project(':security-aop')
 
 }

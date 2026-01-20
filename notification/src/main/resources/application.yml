@@ -4,3 +4,9 @@
 #     max-notifications-per-user: 100
 #     notification-retention-days: 30
 #     sse-timeout: 300000  # 5분
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: root
+    password: root

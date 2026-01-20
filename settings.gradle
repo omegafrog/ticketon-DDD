@@ -2,18 +2,21 @@ rootProject.name = 'ticketon-DDD'
 
 include 'seat'
 include 'user'
-include 'common'
 include 'event'
 include 'auth'
 include 'app'
-include 'gateway'
-include 'message'
 include 'security-aop'
-include 'category-id'
 include 'broker'
 include 'dispatcher'
-include 'eureka'
 include 'purchase'
 include 'notification'
-include 'batch'
 include 'redislock'
+include 'platform:common'
+include 'platform:message'
+include 'platform:gateway'
+include 'platform:eureka'
+
+project(':platform:common').projectDir = file('platform/common')
+project(':platform:message').projectDir = file('platform/message')
+project(':platform:gateway').projectDir = file('platform/gateway')
+project(':platform:eureka').projectDir = file('platform/eureka')

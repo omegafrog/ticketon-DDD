@@ -2,8 +2,8 @@ package org.codenbug.event.application;
 
 import java.util.List;
 
-import org.codenbug.categoryid.app.EventCategoryService;
-import org.codenbug.categoryid.domain.EventCategory;
+import org.codenbug.event.category.app.EventCategoryService;
+import org.codenbug.event.category.domain.EventCategory;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;

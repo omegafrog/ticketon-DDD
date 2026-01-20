@@ -398,6 +398,15 @@ logging:
 
 4. **Redis Connection Issues**
    - Fallback: Graceful degradation
+
+## 🧯 Load Considerations (문제와 해결)
+
+**문제(고부하 위험)**  
+- `KEYS WAITING:*` 기반 전수 조회는 Redis 전체 키스페이스를 블로킹 스캔하여, 키 수가 많아질수록 지연/타임아웃이 발생합니다.
+
+**해결 방법(현재 적용됨)**  
+- `SCAN` 기반 조회로 전환하여 커서 방식의 비블로킹 스캔을 사용합니다.  
+- 전체 조회는 유지하면서도 Redis 단일 스레드 점유 시간을 줄여 고부하 상황의 응답 지연을 완화합니다.
    - Recovery: Automatic reconnection with backoff
 
 ### Error Response Format

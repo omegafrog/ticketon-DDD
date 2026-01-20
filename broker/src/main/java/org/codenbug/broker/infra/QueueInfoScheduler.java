@@ -2,6 +2,7 @@ package org.codenbug.broker.infra;
 
 import static org.codenbug.broker.infra.RedisConfig.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,10 @@ import java.util.Set;
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -48,8 +52,9 @@ public class QueueInfoScheduler {
     // emitter map 가져옵니다
     Map<String, SseConnection> emitterMap = emitterService.getEmitterMap();
 
-    // redis waiting queue의 모든 요소를 가져옵니다
-    redisTemplate.keys(WAITING_QUEUE_KEY_NAME + ":*").forEach(key -> {
+    // redis waiting queue의 모든 요소를 가져옵니다 (SCAN 사용)
+    List<String> waitingKeys = scanWaitingQueueKeys();
+    waitingKeys.forEach(key -> {
       try {
         doPrintInfo(emitterMap, key);
       } catch (JsonProcessingException e) {
@@ -57,6 +62,24 @@ public class QueueInfoScheduler {
       }
     });
 
+  }
+
+  private List<String> scanWaitingQueueKeys() {
+    String pattern = WAITING_QUEUE_KEY_NAME + ":*";
+    int count = 1000;
+
+    List<String> keys = redisTemplate.execute((RedisConnection connection) -> {
+      List<String> results = new ArrayList<>();
+      try (Cursor<byte[]> cursor =
+          connection.scan(ScanOptions.scanOptions().match(pattern).count(count).build())) {
+        while (cursor.hasNext()) {
+          results.add(new String(cursor.next(), StandardCharsets.UTF_8));
+        }
+      }
+      return results;
+    });
+
+    return keys == null ? List.of() : keys;
   }
 
   private void doPrintInfo(Map<String, SseConnection> emitterMap, String key)

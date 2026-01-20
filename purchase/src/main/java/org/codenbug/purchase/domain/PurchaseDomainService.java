@@ -6,8 +6,6 @@ import java.time.ZoneId;
 import java.util.List;
 
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
-import org.codenbug.purchase.query.model.EventProjection;
-import org.codenbug.purchase.query.model.SeatLayoutProjection;
 import org.codenbug.redislock.RedisLockService;
 import org.springframework.stereotype.Component;
 
@@ -33,16 +31,16 @@ public class PurchaseDomainService {
 	) {
 		// 1. 좌석 정보 조회 및 검증
 		List<String> seatIds = redisLockService.getLockedSeatIdsByUserId(userId);
-		EventProjection eventProjection = paymentValidationService.getEventProjection(purchase.getEventId());
+		EventSummary eventSummary = paymentValidationService.getEventSummary(purchase.getEventId());
 		paymentValidationService.validateSeatSelection(purchase.getEventId(), seatIds);
 
 		// 2. 좌석 레이아웃 조회
-		SeatLayoutProjection seatLayout = paymentValidationService.getSeatLayoutProjection(
-			eventProjection.getSeatLayoutId());
+		SeatLayoutInfo seatLayout = paymentValidationService.getSeatLayout(
+			eventSummary.getSeatLayoutId());
 
 		// 3. 티켓 생성
 		List<Ticket> tickets = ticketGenerationService.generateTickets(
-			purchase, seatIds, eventProjection, seatLayout);
+			purchase, seatIds, eventSummary, seatLayout);
 
 		// 4. 결제 정보 업데이트
 		PaymentMethod methodEnum = PaymentMethod.from(paymentInfo.getMethod());
@@ -50,7 +48,7 @@ public class PurchaseDomainService {
 			.atZoneSameInstant(ZoneId.of("Asia/Seoul"))
 			.toLocalDateTime();
 
-		String orderName = ticketGenerationService.generateOrderName(eventProjection, seatIds.size());
+		String orderName = ticketGenerationService.generateOrderName(eventSummary, seatIds.size());
 
 		purchase.updatePaymentInfo(
 			paymentInfo.getPaymentKey(),
@@ -69,10 +67,10 @@ public class PurchaseDomainService {
 	 */
 	public static class PurchaseConfirmationResult {
 		private final List<Ticket> tickets;
-		private final SeatLayoutProjection seatLayout;
+		private final SeatLayoutInfo seatLayout;
 		private final List<String> seatIds;
 
-		public PurchaseConfirmationResult(List<Ticket> tickets, SeatLayoutProjection seatLayout, List<String> seatIds) {
+		public PurchaseConfirmationResult(List<Ticket> tickets, SeatLayoutInfo seatLayout, List<String> seatIds) {
 			this.tickets = tickets;
 			this.seatLayout = seatLayout;
 			this.seatIds = seatIds;
@@ -82,7 +80,7 @@ public class PurchaseDomainService {
 			return tickets;
 		}
 
-		public SeatLayoutProjection getSeatLayout() {
+		public SeatLayoutInfo getSeatLayout() {
 			return seatLayout;
 		}
 

@@ -16,12 +16,11 @@ import org.codenbug.seat.global.SeatCancelRequest;
 import org.codenbug.seat.global.SeatSelectRequest;
 import org.codenbug.seat.global.SeatSelectResponse;
 import org.codenbug.seat.global.exception.ConflictException;
-import org.codenbug.seat.query.model.EventProjection;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.codenbug.seat.infra.EventServiceClient;
+import org.codenbug.seat.infra.dto.EventSummaryResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,18 +28,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateSeatLayoutService {
 	private final SeatLayoutRepository seatLayoutRepository;
-	@Qualifier(value = "seat-event-projection")
-	private final EventProjectionRepository eventProjectionRepository;
+	private final EventServiceClient eventServiceClient;
 	private final SeatTransactionService seatTransactionService;
 	private final RedisLockService redisLockService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	public UpdateSeatLayoutService(SeatLayoutRepository seatLayoutRepository,
-			EventProjectionRepository eventProjectionRepository,
+			EventServiceClient eventServiceClient,
 			SeatTransactionService seatTransactionService, RedisLockService redisLockService,
 			ApplicationEventPublisher eventPublisher) {
 		this.seatLayoutRepository = seatLayoutRepository;
-		this.eventProjectionRepository = eventProjectionRepository;
+		this.eventServiceClient = eventServiceClient;
 		this.seatTransactionService = seatTransactionService;
 		this.redisLockService = redisLockService;
 		this.eventPublisher = eventPublisher;
@@ -80,8 +78,7 @@ public class UpdateSeatLayoutService {
 			throw new IllegalArgumentException("로그인된 사용자가 없습니다.");
 		}
 
-		EventProjection event = eventProjectionRepository.findByEventId(eventId)
-				.orElseThrow(() -> new EntityNotFoundException("이벤트를 찾을 수 없습니다."));
+		EventSummaryResponse event = eventServiceClient.getEventSummary(eventId);
 
 		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
 		Set<Seat> seats = seatLayout.getSeats();
@@ -90,7 +87,7 @@ public class UpdateSeatLayoutService {
 
 		List<String> reservedSeatIds;
 
-		if (event.getSeatSelectable()) {
+		if (event.isSeatSelectable()) {
 			// 지정석 예매 처리
 			if (selectedSeats != null && selectedSeats.size() > 4) {
 				throw new IllegalArgumentException("최대 4개의 좌석만 선택할 수 있습니다.");
@@ -177,8 +174,7 @@ public class UpdateSeatLayoutService {
 		if (userId == null) {
 			throw new IllegalArgumentException("[cancelSeat] 로그인된 사용자가 없습니다.");
 		}
-		EventProjection event = eventProjectionRepository.findByEventId(eventId)
-				.orElseThrow(() -> new EntityNotFoundException("Cannot find event projection."));
+		EventSummaryResponse event = eventServiceClient.getEventSummary(eventId);
 		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
 
 		for (String seatId : seatCancelRequest.getSeatList()) {

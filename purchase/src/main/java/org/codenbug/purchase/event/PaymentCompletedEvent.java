@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * 결제 완료 이벤트 Kafka를 통해 다른 서비스에게 결제 완료를 알리는 이벤트
+ * 결제 완료 이벤트 RabbitMQ를 통해 다른 서비스에게 결제 완료를 알리는 이벤트
  */
 @Getter
 @NoArgsConstructor

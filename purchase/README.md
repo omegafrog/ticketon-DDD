@@ -381,8 +381,8 @@ public class PurchaseId {
 ```java
 void validatePaymentRequest(String eventId, int amount)
 void validateSeatSelection(String eventId, List<String> seatIds)
-EventProjection getEventProjection(String eventId)
-SeatLayoutProjection getSeatLayoutProjection(Long seatLayoutId)
+EventSummary getEventSummary(String eventId)
+SeatLayoutInfo getSeatLayout(Long seatLayoutId)
 ```
 
 #### TicketGenerationService
@@ -397,9 +397,9 @@ SeatLayoutProjection getSeatLayoutProjection(Long seatLayoutId)
 
 ```java
 List<Ticket> generateTickets(Purchase purchase, List<String> seatIds, 
-                            EventProjection eventProjection, 
-                            SeatLayoutProjection seatLayout)
-String generateOrderName(EventProjection eventProjection, int seatCount)
+                            EventSummary eventSummary, 
+                            SeatLayoutInfo seatLayout)
+String generateOrderName(EventSummary eventSummary, int seatCount)
 ```
 
 #### PurchaseDomainService
@@ -439,22 +439,21 @@ public interface TicketRepository extends JpaRepository<Ticket, TicketId> {
 }
 ```
 
-### 프로젝션 리포지토리
+### 서비스 연동 인터페이스
 
-#### EventProjectionRepository
+#### EventInfoProvider
 
 ```java
-public interface EventProjectionRepository {
-    boolean existById(String eventId);
-    EventProjection findByEventId(String eventId);
+public interface EventInfoProvider {
+    EventSummary getEventSummary(String eventId);
 }
 ```
 
-#### SeatLayoutProjectionRepository
+#### SeatLayoutProvider
 
 ```java
-public interface SeatLayoutProjectionRepository {
-    SeatLayoutProjection findById(String seatLayoutId);
+public interface SeatLayoutProvider {
+    SeatLayoutInfo getSeatLayout(Long seatLayoutId);
 }
 ```
 
@@ -550,12 +549,12 @@ payment:
 redis:
   host: localhost
   port: 6379
-  
-kafka:
-  bootstrap-servers: localhost:29092
-  producer:
-    key-serializer: org.apache.kafka.common.serialization.StringSerializer
-    value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+rabbitmq:
+  host: localhost
+  port: 5672
+  username: root
+  password: root
 ```
 
 ### 데이터베이스 구성
@@ -734,8 +733,11 @@ TOSS_SECRET_KEY=test_sk_...
 REDIS_HOST=redis
 REDIS_PORT=6379
 
-# Kafka
-KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+# RabbitMQ
+RABBITMQ_HOST=rabbitmq
+RABBITMQ_PORT=5672
+RABBITMQ_USERNAME=root
+RABBITMQ_PASSWORD=root
 ```
 
 구매 서비스는 포괄적인 오류 처리, 모니터링 및 통합 기능을 갖춘 강력한 도메인 주도 결제 처리 방식을 제공합니다.

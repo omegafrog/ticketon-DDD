@@ -13,11 +13,11 @@ import org.springframework.web.client.RestTemplate;
 @EnableJpaRepositories(basePackages = {"org.codenbug.purchase.infra"},
 		entityManagerFactoryRef = "primaryEntityManagerFactory",
 		transactionManagerRef = "primaryTransactionManager")
-@EntityScan(basePackages = {"org.codenbug.purchase.domain", "org.codenbug.purchase.query.model"})
+@EntityScan(basePackages = {"org.codenbug.purchase.domain"})
 @ComponentScan(basePackages = {"org.codenbug.purchase"})
 public class PurchaseConfig {
 
-	@Bean
+	@Bean("purchaseRestTemplate")
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
 	}
