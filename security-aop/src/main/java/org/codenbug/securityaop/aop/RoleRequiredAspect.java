@@ -31,15 +31,15 @@ public class RoleRequiredAspect {
 	@Around("@annotation(roleRequired)")
 	public Object acquireAuthentication(ProceedingJoinPoint joinPoint,RoleRequired roleRequired) throws Throwable {
 
-		String authorization = request.getHeader("Authorization");
+		String authorization = getRequiredHeader("Authorization");
 		AccessToken accessToken = Util.parseAccessToken(authorization);
 
 		accessToken.decode(secretKey);
 
-		String userId = request.getHeader("User-Id");
-		Role role = Role.valueOf(request.getHeader("Role"));
+		String userId = getRequiredHeader("User-Id");
+		Role role = Role.valueOf(getRequiredHeader("Role"));
 		// boolean socialUser = request.getHeader("socialUser") != null;
-		String email = request.getHeader("Email");
+		String email = getRequiredHeader("Email");
 
 		if( !List.of(roleRequired.value()).contains(role))
 			throw new AccessDeniedException("Access Denied");
@@ -47,13 +47,21 @@ public class RoleRequiredAspect {
 	}
 	@Around("@annotation(AuthNeeded)")
 	public Object setUserSecurityToken(ProceedingJoinPoint joinPoint) throws Throwable {
-		String userId = request.getHeader("User-Id");
-		Role role = Role.valueOf(request.getHeader("Role"));
+		String userId = getRequiredHeader("User-Id");
+		Role role = Role.valueOf(getRequiredHeader("Role"));
 		// boolean socialUser = request.getHeader("socialUser") != null;
-		String email = request.getHeader("Email");
+		String email = getRequiredHeader("Email");
 		try (LoggedInUserContext context = LoggedInUserContext.open(new UserSecurityToken(userId, email, role))
 		) {
 			return joinPoint.proceed();
 		}
+	}
+
+	private String getRequiredHeader(String name) {
+		String value = request.getHeader(name);
+		if (value == null || value.isBlank()) {
+			throw new IllegalArgumentException("Missing required header: " + name);
+		}
+		return value;
 	}
 }

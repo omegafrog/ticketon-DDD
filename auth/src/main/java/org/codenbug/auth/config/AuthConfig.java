@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
+import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
@@ -19,5 +20,10 @@ public class AuthConfig {
   public PasswordEncoder passwordEncoder(@Value("${custom.password.secret}") String secret) {
     return new Pbkdf2PasswordEncoder(secret, 16, 10,
         Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 }

@@ -12,11 +12,10 @@ import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.domain.UserRepository;
 import org.codenbug.user.ui.RegisterRequest;
-import org.springframework.classify.PatternMatcher;
+import org.codenbug.user.ui.RegisterValidationRequest;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.PatternMatchUtils;
 
 import common.ValidationError;
 import common.ValidationErrors;
@@ -39,35 +38,43 @@ public class UserCommandService {
   @Transactional
   public UserId register(RegisterRequest request) {
 
-    validateRequest(request);
+    validateRegisterFields(request.getName(), request.getAge(), request.getSex(),
+        request.getPhoneNum(), request.getLocation());
+
+    if (request.getSecurityUserId() == null) {
+      throw new ValidationErrors(List.of(new ValidationError("SecurityUserId must not be null")));
+    }
 
     return userRepository.save(
         new User(idService, request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(),
             request.getLocation(), request.getAge(), request.getSecurityUserId()));
   }
 
-  private void validateRequest(RegisterRequest request) {
+  public void validateRegisterInputs(RegisterValidationRequest request) {
+    validateRegisterFields(request.getName(), request.getAge(), request.getSex(),
+        request.getPhoneNum(), request.getLocation());
+  }
+
+  private void validateRegisterFields(String name, Integer age, String sex, String phoneNum,
+      String location) {
     List<ValidationError> errors = new ArrayList<>();
-    if (request.getName() == null || request.getName().isEmpty()) {
+    if (name == null || name.isEmpty()) {
       errors.add(new ValidationError("Name must not be null or empty."));
     }
-    if (request.getLocation() == null || request.getLocation().isEmpty()) {
+    if (location == null || location.isEmpty()) {
       errors.add(new ValidationError("Location must not be null or empty."));
     }
-    if (request.getSecurityUserId() == null) {
-      errors.add(new ValidationError("SecurityUserId must not be null"));
-    }
-    if (request.getAge() == null || request.getAge() < 0) {
+    if (age == null || age < 0) {
       errors.add(new ValidationError("Age must not be null or bigger than -1"));
     }
-    if (request.getSex() == null) {
+    if (sex == null) {
       errors.add(new ValidationError("Sex must not be null."));
     }
-    if (!request.getSex().equals(Sex.MALE.name()) && !request.getSex().equals(Sex.FEMALE.name())
-        && !request.getSex().equals(Sex.ETC.name())) {
+    if (sex != null && !sex.equals(Sex.MALE.name()) && !sex.equals(Sex.FEMALE.name())
+        && !sex.equals(Sex.ETC.name())) {
       errors.add(new ValidationError("Sex must be \"MALE\" or \"FEMALE\" or \"ETC\""));
     }
-    if (!pattern.matcher(request.getPhoneNum()).matches()) {
+    if (phoneNum == null || !pattern.matcher(phoneNum).matches()) {
       errors.add(new ValidationError(
           "Phone number must match pattern ^01([0|1|6|7|8|9])-\\d{3,4}-\\d{4}$."));
     }

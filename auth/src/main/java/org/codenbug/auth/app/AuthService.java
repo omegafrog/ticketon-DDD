@@ -8,11 +8,12 @@ import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.auth.domain.SocialInfo;
 import org.codenbug.auth.domain.SocialProvider;
 import org.codenbug.auth.global.SocialLoginType;
+import org.codenbug.auth.infra.UserValidationClient;
+import org.codenbug.auth.ui.LoginRequest;
 import org.codenbug.auth.ui.RegisterRequest;
 import org.codenbug.common.Role;
 import org.codenbug.common.TokenInfo;
 import org.codenbug.common.Util;
-import org.codenbug.auth.ui.LoginRequest;
 import org.codenbug.message.SecurityUserRegisteredEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,14 +35,17 @@ public class AuthService {
   @Value("${custom.jwt.secret}")
   private String key;
   private final ApplicationEventPublisher publisher;
+  private final UserValidationClient userValidationClient;
 
   public AuthService(SecurityUserRepository securityUserRepository, PasswordEncoder passwordEncoder,
-      ApplicationEventPublisher publisher, ObjectMapper objectMapper, ProviderFactory factory) {
+      ApplicationEventPublisher publisher, ObjectMapper objectMapper, ProviderFactory factory,
+      UserValidationClient userValidationClient) {
     this.securityUserRepository = securityUserRepository;
     this.passwordEncoder = passwordEncoder;
     this.publisher = publisher;
     this.objectMapper = objectMapper;
     this.factory = factory;
+    this.userValidationClient = userValidationClient;
   }
 
   public TokenInfo loginEmail(LoginRequest loginRequest) {
@@ -60,6 +64,8 @@ public class AuthService {
   // 이메일 회원가입
   @Transactional
   public SecurityUserId register(RegisterRequest request) {
+    userValidationClient.validateRegisterInputs(request);
+
     SecurityUserId saved = securityUserRepository
         .save(new SecurityUser(new SocialInfo(null, null, false), request.getEmail(),
             passwordEncoder.encode(request.getPassword()), Role.USER.toString()));

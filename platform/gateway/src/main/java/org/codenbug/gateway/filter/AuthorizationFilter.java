@@ -77,16 +77,26 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 				refreshToken = getRefreshToken(request);
 
 				validateToken(accessToken, refreshToken);
+				accessToken.decode(jwtSecret);
 			} catch (ExpiredJwtException e) {
 				// refresh token
 				log.debug("access token is expired");
 
-				TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
-				accessToken = tokenInfo.getAccessToken();
-				refreshToken = tokenInfo.getRefreshToken();
+				try {
+					TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
+					accessToken = tokenInfo.getAccessToken();
+					refreshToken = tokenInfo.getRefreshToken();
+					accessToken.decode(jwtSecret);
+				} catch (io.jsonwebtoken.JwtException refreshException) {
+					return sendUnauthorizedError(
+						new RuntimeException("인증 토큰이 유효하지 않습니다.", refreshException), response);
+				}
 
 			} catch (JwtException  e) {
 				return errorResponse(e, response);
+			} catch (io.jsonwebtoken.JwtException e) {
+				return sendUnauthorizedError(new RuntimeException("인증 토큰이 유효하지 않습니다.", e),
+					response);
 			} catch (RuntimeException e){
 				return sendUnauthorizedError(e, response);
 			}
@@ -101,7 +111,6 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 	private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request,
 		RefreshToken refreshToken) {
-		accessToken.decode(jwtSecret);
 		ServerHttpRequest mutatedRequest = request.mutate()
 			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
 			.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),

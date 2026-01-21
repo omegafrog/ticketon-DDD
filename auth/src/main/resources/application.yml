@@ -77,6 +77,9 @@ logging:
 custom:
   cookie:
     domain: localhost
+service:
+  user:
+    base-url: http://localhost:9000
 sns:
   google:
       url: https://accounts.google.com/o/oauth2/v2/auth
