@@ -145,20 +145,16 @@ public class PurchaseService {
 		String userId
 	) {
 		try {
-			// Event version 재검증
-		EventSummary currentEvent = eventInfoProvider.getEventSummary(preResult.getEventId());
-		if (currentEvent == null) {
-			throw new IllegalArgumentException("이벤트 정보를 찾을 수 없습니다.");
-		}
+			boolean isValid = eventInfoProvider.isEventStateValid(
+				preResult.getEventId(),
+				preResult.getEventVersion(),
+				preResult.getEventStatus()
+			);
 
-			// Version이 변경되었거나 상태가 OPEN이 아니면 예외 발생
-			if (!preResult.getEventVersion().equals(currentEvent.getVersion()) ||
-				!"OPEN".equals(currentEvent.getStatus())) {
-
+			if (!isValid) {
 				log.warn(
-					"[finalizePayment] Event 상태 변경 감지. eventId: {}, 기존 version: {}, 현재 version: {}, 기존 상태: {}, 현재 상태: {}",
-					preResult.getEventId(), preResult.getEventVersion(), currentEvent.getVersion(),
-					preResult.getEventStatus(), currentEvent.getStatus());
+					"[finalizePayment] Event 상태 변경 감지. eventId: {}, 기존 version: {}, 기존 상태: {}",
+					preResult.getEventId(), preResult.getEventVersion(), preResult.getEventStatus());
 
 				// EventChangeDetectedException을 던져서 상위에서 예외 처리
 				throw new EventChangeDetectedException(

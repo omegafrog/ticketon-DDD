@@ -33,4 +33,12 @@ public class EventServiceClient implements EventInfoProvider {
 			response.getTitle()
 		);
 	}
+
+	@Override
+	public boolean isEventStateValid(String eventId, Long version, String status) {
+		String url = "%s/internal/events/%s/version-check?version=%d&status=%s"
+			.formatted(eventServiceBaseUrl, eventId, version, status);
+		Boolean response = restTemplate.getForObject(url, Boolean.class);
+		return response != null && response;
+	}
 }
