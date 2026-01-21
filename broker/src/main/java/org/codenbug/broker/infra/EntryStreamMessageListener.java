@@ -102,32 +102,41 @@ public class EntryStreamMessageListener
 
     String instanceStreamName = redisConfig.getInstanceDispatchStreamName();
     String groupName = instanceStreamName + ":GROUP";
-    String consumerName = instanceConfig.getInstanceId() + "-consumer";
-
     Map<String, String> body = message.getValue();
 
-    String userId = body.get("userId").replaceAll("\"", "");
-    String eventId = body.get("eventId").replaceAll("\"", "");
+    String userId = normalizeId(body.get("userId"));
+    String eventId = normalizeId(body.get("eventId"));
     SseConnection sseConnection = sseEmitterService.getEmitterMap().get(userId);
     // dispatcher가 유저 승급했는데, 유저는 정작 연결 끊은 상태
     if (sseConnection == null) {
-      log.info("count incremented");
-      redisTemplate.opsForHash().increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId, 1);
-      redisTemplate.opsForHash().delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
-    }
-    if (!sseConnection.getEventId().equals(eventId)) {
+      handleDisconnectedUser(eventId, userId);
+      acknowledge(instanceStreamName, groupName, message);
+      return;
+    } else if (!sseConnection.getEventId().equals(eventId)) {
       return;
     }
 
+    processEntry(sseConnection, eventId, userId);
+    acknowledge(instanceStreamName, groupName, message);
+  }
+
+  private String normalizeId(String rawId) {
+    return rawId.replaceAll("\"", "");
+  }
+
+  private void handleDisconnectedUser(String eventId, String userId) {
+    log.info("count incremented");
+    redisTemplate.opsForHash().increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId, 1);
+    redisTemplate.opsForHash().delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+  }
+
+  private void processEntry(SseConnection sseConnection, String eventId, String userId) {
     sseConnection.setStatus(Status.IN_PROGRESS);
     SseEmitter emitter = sseConnection.getEmitter();
 
     String token = entryAuthService
         .generateEntryAuthToken(Map.of("eventId", eventId, "userId", userId), "entryAuthToken");
-    redisTemplate.opsForHash().put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(),
-        token);
-    redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5,
-        TimeUnit.MINUTES);
+    storeEntryToken(userId, token);
 
     try {
       emitter.send(SseEmitter.event().data(Map.of("eventId", eventId, "userId", userId, "status",
@@ -137,6 +146,17 @@ public class EntryStreamMessageListener
     } catch (Exception e) {
       closeConn(userId, eventId, redisTemplate);
     }
+  }
+
+  private void storeEntryToken(String userId, String token) {
+    redisTemplate.opsForHash().put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(),
+        token);
+    redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5,
+        TimeUnit.MINUTES);
+  }
+
+  private void acknowledge(String instanceStreamName, String groupName,
+      MapRecord<String, String, String> message) {
     redisTemplate.opsForStream().acknowledge(instanceStreamName, groupName, message.getId());
   }
 }
