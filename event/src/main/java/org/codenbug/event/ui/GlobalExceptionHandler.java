@@ -12,6 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -62,6 +64,15 @@ public class GlobalExceptionHandler {
     errors.put("message", ex.getMessage());
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
         HttpStatus.BAD_REQUEST.toString(), "파라미터 validation 실패했습니다.", errors));
+  }
+
+  @ExceptionHandler(EntityNotFoundException.class)
+  public ResponseEntity<RsData<Map<String, Object>>> handleEntityNotFoundException(
+      EntityNotFoundException ex) {
+    Map<String, Object> errors = new HashMap<>();
+    errors.put("message", ex.getMessage() == null ? "리소스를 찾을 수 없습니다." : ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RsData<Map<String, Object>>(
+        HttpStatus.NOT_FOUND.toString(), "리소스를 찾을 수 없습니다.", errors));
   }
 
 

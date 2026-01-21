@@ -1,5 +1,6 @@
 package org.codenbug.event.application;
 
+import org.codenbug.event.category.app.EventCategoryService;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventInformation;
@@ -21,10 +22,13 @@ public class UpdateEventService {
 
 	private final EventRepository eventRepository;
 	private final UpdateSeatLayoutService updateSeatLayoutService;
+	private final EventCategoryService eventCategoryService;
 
-	public UpdateEventService(EventRepository eventRepository, UpdateSeatLayoutService updateSeatLayoutService) {
+	public UpdateEventService(EventRepository eventRepository, UpdateSeatLayoutService updateSeatLayoutService,
+		EventCategoryService eventCategoryService) {
 		this.eventRepository = eventRepository;
 		this.updateSeatLayoutService = updateSeatLayoutService;
+		this.eventCategoryService = eventCategoryService;
 	}
 
 
@@ -38,6 +42,10 @@ public class UpdateEventService {
 
 		ManagerId loggedInManagerId = getLoggedInManager();
 		event.canUpdate(loggedInManagerId);
+
+		if (request.getCategoryId() != null) {
+			eventCategoryService.validateExist(request.getCategoryId().getValue());
+		}
 
 		updateSeatLayoutService.update(event.getSeatLayoutId().getValue(), request.getSeatLayout());
 
