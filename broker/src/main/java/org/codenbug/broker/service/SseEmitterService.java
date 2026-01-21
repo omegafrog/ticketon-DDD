@@ -79,15 +79,15 @@ public class SseEmitterService {
     // entry_queue_count를 1 감소시킨 것을 다시 증가
     if (status.equals(Status.IN_PROGRESS)) {
       log.info("count incremented");
-      redisTemplate.opsForHash().increment(ENTRY_QUEUE_COUNT_KEY_NAME, parsedEventId, 1);
+      redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, parsedEventId, 1);
       redisTemplate.delete(buildEntryTokenKey(userId));
     } else if (status.equals(Status.IN_ENTRY)) {
 
       redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY_NAME + ":" + eventId,
           Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId));
-      redisTemplate.opsForHash().delete("WAITING_QUEUE_RECORD:" + eventId.toString(),
+      redisTemplate.opsForHash().delete("WAITING_QUEUE_INDEX_RECORD:" + eventId.toString(),
           userId.toString());
-      redisTemplate.opsForHash().delete(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + parsedEventId,
+      redisTemplate.opsForHash().delete(WAITING_USER_IDS_KEY_NAME + ":" + parsedEventId,
           userId.toString());
     }
   }

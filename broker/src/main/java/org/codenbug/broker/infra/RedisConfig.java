@@ -25,7 +25,7 @@ public class RedisConfig {
 	// 메시지의 idx 값을 저장하기 위한 space의 key값
 	public static final String WAITING_QUEUE_IDX_KEY_NAME = "WAITING_QUEUE_IDX";
 	// entry queue의 현재 인원을  저장하기 위한 space의 key값
-	public static final String ENTRY_QUEUE_COUNT_KEY_NAME = "ENTRY_QUEUE_COUNT";
+	public static final String ENTRY_QUEUE_SLOTS_KEY_NAME = "ENTRY_QUEUE_SLOTS";
 	// 메시지 내부의 userId 속성의 키 값
 	public static final String QUEUE_MESSAGE_USER_ID_KEY_NAME = "userId";
 	// 메시지 내부의 eventId 속성의 키 값
@@ -34,7 +34,7 @@ public class RedisConfig {
 	// 메시지 내부의 idx 속성의 키 값
 	public static final String QUEUE_MESSAGE_IDX_KEY_NAME = "idx";
 	public static final String DISPATCH_QUEUE_CHANNEL_PREFIX = "DISPATCH:";
-	public static final String WAITING_QUEUE_IN_USER_RECORD_KEY_NAME = "WAITING_USER_ID";
+	public static final String WAITING_USER_IDS_KEY_NAME = "WAITING_USER_IDS";
 	public static final String ENTRY_TOKEN_STORAGE_KEY_NAME = "ENTRY_TOKEN";
 	public static final String WAITING_QUEUE_START_IDX_KEY = "WAITING_QUEUE_START_IDX";
 	private static final String ENTRY_USER_STREAM_GROUP = "ENTRY_CONSUMER_GROUP";

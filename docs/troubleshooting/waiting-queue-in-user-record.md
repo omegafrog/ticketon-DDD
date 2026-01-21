@@ -43,15 +43,15 @@ start
 
 :try HSETNX WAITING_QUEUE_IN_USER_RECORD:{eventId} userId -> "true";
 if (inserted?) then (yes)
-  if (ENTRY_QUEUE_COUNT exists?) then (yes)
+  if (ENTRY_QUEUE_SLOTS exists?) then (yes)
   else (no)
     :fetch seat count;
-    :put ENTRY_QUEUE_COUNT[eventId];
+    :put ENTRY_QUEUE_SLOTS[eventId];
   endif
 
   :idx = HINCRBY WAITING_QUEUE_IDX[eventId] 1;
   :ZADD WAITING_QUEUE:{eventId} score=idx member={userId};
-  :HSET WAITING_QUEUE_RECORD:{eventId} userId -> record;
+  :HSET WAITING_QUEUE_INDEX_RECORD:{eventId} userId -> record;
   :return SSE emitter;
   stop
 else (no)

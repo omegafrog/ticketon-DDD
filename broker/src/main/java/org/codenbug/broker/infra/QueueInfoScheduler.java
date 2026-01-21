@@ -89,7 +89,7 @@ public class QueueInfoScheduler {
     for (String waitingKey : waitingKeyList) {
       Object result = null;
       result =
-          redisTemplate.opsForHash().get("WAITING_QUEUE_RECORD:" + key.split(":")[1].toString(),
+          redisTemplate.opsForHash().get("WAITING_QUEUE_INDEX_RECORD:" + key.split(":")[1].toString(),
               objectMapper.readTree(waitingKey.toString()).get("userId").asText());
 
       if (result == null)
@@ -172,7 +172,7 @@ public class QueueInfoScheduler {
   //
   // // Redis에서 해당 사용자가 실제로 대기열에 있는지 확인
   // boolean existsInRedis = objectRedisTemplate.opsForHash()
-  // .hasKey(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId);
+  // .hasKey(WAITING_USER_IDS_KEY_NAME + ":" + eventId, userId);
   //
   // if (!existsInRedis) {
   // log.warn("Found zombie connection for user {} in event {}, cleaning up", userId, eventId);

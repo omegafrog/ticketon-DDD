@@ -184,10 +184,10 @@ void removeConnection(String userId)
 WAITING:{eventId} -> ZSet(score=timestamp, member=userId)
 
 # User metadata
-WAITING_QUEUE_RECORD:{eventId} -> Hash(userId -> {position, timestamp, ...})
+WAITING_QUEUE_INDEX_RECORD:{eventId} -> Hash(userId -> {position, timestamp, ...})
 
 # Duplicate prevention  
-WAITING_USER_ID:{eventId} -> Hash(userId -> "true")
+WAITING_USER_IDS:{eventId} -> Hash(userId -> "true")
 ```
 
 #### EntryAuthService
@@ -284,8 +284,8 @@ broker:
 public class RedisConfig {
     // Key naming constants
     public static final String WAITING_QUEUE_KEY_NAME = "WAITING";
-    public static final String WAITING_QUEUE_RECORD_KEY_NAME = "WAITING_QUEUE_RECORD";
-    public static final String WAITING_USER_ID_KEY_NAME = "WAITING_USER_ID";
+    public static final String WAITING_QUEUE_INDEX_RECORD_KEY_NAME = "WAITING_QUEUE_INDEX_RECORD";
+    public static final String WAITING_USER_IDS_KEY_NAME = "WAITING_USER_IDS";
     public static final String DISPATCH_QUEUE_CHANNEL_NAME = "DISPATCH";
     
     // Stream configuration
@@ -349,7 +349,7 @@ redis-cli XREAD COUNT 10 STREAMS DISPATCH 0-0
 
 # Check queue status
 redis-cli ZRANGE WAITING:event123 0 -1 WITHSCORES
-redis-cli HGETALL WAITING_QUEUE_RECORD:event123
+redis-cli HGETALL WAITING_QUEUE_INDEX_RECORD:event123
 ```
 
 ## 📊 Monitoring

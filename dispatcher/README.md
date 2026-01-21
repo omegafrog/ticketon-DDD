@@ -174,9 +174,9 @@ local capacity = tonumber(ARGV[2])
 
 -- Key construction
 local waitingKey = "WAITING:" .. eventId
-local entryCountKey = "ENTRY_QUEUE_COUNT:" .. eventId  
-local recordKey = "WAITING_QUEUE_RECORD:" .. eventId
-local userIdKey = "WAITING_USER_ID:" .. eventId
+local entryCountKey = "ENTRY_QUEUE_SLOTS:" .. eventId  
+local recordKey = "WAITING_QUEUE_INDEX_RECORD:" .. eventId
+local userIdKey = "WAITING_USER_IDS:" .. eventId
 
 -- Check available capacity
 local currentCount = redis.call('GET', entryCountKey) or 0
@@ -238,7 +238,7 @@ return {promotedCount, promotedUsers}
 - 중간에 자리가 부족해지면 `return 0`으로 종료하면서도 앞선 승격은 이미 반영되어, “리턴값 vs 실제 승격 수”가 어긋날 수 있습니다.
 
 **해결 방법(현재 적용됨)**  
-- `ENTRY_QUEUE_COUNT[eventId]`를 읽어 **승격 가능한 수(capacity)** 만큼만 가져오고 처리합니다.  
+- `ENTRY_QUEUE_SLOTS[eventId]`를 읽어 **승격 가능한 수(capacity)** 만큼만 가져오고 처리합니다.  
 - `ZRANGE 0 (capacity-1)`로 제한하여 **필요한 만큼만** 처리하며, 리턴값은 실제 승격 수와 일치합니다.  
 - 결과적으로 이벤트 단위 처리이더라도 **대기열 크기에 비례한 선형 스캔**을 피하고, 고부하 상황에서 Redis 블로킹 시간을 줄입니다.
 
@@ -388,7 +388,7 @@ redis-cli ZADD WAITING:event123 1642845601 user2
 redis-cli ZADD WAITING:event123 1642845602 user3
 
 # Add metadata
-redis-cli HSET WAITING_QUEUE_RECORD:event123 user1 '{"instanceId":"test","joinedAt":"2025-01-22T10:00:00Z"}'
+redis-cli HSET WAITING_QUEUE_INDEX_RECORD:event123 user1 '{"instanceId":"test","joinedAt":"2025-01-22T10:00:00Z"}'
 ```
 
 #### Monitor Processing
@@ -409,7 +409,7 @@ curl http://localhost:9002/actuator/metrics/executor.active
 # Generate test load
 for i in {1..1000}; do
     redis-cli ZADD WAITING:event123 $((1642845600 + i)) user$i
-    redis-cli HSET WAITING_QUEUE_RECORD:event123 user$i "{\"instanceId\":\"test\",\"joinedAt\":\"2025-01-22T10:00:00Z\"}"
+    redis-cli HSET WAITING_QUEUE_INDEX_RECORD:event123 user$i "{\"instanceId\":\"test\",\"joinedAt\":\"2025-01-22T10:00:00Z\"}"
 done
 
 # Monitor promotion throughput

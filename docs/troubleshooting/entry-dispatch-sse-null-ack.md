@@ -35,7 +35,7 @@ title EntryStreamMessageListener.onMessage
 
 if (sseConnection == null?) then 
   -->log "count incremented";
-  -->increment ENTRY_QUEUE_COUNT[eventId];
+  -->increment ENTRY_QUEUE_SLOTS[eventId];
   -->delete ENTRY_TOKEN_STORAGE[userId];
   -->sseConnection.getEventId();\n(NPE 발생 가능)
 else

@@ -23,7 +23,7 @@
     broker/src/main/java/org/codenbug/broker/infra/EntryStreamMessageListener.java
   - 승격 Lua가 중간에 자리가 없으면 return 0으로 종료하지만 이미 승격된 사용자는 롤백되지 않습니다. 프로모션 카운터는 0으로 기록되어 실제 승격 수와 불일치합니다. dispatcher/src/main/
     resources/promote_all_waiting_for_event.lua, dispatcher/src/main/java/org/codenbug/messagedispatcher/thread/EntryPromoteThread.java
-  - ENTRY_QUEUE_COUNT가 실제 “좌석 수”라면, IN_PROGRESS 종료 시 1을 증가시키는 로직은 재입장/재승격을 허용해 좌석 초과를 유발할 수 있습니다(의도한 의미 확인 필요). broker/src/main/
+  - ENTRY_QUEUE_SLOTS가 실제 “좌석 수”라면, IN_PROGRESS 종료 시 1을 증가시키는 로직은 재입장/재승격을 허용해 좌석 초과를 유발할 수 있습니다(의도한 의미 확인 필요). broker/src/main/
     java/org/codenbug/broker/service/SseEmitterService.java
 
   추상화 레벨 불일치

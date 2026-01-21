@@ -25,12 +25,12 @@ public class RedisConfig {
 	// entry queue redis stream 키 이름
 	public static final String ENTRY_QUEUE_KEY_NAME = "ENTRY";
 	// entry queue의 현재 인원을  저장하기 위한 space의 key값
-	public static final String ENTRY_QUEUE_COUNT_KEY_NAME = "ENTRY_QUEUE_COUNT";
+	public static final String ENTRY_QUEUE_SLOTS_KEY_NAME = "ENTRY_QUEUE_SLOTS";
 	// dispatch queue의 컨슈머 그룹명
 	public static final String ENTRY_QUEUE_CONSUMER_NAME = "ENTRY_QUEUE_CONSUMER";
 	public static final String DISPATCH_QUEUE_CHANNEL_PREFIX = "DISPATCH:";
 	public static final Integer ENTRY_QUEUE_CAPACITY = 1000;
-	public static final String WAITING_QUEUE_IN_USER_RECORD_KEY_NAME = "WAITING_USER_ID";
+	public static final String WAITING_USER_IDS_KEY_NAME = "WAITING_USER_IDS";
 
 	@Bean
 	public RedisTemplate<String, Object> basicRedisTemplate(RedisConnectionFactory redisConnectionFactory) {

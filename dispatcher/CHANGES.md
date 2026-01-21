@@ -67,10 +67,10 @@ private void processPromotionTasks(String taskListKey) {
 ```java
 private void executePromotionScript(String eventId) {
     try {
-        String entryCountHashKey = ENTRY_QUEUE_COUNT_KEY_NAME;
-        String waitingRecordHash = "WAITING_QUEUE_RECORD:" + eventId;
+        String entryCountHashKey = ENTRY_QUEUE_SLOTS_KEY_NAME;
+        String waitingRecordHash = "WAITING_QUEUE_INDEX_RECORD:" + eventId;
         String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId;
-        String waitingInUserHash = WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId;
+        String waitingInUserHash = WAITING_USER_IDS_KEY_NAME + ":" + eventId;
         String entryStreamKey = ENTRY_QUEUE_KEY_NAME;
 
         List<String> scriptKeys = List.of(

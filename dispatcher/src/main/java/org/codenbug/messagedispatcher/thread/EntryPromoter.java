@@ -183,11 +183,11 @@ public class EntryPromoter {
    */
   private void executePromotionScript(String eventId) {
     try {
-      String entryCountHashKey = ENTRY_QUEUE_COUNT_KEY_NAME; // ex: "ENTRY_QUEUE_COUNT"
-      String waitingRecordHash = "WAITING_QUEUE_RECORD:" + eventId; // ex: "WAITING_QUEUE_RECORD:42"
+      String entryCountHashKey = ENTRY_QUEUE_SLOTS_KEY_NAME; // ex: "ENTRY_QUEUE_SLOTS"
+      String waitingRecordHash = "WAITING_QUEUE_INDEX_RECORD:" + eventId; // ex: "WAITING_QUEUE_INDEX_RECORD:42"
       String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId; // ex: "waiting:42"
-      String waitingInUserHash = WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId; // ex:
-                                                                                        // "WAITING_QUEUE_IN_USER_RECORD:42"
+      String waitingInUserHash = WAITING_USER_IDS_KEY_NAME + ":" + eventId; // ex:
+                                                                                        // "WAITING_USER_IDS:42"
       String entryStreamKey = ENTRY_QUEUE_KEY_NAME; // ex: "ENTRY_QUEUE"
 
       List<String> scriptKeys = List.of(entryCountHashKey, waitingRecordHash, waitingZsetKey,
@@ -231,7 +231,7 @@ public class EntryPromoter {
     List<Object> records = redisTemplate.opsForZSet().range(key, 0, -1).stream().map(item -> {
       try {
         return redisTemplate.opsForHash().get(
-            "WAITING_QUEUE_RECORD:" + key.split(":")[1].toString(),
+            "WAITING_QUEUE_INDEX_RECORD:" + key.split(":")[1].toString(),
             objectMapper.readTree(item.toString()).get("userId").toString());
       } catch (JsonProcessingException e) {
         throw new RuntimeException(e);
@@ -250,12 +250,12 @@ public class EntryPromoter {
       // 이 waiting 스트림 메시지에 해당하는 유저가 이벤트의 entry queue에 들어갈수 있는지 검사
       // 해당 event의 entry queue count를 조회
       Long queueCount =
-          Long.parseLong(hashOps.get(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString()).toString());
+          Long.parseLong(hashOps.get(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId.toString()).toString());
       // 이 값이 1 이상이라면 들어갈 자리가 있다는 뜻이므로 유저를 entry queue로 넣음
       if (queueCount != null && queueCount > 0) {
 
         // 2) 해당 event의 entry queue count 1만큼 감소
-        Long tmp = hashOps.increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString(), -1);
+        Long tmp = hashOps.increment(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId.toString(), -1);
 
         // entry queue message를 생성
         redisTemplate.opsForStream()
@@ -266,10 +266,10 @@ public class EntryPromoter {
         // 4) 스트림에서 해당 레코드 삭제
         redisTemplate.opsForZSet().remove(key,
             objectMapper.writeValueAsString(Map.of("userId", userId)));
-        redisTemplate.opsForHash().delete("WAITING_QUEUE_RECORD:" + eventId.toString(),
+        redisTemplate.opsForHash().delete("WAITING_QUEUE_INDEX_RECORD:" + eventId.toString(),
             userId.toString());
 
-        hashOps.delete(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId.toString(),
+        hashOps.delete(WAITING_USER_IDS_KEY_NAME + ":" + eventId.toString(),
             userId.toString());
       }
     }
@@ -277,10 +277,10 @@ public class EntryPromoter {
 }
 
 //
-// Set<String> keys = redisTemplate.keys(RedisConfig.ENTRY_QUEUE_COUNT_KEY_NAME + ":*");
+// Set<String> keys = redisTemplate.keys(RedisConfig.ENTRY_QUEUE_SLOTS_KEY_NAME + ":*");
 //
 // Long count = Long.parseLong(Objects.requireNonNull(redisTemplate.opsForValue()
-// .get(RedisConfig.ENTRY_QUEUE_COUNT_KEY_NAME)).toString());
+// .get(RedisConfig.ENTRY_QUEUE_SLOTS_KEY_NAME)).toString());
 // // 갯수만큼 waiting queue에서 가져옴
 // List<MapRecord<String, Object, Object>> promoteTarget = redisTemplate.opsForStream()
 // .read(Consumer.from(
@@ -311,8 +311,8 @@ public class EntryPromoter {
 // redisTemplate.opsForStream()
 // .delete(RedisConfig.WAITING_QUEUE_KEY_NAME, record.getId());
 //
-// // WAITING_USER_ID에서 삭제
+// // WAITING_USER_IDS에서 삭제
 // redisTemplate.opsForHash()
-// .delete(RedisConfig.WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId.toString());
+// .delete(RedisConfig.WAITING_USER_IDS_KEY_NAME + ":" + eventId, userId.toString());
 // }
 // );

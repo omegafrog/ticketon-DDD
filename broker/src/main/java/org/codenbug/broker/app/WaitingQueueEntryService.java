@@ -1,21 +1,14 @@
 package org.codenbug.broker.app;
 
-import static org.codenbug.broker.infra.RedisConfig.*;
-
-import java.util.Map;
-
 import org.codenbug.broker.config.InstanceConfig;
+import org.codenbug.broker.infra.WaitingQueueRedisRepository;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,19 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 public class WaitingQueueEntryService {
 
   private final SseEmitterService sseEmitterService;
-  private final RedisTemplate<String, Object> simpleRedisTemplate;
-  private final ObjectMapper objectMapper;
+  private final WaitingQueueRedisRepository waitingQueueRepository;
+  private final EventClient eventClient;
   private final InstanceConfig instanceConfig;
 
-  @Value("${custom.events.url}")
-  private String url;
-
   public WaitingQueueEntryService(SseEmitterService sseEmitterService,
-      RedisTemplate<String, Object> simpleRedisTemplate, ObjectMapper objectMapper,
+      WaitingQueueRedisRepository waitingQueueRepository, EventClient eventClient,
       InstanceConfig instanceConfig) {
     this.sseEmitterService = sseEmitterService;
-    this.simpleRedisTemplate = simpleRedisTemplate;
-    this.objectMapper = objectMapper;
+    this.waitingQueueRepository = waitingQueueRepository;
+    this.eventClient = eventClient;
     this.instanceConfig = instanceConfig;
   }
 
@@ -66,61 +56,23 @@ public class WaitingQueueEntryService {
    */
   private void enter(String userId, String eventId) throws JsonProcessingException {
 
-    if (!WaitingQueueCountExist(eventId)) {
-      // 총 좌석수 얻기
-      updateWaitingQueueCount(eventId);
+    if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
+      int seatCount = eventClient.getSeatCount(eventId);
+      waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
     }
 
-    // 중복 대기열 진입 방지용 기록
-    Boolean inserted = simpleRedisTemplate.opsForHash()
-        .putIfAbsent(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId.toString(),
-            "true");
-    if (Boolean.FALSE.equals(inserted)) {
+    boolean inserted = waitingQueueRepository.recordWaitingUserIfAbsent(eventId, userId);
+    if (!inserted) {
       throw new IllegalStateException("이미 대기열에 존재합니다.");
     }
 
-    // 대기열 큐 idx 증가
-    Long idx = incrementWaitingQueueIdx(eventId);
+    long idx = waitingQueueRepository.incrementWaitingQueueIdx(eventId);
 
-    // { idx , userId}
-    // 로 key가 WAITING:<eventId>인 zset에 저장
-    saveUserToWaitingQueue(userId, eventId, idx);
+    waitingQueueRepository.saveUserToWaitingQueue(userId, eventId, idx);
 
-    // 나머지 정보를 hash에 저장
-    saveAdditionalUserDataToHash(userId, eventId, idx);
+    waitingQueueRepository.saveAdditionalUserData(userId, eventId, idx,
+        instanceConfig.getInstanceId());
 
-  }
-
-  private void saveAdditionalUserDataToHash(String userId, String eventId, Long idx) {
-    simpleRedisTemplate.opsForHash().put("WAITING_QUEUE_RECORD:" + eventId, userId.toString(),
-        Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId.toString(), QUEUE_MESSAGE_IDX_KEY_NAME,
-            idx.toString(), QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId.toString(),
-            QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME, instanceConfig.getInstanceId()));
-  }
-
-  private void saveUserToWaitingQueue(String userId, String eventId, Long idx) {
-    simpleRedisTemplate.opsForZSet().add(WAITING_QUEUE_KEY_NAME + ":" + eventId,
-        Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId.toString()), idx);
-  }
-
-  private Long incrementWaitingQueueIdx(String eventId) {
-    Long idx = simpleRedisTemplate.opsForHash().increment(WAITING_QUEUE_IDX_KEY_NAME,
-        eventId.toString(), 1);
-    return idx;
-  }
-
-  private void updateWaitingQueueCount(String eventId) throws JsonProcessingException {
-    RestTemplate restTemplate = new RestTemplate();
-
-    ResponseEntity<String> forEntity =
-        restTemplate.getForEntity(url + "/api/v1/events/" + eventId, String.class);
-
-    int seatCount = objectMapper.readTree(forEntity.getBody()).get("data").get("seatCount").asInt();
-    simpleRedisTemplate.opsForHash().put(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString(), seatCount);
-  }
-
-  private Boolean WaitingQueueCountExist(String eventId) {
-    return simpleRedisTemplate.opsForHash().hasKey(ENTRY_QUEUE_COUNT_KEY_NAME, eventId.toString());
   }
 
   /**
@@ -133,7 +85,7 @@ public class WaitingQueueEntryService {
     String userId = getLoggedInUserId();
 
     // SSE 연결 해제 및 리소스 정리
-    sseEmitterService.closeConn(userId, eventId, simpleRedisTemplate);
+    sseEmitterService.closeConnection(userId, eventId);
 
     return ResponseEntity.ok().build();
   }
