@@ -25,6 +25,7 @@ import org.springframework.data.redis.core.Cursor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -40,6 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EntryPromoter {
 
   private final RedisTemplate<String, Object> redisTemplate;
+  private final StringRedisTemplate stringRedisTemplate;
   private final ObjectMapper objectMapper;
   private final DefaultRedisScript<Long> promoteAllScript;
   private final AtomicLong promotionCounter;
@@ -49,9 +51,11 @@ public class EntryPromoter {
   private static final int THREAD_POOL_SIZE = 10; // 스레드 풀 크기 설정
   private static final int QUEUE_CAPACITY = 100; // 작업 큐 용량 설정
 
-  public EntryPromoter(RedisTemplate<String, Object> redisTemplate, ObjectMapper objectMapper,
+  public EntryPromoter(RedisTemplate<String, Object> redisTemplate,
+      StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper,
       AtomicLong promotionCounter) {
     this.redisTemplate = redisTemplate;
+    this.stringRedisTemplate = stringRedisTemplate;
     this.objectMapper = objectMapper;
     this.promotionCounter = promotionCounter;
 
@@ -108,9 +112,14 @@ public class EntryPromoter {
       // 각 키를 작업 목록에 추가
       for (int i = 0; i < keys.size(); i++) {
         String key = keys.get(i);
-        String eventId = key.split(":")[1];
+        String[] parts = key.split(":");
+        if (parts.length < 2) {
+          log.warn("Skipping unexpected waiting key format: {}", key);
+          continue;
+        }
+        String eventId = parts[1];
         // 작업 정보를 Redis 리스트에 저장
-        redisTemplate.opsForList().rightPush(taskListKey, eventId);
+        stringRedisTemplate.opsForList().rightPush(taskListKey, eventId);
       }
 
       log.info("Created temporary task list {} with {} tasks", taskListKey, keys.size());
@@ -124,7 +133,8 @@ public class EntryPromoter {
             (tpe.getQueue().size() * 100 / QUEUE_CAPACITY), tpe.getQueue().size(), QUEUE_CAPACITY);
       }
 
-      for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+      int workerCount = Math.min(keys.size(), THREAD_POOL_SIZE);
+      for (int i = 0; i < workerCount; i++) {
         try {
           executorService.submit(() -> processPromotionTasks(taskListKey));
         } catch (Exception e) {
@@ -140,7 +150,7 @@ public class EntryPromoter {
           tpe.getQueue().size(), tpe.getCompletedTaskCount());
 
       // 작업 목록 만료 시간 설정 (5분)
-      redisTemplate.expire(taskListKey, 5, TimeUnit.MINUTES);
+      stringRedisTemplate.expire(taskListKey, 5, TimeUnit.MINUTES);
 
     } catch (Exception e) {
       log.error("Error in promoteToEntryQueue: {}", e.getMessage(), e);
@@ -154,7 +164,7 @@ public class EntryPromoter {
     try {
       while (true) {
         // 작업 목록에서 작업 가져오기 (LPOP 사용)
-        String eventId = (String) redisTemplate.opsForList().leftPop(taskListKey);
+        String eventId = stringRedisTemplate.opsForList().leftPop(taskListKey);
         if (eventId == null) {
           // 더 이상 작업이 없으면 종료
           break;

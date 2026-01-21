@@ -80,7 +80,7 @@ public class SseEmitterService {
     if (status.equals(Status.IN_PROGRESS)) {
       log.info("count incremented");
       redisTemplate.opsForHash().increment(ENTRY_QUEUE_COUNT_KEY_NAME, parsedEventId, 1);
-      redisTemplate.opsForHash().delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+      redisTemplate.delete(buildEntryTokenKey(userId));
     } else if (status.equals(Status.IN_ENTRY)) {
 
       redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY_NAME + ":" + eventId,
@@ -100,5 +100,9 @@ public class SseEmitterService {
    */
   public void closeConnection(String userId, String eventId) {
     closeConn(userId, eventId, redisTemplate);
+  }
+
+  private static String buildEntryTokenKey(String userId) {
+    return ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId;
   }
 }

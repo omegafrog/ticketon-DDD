@@ -99,7 +99,7 @@ services:
       MYSQL_PASSWORD: ticketon
     volumes:
       - mysql_master_data:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/my.cnf
+      - ./mysql/master/master.cnf:/etc/my.cnf
     ports:
       - "3306:3306"
       - "33060:33060"
@@ -120,8 +120,8 @@ services:
       MYSQL_USER: ticketon
       MYSQL_PASSWORD: ticketon
     volumes:
+      - ./mysql/replica/replica.cnf:/etc/my.cnf
       - mysql_replica_data:/var/lib/mysql
-      - ./mysql/my.cnf:/etc/my.cnf
     ports:
       - "3307:3306"
       - "33061:33060"

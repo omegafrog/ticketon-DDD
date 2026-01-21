@@ -127,7 +127,7 @@ public class EntryStreamMessageListener
   private void handleDisconnectedUser(String eventId, String userId) {
     log.info("count incremented");
     redisTemplate.opsForHash().increment(ENTRY_QUEUE_COUNT_KEY_NAME, eventId, 1);
-    redisTemplate.opsForHash().delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+    redisTemplate.delete(buildEntryTokenKey(userId));
   }
 
   private void processEntry(SseConnection sseConnection, String eventId, String userId) {
@@ -149,10 +149,11 @@ public class EntryStreamMessageListener
   }
 
   private void storeEntryToken(String userId, String token) {
-    redisTemplate.opsForHash().put(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString(),
-        token);
-    redisTemplate.expire(RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId, 5,
-        TimeUnit.MINUTES);
+    redisTemplate.opsForValue().set(buildEntryTokenKey(userId), token, 5, TimeUnit.MINUTES);
+  }
+
+  private String buildEntryTokenKey(String userId) {
+    return RedisConfig.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId;
   }
 
   private void acknowledge(String instanceStreamName, String groupName,

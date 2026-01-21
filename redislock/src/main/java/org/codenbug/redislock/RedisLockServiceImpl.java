@@ -128,13 +128,12 @@ public class RedisLockServiceImpl implements RedisLockService {
      */
     @Override
     public void releaseAllEntryQueueLocks(String userId) {
-        Long deletedCount =
-                redisTemplate.opsForHash().delete(ENTRY_TOKEN_STORAGE_KEY_NAME, userId.toString());
+        Boolean deleted = redisTemplate.delete(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId);
 
-        if (deletedCount > 0) {
-            log.info("ENTRY_TOKEN 해시에서 userId {}의 토큰을 삭제했습니다.", userId);
+        if (Boolean.TRUE.equals(deleted)) {
+            log.info("ENTRY_TOKEN 키에서 userId {}의 토큰을 삭제했습니다.", userId);
         } else {
-            log.warn("ENTRY_TOKEN 해시에서 userId {}에 해당하는 토큰이 존재하지 않습니다.", userId);
+            log.warn("ENTRY_TOKEN 키에서 userId {}에 해당하는 토큰이 존재하지 않습니다.", userId);
         }
     }
 

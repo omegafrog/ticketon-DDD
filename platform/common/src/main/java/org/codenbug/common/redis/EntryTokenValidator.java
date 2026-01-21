@@ -14,14 +14,14 @@ public class EntryTokenValidator {
 	}
 
 	public void validate(String userId, String token) {
-		String redisKey = ENTRY_TOKEN_STORAGE_KEY_NAME;
-		String storedToken = redisTemplate.opsForHash().get(redisKey, userId).toString();
+		String redisKey = ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId;
+		Object storedTokenObj = redisTemplate.opsForValue().get(redisKey);
 
-		if (storedToken == null) {
+		if (storedTokenObj == null) {
 			throw new AccessDeniedException("유효하지 않은 입장 토큰입니다.");
 		}
 
-		storedToken = storedToken.replace("\"", "");  // 쌍따옴표 제거
+		String storedToken = storedTokenObj.toString().replace("\"", "");
 
 		if (!storedToken.equals(token)) {
 			throw new AccessDeniedException("유효하지 않은 입장 토큰입니다.");
