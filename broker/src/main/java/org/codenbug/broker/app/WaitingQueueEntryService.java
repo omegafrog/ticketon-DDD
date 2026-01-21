@@ -5,7 +5,6 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 import java.util.Map;
 
 import org.codenbug.broker.config.InstanceConfig;
-import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,14 +71,13 @@ public class WaitingQueueEntryService {
       updateWaitingQueueCount(eventId);
     }
 
-    // 유저가 대기열에 있었는지 확인하기 위한 hash 값 조회
-    // => redis lock으로 대체. emitterService.add 호출시 락 검사
-    // Boolean isEntered = simpleRedisTemplate.opsForHash()
-    // .hasKey(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId.toString());
-    //
-    // if (isEntered) {
-    // return;
-    // }
+    // 중복 대기열 진입 방지용 기록
+    Boolean inserted = simpleRedisTemplate.opsForHash()
+        .putIfAbsent(WAITING_QUEUE_IN_USER_RECORD_KEY_NAME + ":" + eventId, userId.toString(),
+            "true");
+    if (Boolean.FALSE.equals(inserted)) {
+      throw new IllegalStateException("이미 대기열에 존재합니다.");
+    }
 
     // 대기열 큐 idx 증가
     Long idx = incrementWaitingQueueIdx(eventId);
