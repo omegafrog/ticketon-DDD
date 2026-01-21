@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
+import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.SeatLayoutId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,4 +18,15 @@ public interface JpaEventRepository extends JpaRepository<Event, EventId>, JpaSp
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update Event e set e.metaData.deleted = true, e.metaData.modifiedAt = :modifiedAt where e.eventId = :id")
 	int markDeleted(@Param("id") EventId id, @Param("modifiedAt") LocalDateTime modifiedAt);
+
+	@Query("""
+		select count(e) from Event e
+		where e.eventId = :id
+		  and e.version = :version
+		  and e.eventInformation.status = :status
+		  and e.metaData.deleted = false
+		""")
+	long countMatchingVersionAndStatus(@Param("id") EventId id,
+		@Param("version") Long version,
+		@Param("status") EventStatus status);
 }

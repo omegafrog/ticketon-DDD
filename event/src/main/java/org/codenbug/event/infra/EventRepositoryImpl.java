@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
+import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.ManagerId;
 import org.codenbug.event.domain.SeatLayoutId;
 import org.codenbug.event.global.EventInfoResponse;
@@ -45,6 +46,11 @@ public class EventRepositoryImpl implements EventRepository {
 	@Override
 	public int markDeleted(EventId id) {
 		return jpaEventRepository.markDeleted(id, LocalDateTime.now());
+	}
+
+	@Override
+	public boolean isVersionAndStatusValid(EventId id, Long version, EventStatus status) {
+		return jpaEventRepository.countMatchingVersionAndStatus(id, version, status) > 0;
 	}
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {
