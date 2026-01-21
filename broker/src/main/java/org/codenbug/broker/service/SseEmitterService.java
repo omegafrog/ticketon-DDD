@@ -1,6 +1,5 @@
 package org.codenbug.broker.service;
 
-
 import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.util.Map;
@@ -8,11 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
-import org.codenbug.redislock.lock.RedisLock;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +29,6 @@ public class SseEmitterService {
     this.redisTemplate = redisTemplate;
   }
 
-  @RedisLock(key = "#userId" + ":" + "#eventId")
   public SseEmitter add(String userId, String eventId) {
 
     // 새로운 emitter 생성

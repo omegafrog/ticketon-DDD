@@ -35,6 +35,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
   }
 
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+  }
+
   // @ExceptionHandler(AccessDeniedException.class)
   // public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
   // log.error("Access denied: {}", e.getMessage());
