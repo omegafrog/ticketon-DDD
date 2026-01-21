@@ -11,6 +11,7 @@ import org.codenbug.seat.app.UpdateSeatLayoutService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -28,7 +29,10 @@ public class UpdateEventService {
 
 
 	@Transactional
-	@CacheEvict(value = "events", key = "#id")
+	@Caching(evict = {
+		@CacheEvict(value = "events", key = "#id"),
+		@CacheEvict(value = "eventSearch", key = "'single:' + #id.eventId")
+	})
 	public void updateEvent(EventId id, UpdateEventRequest request) {
 		Event event = eventRepository.findEvent(id);
 

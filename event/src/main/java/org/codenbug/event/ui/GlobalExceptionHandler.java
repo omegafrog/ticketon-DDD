@@ -1,9 +1,8 @@
 package org.codenbug.event.ui;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
 import org.codenbug.common.RsData;
 import org.codenbug.common.exception.ControllerParameterValidationFailedException;
 import org.springframework.http.HttpStatus;
@@ -55,6 +54,14 @@ public class GlobalExceptionHandler {
     });
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
         ex.getStatusCode().toString(), "파라미터 validation 실패했습니다.", errors));
+  }
+
+  @ExceptionHandler(IllegalStateException.class)
+  public ResponseEntity<RsData<Map<String, Object>>> handleIllegalStateException(IllegalStateException ex) {
+    Map<String, Object> errors = new HashMap<>();
+    errors.put("message", ex.getMessage());
+    return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
+        HttpStatus.BAD_REQUEST.toString(), "파라미터 validation 실패했습니다.", errors));
   }
 
 

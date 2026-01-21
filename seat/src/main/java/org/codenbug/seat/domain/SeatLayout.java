@@ -15,7 +15,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -38,7 +37,7 @@ public class SeatLayout {
 	private RegionLocation regionLocation;
 
 	@OneToMany(mappedBy = "seatLayout", fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE,
-		CascadeType.REMOVE})
+		CascadeType.REMOVE}, orphanRemoval = true)
 	private Set<Seat> seats;
 
 	protected SeatLayout() {
@@ -126,6 +125,7 @@ public class SeatLayout {
 
 	public void update(List<List<String>> layout, List<Seat> seats) {
 		this.layout = convertLayout(layout);
-		this.seats = new HashSet<>(seats);
+		this.seats.clear();
+		this.seats.addAll(seats.stream().map(seat -> seat.updateTarget(this)).collect(Collectors.toSet()));
 	}
 }

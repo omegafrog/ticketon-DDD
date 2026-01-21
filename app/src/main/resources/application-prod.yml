@@ -22,6 +22,8 @@ server:
   tomcat:
     threads:
       max: 1100
+  error:
+    include-stacktrace: never
 
 services:
   event:

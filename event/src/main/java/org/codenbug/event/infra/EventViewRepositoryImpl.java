@@ -5,14 +5,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.codenbug.event.domain.QEvent;
+import org.codenbug.event.domain.QSeatLayoutStats;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
 import org.codenbug.seat.domain.QSeat;
 import org.codenbug.seat.domain.QSeatLayout;
-import org.codenbug.event.domain.SeatLayoutStats;
-import org.codenbug.event.domain.QSeatLayoutStats;
 import org.redisson.api.RBucket;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,6 +42,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	private final RedisViewCountService redisViewCountService;
 	private final QEvent event = QEvent.event;
 	private final QSeatLayout seatLayout = QSeatLayout.seatLayout;
+	private final QSeatLayoutStats seatStats = QSeatLayoutStats.seatLayoutStats;
 	private final RedissonClient redissonClient;
 	private final ObjectMapper objectMapper;
 
@@ -69,7 +69,6 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
 		// 메인 쿼리: DB 데이터 조회 (머터리얼라이즈 뷰 활용)
-		QSeatLayoutStats seatStats = QSeatLayoutStats.seatLayoutStats;
 		JPAQuery<EventListProjection> query = readOnlyQueryFactory
 			.select(Projections.constructor(EventListProjection.class,
 				event.eventId.eventId,
@@ -79,8 +78,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.eventEnd,
 				event.eventInformation.bookingStart,
 				event.eventInformation.bookingEnd,
-				event.eventInformation.minPrice,
-				event.eventInformation.maxPrice,
+				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
@@ -203,8 +202,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.eventEnd,
 				event.eventInformation.bookingStart,
 				event.eventInformation.bookingEnd,
-				event.eventInformation.minPrice,
-				event.eventInformation.maxPrice,
+				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
@@ -212,6 +211,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			))
 			.from(event)
 			.join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
 			.where(event.managerId.managerId.eq(managerId)
 				.and(event.metaData.deleted.isFalse()))
 			.offset(pageable.getOffset())
@@ -261,8 +261,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.eventEnd,
 				event.eventInformation.bookingStart,
 				event.eventInformation.bookingEnd,
-				event.eventInformation.minPrice,
-				event.eventInformation.maxPrice,
+				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
@@ -270,6 +270,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			))
 			.from(event)
 			.join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
 			.where(whereClause)
 			.orderBy(event.eventId.eventId.asc())
 			.limit(size + 1) // 다음 페이지 존재 여부 확인용 +1
@@ -371,8 +372,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.eventEnd,
 				event.eventInformation.bookingStart,
 				event.eventInformation.bookingEnd,
-				event.eventInformation.minPrice,
-				event.eventInformation.maxPrice,
+				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
 				event.eventInformation.viewCount, // DB viewCount
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
@@ -386,6 +387,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			))
 			.from(event)
 			.leftJoin(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
 			.leftJoin(seat).on(seatLayout.eq(seat.seatLayout)).fetchJoin()
 			.where(event.eventId.eventId.eq(eventId)
 				.and(event.metaData.deleted.isFalse()))

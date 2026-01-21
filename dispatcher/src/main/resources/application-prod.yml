@@ -4,3 +4,7 @@ spring:
       port: 6379
       host: env-redis-1
 
+server:
+  error:
+    include-stacktrace: never
+

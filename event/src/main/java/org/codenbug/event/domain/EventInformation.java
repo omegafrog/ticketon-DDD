@@ -1,8 +1,10 @@
 package org.codenbug.event.domain;
 
 import java.time.LocalDateTime;
+
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.event.ui.NewEventRequest;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
@@ -109,6 +111,7 @@ public class EventInformation {
 		this.bookingEnd	= request.getBookingEnd() == null ? this.bookingEnd : request.getBookingEnd();
 		this.status = request.getStatus() == null ? this.status : request.getStatus();
 		this.seatSelectable = request.getSeatSelectable() == null ? this.seatSelectable : request.getSeatSelectable();
+		this.categoryId = request.getCategoryId() == null ? this.categoryId : request.getCategoryId();
 		validate();
 		return this;
 	}

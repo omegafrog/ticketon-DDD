@@ -2,6 +2,10 @@ custom:
   cookie:
     domain: .ticketon.site
 
+server:
+  error:
+    include-stacktrace: never
+
 spring:
   datasource:
     url: jdbc:mysql://mysql.auth.ticketone.site:3306/auth?serverTimezone=Asia/Seoul

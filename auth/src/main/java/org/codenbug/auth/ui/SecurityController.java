@@ -87,8 +87,7 @@ public class SecurityController {
     try {
       TokenInfo tokenInfo = authService.loginEmail(request);
 
-      resp.setHeader(HttpHeaders.AUTHORIZATION,
-          tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
+      resp.setHeader(HttpHeaders.AUTHORIZATION, tokenInfo.getAccessToken().getRawValue());
 
       Cookie refreshToken = createRefreshTokenCookie(tokenInfo.getRefreshToken());
       resp.addCookie(refreshToken);
@@ -98,7 +97,7 @@ public class SecurityController {
       log.info("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
 
       return ResponseEntity.ok(new RsData<>("200", "login success.",
-          tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+          tokenInfo.getAccessToken().getRawValue()));
     } catch (Exception e) {
       long endTime = System.currentTimeMillis();
       long duration = endTime - startTime;
@@ -177,14 +176,14 @@ public class SecurityController {
 
       // 쿠키에 토큰 저장 (UserController.login 메서드와 유사하게)
       AccessToken accessToken = userResponse.tokenInfo().getAccessToken();
-      response.setHeader("Authorization", accessToken.getType() + " " + accessToken.getRawValue());
+      response.setHeader("Authorization", accessToken.getRawValue());
       Cookie refreshTokenCookie =
           createRefreshTokenCookie(userResponse.tokenInfo().getRefreshToken());
 
       response.addCookie(refreshTokenCookie);
 
       return ResponseEntity.ok(new RsData<>("200-SUCCESS", "소셜 로그인 성공",
-          accessToken.getType() + " " + accessToken.getRawValue()));
+          accessToken.getRawValue()));
 
     } catch (Exception e) {
       log.error(">> 소셜 로그인 처리 중 오류 발생: {}", e.getMessage(), e);
@@ -204,8 +203,7 @@ public class SecurityController {
       TokenInfo tokenInfo = authService.refreshTokens(request);
 
       // 응답 헤더에 새로운 액세스 토큰 설정
-      response.setHeader(HttpHeaders.AUTHORIZATION,
-          tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue());
+      response.setHeader(HttpHeaders.AUTHORIZATION, tokenInfo.getAccessToken().getRawValue());
 
       // 쿠키에 새로운 리프레시 토큰 설정
       Cookie refreshTokenCookie = createRefreshTokenCookie(tokenInfo.getRefreshToken());
@@ -214,7 +212,7 @@ public class SecurityController {
       log.info("Token refresh successful for user: {}", request.getHeader("User-Id"));
 
       return ResponseEntity.ok(new RsData<>("200", "토큰 재발급 성공",
-          tokenInfo.getAccessToken().getType() + " " + tokenInfo.getAccessToken().getRawValue()));
+          tokenInfo.getAccessToken().getRawValue()));
 
     } catch (Exception e) {
       log.error("Token refresh failed: {}", e.getMessage(), e);

@@ -25,7 +25,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("SecurityController 테스트")
@@ -73,10 +72,10 @@ class SecurityControllerTest {
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertEquals("200", result.getBody().getCode());
             assertEquals("토큰 재발급 성공", result.getBody().getMessage());
-            assertEquals("Bearer new-access-token-value", result.getBody().getData());
+            assertEquals("new-access-token-value", result.getBody().getData());
 
             // 응답 헤더 확인
-            assertEquals("Bearer new-access-token-value", response.getHeader("Authorization"));
+            assertEquals("new-access-token-value", response.getHeader("Authorization"));
 
             // 쿠키 확인
             Cookie[] cookies = response.getCookies();
@@ -172,8 +171,8 @@ class SecurityControllerTest {
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertEquals("200", result.getBody().getCode());
             assertEquals("토큰 재발급 성공", result.getBody().getMessage());
-            assertEquals("JWT jwt-access-token-value", result.getBody().getData());
-            assertEquals("JWT jwt-access-token-value", response.getHeader("Authorization"));
+            assertEquals("jwt-access-token-value", result.getBody().getData());
+            assertEquals("jwt-access-token-value", response.getHeader("Authorization"));
 
             Cookie[] cookies = response.getCookies();
             assertNotNull(cookies);
@@ -203,8 +202,8 @@ class SecurityControllerTest {
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertEquals("200", result.getBody().getCode());
             assertEquals("토큰 재발급 성공", result.getBody().getMessage());
-            assertEquals("Bearer " + longAccessTokenValue, result.getBody().getData());
-            assertEquals("Bearer " + longAccessTokenValue, response.getHeader("Authorization"));
+            assertEquals(longAccessTokenValue, result.getBody().getData());
+            assertEquals(longAccessTokenValue, response.getHeader("Authorization"));
 
             Cookie[] cookies = response.getCookies();
             assertNotNull(cookies);
@@ -251,7 +250,7 @@ class SecurityControllerTest {
             assertEquals(HttpStatus.OK, result.getStatusCode());
             assertEquals("200", result.getBody().getCode());
             assertEquals("토큰 재발급 성공", result.getBody().getMessage());
-            assertEquals("Bearer access-token-value", result.getBody().getData());
+            assertEquals("access-token-value", result.getBody().getData());
 
             verify(authService, times(1)).refreshTokens(any(HttpServletRequest.class));
         }
