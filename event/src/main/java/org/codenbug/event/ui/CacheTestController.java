@@ -1,5 +1,6 @@
 package org.codenbug.event.ui;
 
+import org.codenbug.common.RsData;
 import org.codenbug.message.EventCreatedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class CacheTestController {
     }
     
     @PostMapping("/cache-invalidation")
-    public ResponseEntity<String> testCacheInvalidation() {
+    public ResponseEntity<RsData<String>> testCacheInvalidation() {
         // 테스트용 EventCreatedEvent 발행
         EventCreatedEvent testEvent = new EventCreatedEvent(
             "test-event-id",
@@ -36,6 +37,9 @@ public class CacheTestController {
         
         eventPublisher.publishEvent(testEvent);
         
-        return ResponseEntity.ok("Cache invalidation event published successfully");
+        return ResponseEntity.ok(new RsData<>(
+            "200",
+            "Cache invalidation event published successfully",
+            "SUCCESS"));
     }
 }
