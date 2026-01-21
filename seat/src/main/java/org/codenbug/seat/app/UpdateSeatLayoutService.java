@@ -62,6 +62,14 @@ public class UpdateSeatLayoutService {
 		log.info("[update] SeatLayout 업데이트 완료. seatLayoutId: {}", seatLayoutId);
 	}
 
+	@Transactional
+	public void markAllSeatsUnavailable(Long seatLayoutId) {
+		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(seatLayoutId);
+		seatLayout.markAllUnavailable();
+		seatLayoutRepository.save(seatLayout);
+		log.info("[update] SeatLayout 좌석 모두 비활성화. seatLayoutId: {}", seatLayoutId);
+	}
+
 	/**
 	 * 좌석 선택 요청에 따라 Redis 락을 걸고, DB에 좌석 상태 반영
 	 *

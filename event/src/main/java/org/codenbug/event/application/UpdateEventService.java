@@ -59,7 +59,8 @@ public class UpdateEventService {
 
 		ManagerId loggedInManagerId = getLoggedInManager();
 		event.canDelete(loggedInManagerId);
-		event.delete();
+		updateSeatLayoutService.markAllSeatsUnavailable(event.getSeatLayoutId().getValue());
+		eventRepository.markDeleted(id);
 	}
 
 	private ManagerId getLoggedInManager() {

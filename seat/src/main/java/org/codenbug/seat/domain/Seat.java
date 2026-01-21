@@ -33,6 +33,7 @@ public class Seat {
 		this.grade = grade;
 		this.signature = signature;
 		this.amount = amount;
+		this.available = true;
 	}
 	private SeatId generateSeatId() {
 		return new SeatId(Util.ID.createUUID());

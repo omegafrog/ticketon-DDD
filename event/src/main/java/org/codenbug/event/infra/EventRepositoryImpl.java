@@ -1,5 +1,7 @@
 package org.codenbug.event.infra;
 
+import java.time.LocalDateTime;
+
 import org.codenbug.event.domain.Event;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.domain.EventRepository;
@@ -12,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Repository
 public class EventRepositoryImpl implements EventRepository {
@@ -30,12 +34,17 @@ public class EventRepositoryImpl implements EventRepository {
 	@Override
 	public Event findEvent(EventId id) {
 		return jpaEventRepository.findById(id)
-			.orElseThrow(() -> new RuntimeException("Cannot find event"));
+			.orElseThrow(() -> new EntityNotFoundException("Cannot find event"));
 	}
 
 	@Override
 	public Event findBySeatLayoutId(SeatLayoutId seatLayoutId) {
 		return jpaEventRepository.findBySeatLayoutId(seatLayoutId);
+	}
+
+	@Override
+	public int markDeleted(EventId id) {
+		return jpaEventRepository.markDeleted(id, LocalDateTime.now());
 	}
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {

@@ -8,6 +8,7 @@ import org.codenbug.common.exception.ControllerParameterValidationFailedExceptio
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -81,6 +82,15 @@ public class GlobalExceptionHandler {
       EntityNotFoundException ex) {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", ex.getMessage() == null ? "리소스를 찾을 수 없습니다." : ex.getMessage());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RsData<Map<String, Object>>(
+        HttpStatus.NOT_FOUND.toString(), "리소스를 찾을 수 없습니다.", errors));
+  }
+
+  @ExceptionHandler(JpaObjectRetrievalFailureException.class)
+  public ResponseEntity<RsData<Map<String, Object>>> handleJpaObjectRetrievalFailureException(
+      JpaObjectRetrievalFailureException ex) {
+    Map<String, Object> errors = new HashMap<>();
+    errors.put("message", "리소스를 찾을 수 없습니다.");
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RsData<Map<String, Object>>(
         HttpStatus.NOT_FOUND.toString(), "리소스를 찾을 수 없습니다.", errors));
   }

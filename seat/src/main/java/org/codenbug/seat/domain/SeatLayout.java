@@ -128,4 +128,11 @@ public class SeatLayout {
 		this.seats.clear();
 		this.seats.addAll(seats.stream().map(seat -> seat.updateTarget(this)).collect(Collectors.toSet()));
 	}
+
+	public void markAllUnavailable() {
+		if (seats == null) {
+			return;
+		}
+		seats.forEach(seat -> seat.setAvailable(false));
+	}
 }
