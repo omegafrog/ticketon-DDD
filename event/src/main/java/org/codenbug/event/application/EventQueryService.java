@@ -1,6 +1,9 @@
 package org.codenbug.event.application;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.codenbug.event.category.app.EventCategoryService;
 import org.codenbug.event.category.domain.EventCategory;
@@ -64,14 +67,22 @@ public class EventQueryService {
 		Page<Event> eventPage = eventRepository.getManagerEventList(managerId, pageable);
 		List<EventCategory> categories = eventCategoryService.findAllByIds(
 			eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
+
+		List<Long> seatLayoutIds = eventPage.map(event -> event.getSeatLayoutId().getValue()).toList();
+		Map<Long, SeatLayout> seatLayoutsById = seatLayoutRepository.findSeatLayouts(seatLayoutIds)
+			.stream()
+			.collect(Collectors.toMap(SeatLayout::getId, Function.identity()));
 		
 		return eventPage.map(event -> {
 			EventCategory category = categories.stream()
 				.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Category not found"));
-			
-			SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId().getValue());
+
+			SeatLayout seatLayout = seatLayoutsById.get(event.getSeatLayoutId().getValue());
+			if (seatLayout == null) {
+				throw new IllegalArgumentException("Seat layout not found");
+			}
 			
 			return new EventManagerListResponse(
 				String.valueOf(event.getEventId().getEventId()),

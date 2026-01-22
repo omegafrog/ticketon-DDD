@@ -6,7 +6,7 @@ spring:
       port: 6379
       host: localhost
   application:
-    name: broker-service # Eureka에 등록될 서비스의 고유 이름
+    name: broker # Eureka에 등록될 서비스의 고유 이름
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root

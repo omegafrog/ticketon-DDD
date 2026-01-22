@@ -1,0 +1,68 @@
+spring:
+  config:
+    activate:
+      on-profile: local
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            # OpenAPI docs routes
+            - id: auth-api-docs
+              uri: lb://auth
+              predicates:
+                - Path=/v3/api-docs/auth
+              filters:
+                - RewritePath=/v3/api-docs/auth, /v3/api-docs
+            - id: event-api-docs
+              uri: lb://event
+              predicates:
+                - Path=/v3/api-docs/event
+              filters:
+                - RewritePath=/v3/api-docs/event, /v3/api-docs/event
+            - id: purchase-api-docs
+              uri: lb://purchase
+              predicates:
+                - Path=/v3/api-docs/purchase
+              filters:
+                - RewritePath=/v3/api-docs/purchase, /v3/api-docs/purchase
+            - id: user-api-docs
+              uri: lb://user
+              predicates:
+                - Path=/v3/api-docs/user
+              filters:
+                - RewritePath=/v3/api-docs/user, /v3/api-docs/user
+            - id: seat-api-docs
+              uri: lb://seat
+              predicates:
+                - Path=/v3/api-docs/seat
+              filters:
+                - RewritePath=/v3/api-docs/seat, /v3/api-docs/seat
+            - id: broker-api-docs
+              uri: lb://broker
+              predicates:
+                - Path=/v3/api-docs/broker
+              filters:
+                - RewritePath=/v3/api-docs/broker, /v3/api-docs
+            # API routes
+            - id: auth-service
+              uri: lb://auth # event 모듈이 실행될 주소
+              predicates:
+                - Path=/api/v1/auth/**
+            - id: broker-service
+              uri: lb://broker
+              predicates:
+                - Path=/api/v1/broker/**
+            - id: static-event-service
+              uri: lb://app
+              predicates:
+                - Path=/static/events/**
+            - id: static-service
+              uri: lb://app
+              predicates:
+                - Path=/static/**
+            - id: main-service # 규칙의 고유 ID
+              uri: lb://app # user 모듈이 실행될 주소
+              predicates:
+                - Path=/api/v1/** # 이 경로 패턴의 요청이 오면 위 uri로 전달합니다.
+          default-filters: AuthorizationFilter

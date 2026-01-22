@@ -2,8 +2,14 @@ package org.codenbug.notification.domain.entity;
 
 import java.util.Objects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class UserId {
-    private final String value;
+    private String value;
+
+    protected UserId() {
+    }
 
     public UserId(String value) {
         if (value == null || value.trim().isEmpty()) {

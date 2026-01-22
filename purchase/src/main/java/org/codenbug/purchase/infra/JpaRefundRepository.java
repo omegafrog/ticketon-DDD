@@ -10,6 +10,7 @@ import org.codenbug.purchase.domain.RefundStatus;
 import org.codenbug.purchase.domain.UserId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,10 +24,12 @@ public interface JpaRefundRepository extends JpaRepository<Refund, RefundId> {
 
     List<Refund> findByPurchase_PurchaseId(PurchaseId purchasePurchaseId);
 
+    @EntityGraph(attributePaths = "purchase")
     @Query("SELECT r FROM Refund r WHERE r.purchase.userId = :userId")
     Page<Refund> findByPurchaseUserId(@Param("userId") UserId userId, Pageable pageable);
 
-    List<Refund> findByStatus(RefundStatus status);
+    @Query("SELECT r FROM Refund r JOIN FETCH r.purchase WHERE r.status = :status")
+    List<Refund> findByStatus(@Param("status") RefundStatus status);
 
     List<Refund> findByPurchaseAndStatus(Purchase purchase, RefundStatus status);
 

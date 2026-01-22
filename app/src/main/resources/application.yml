@@ -1,6 +1,6 @@
 spring:
   application:
-    name: app-service  # 통합 애플리케이션 이름
+    name: app  # 통합 애플리케이션 이름
   profiles:
     active: dev
     include: secret
@@ -99,4 +99,11 @@ management:
     metrics:
       export:
         enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
 

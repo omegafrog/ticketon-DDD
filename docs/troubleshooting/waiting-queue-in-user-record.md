@@ -1,21 +1,19 @@
-# WAITING_QUEUE_IN_USER_RECORD 미사용으로 인한 중복 대기열 진입
+# WAITING_USER_IDS 기반 중복 진입 방지 정리
 
-## 문제
-- WAITING_QUEUE_IN_USER_RECORD가 실제로 추가되는 로직이 없다.
-- 중복 진입 방지와 Lua 스크립트의 정리(HDEL)가 무의미해져 동일 유저가 중복으로 대기열에 들어갈 수 있다.
-- broker가 scale out되면 여러 인스턴스에서 동시에 진입 요청을 처리해 중복이 더 쉽게 발생한다.
+## 문제(과거)
+- 과거에는 중복 진입 기록이 누락되어 동일 유저가 중복으로 대기열에 들어갈 수 있었다.
+- broker가 scale out되면 여러 인스턴스에서 동시에 진입 요청을 처리해 중복이 더 쉽게 발생했다.
 
-## 원인
-- `WaitingQueueEntryService.enter()`에서 중복 확인/기록 로직이 주석 처리되어 있음.
-- `WAITING_QUEUE_IN_USER_RECORD`는 정리만 되고 생성되지 않아 상태 일관성이 깨짐.
+## 원인(과거)
+- 중복 확인/기록 로직이 없었고, 정리 로직만 존재해 상태 일관성이 깨졌다.
 
 ## 영향
 - 동일 유저의 대기열 엔트리가 여러 개 생성될 수 있음.
 - 승격/정리 로직이 기대대로 동작하지 않음(유저 상태 불일치, 자리 계산 오류 가능).
 
-## 해결 제안
-1) **WAITING_QUEUE_IN_USER_RECORD를 진입 시 원자적으로 기록**
-   - `HSETNX` 또는 `putIfAbsent`로 `WAITING_QUEUE_IN_USER_RECORD:{eventId}`에 userId 기록
+## 해결
+1) **WAITING_USER_IDS를 진입 시 원자적으로 기록**
+   - `HSETNX` 또는 `putIfAbsent`로 `WAITING_USER_IDS:{eventId}`에 userId 기록
    - 실패 시(이미 존재) 중복 진입으로 처리
 
 2) **정리 로직 유지**
@@ -41,7 +39,7 @@ start
 :receive enter request;
 :userId, eventId;
 
-:try HSETNX WAITING_QUEUE_IN_USER_RECORD:{eventId} userId -> "true";
+:try HSETNX WAITING_USER_IDS:{eventId} userId -> "true";
 if (inserted?) then (yes)
   if (ENTRY_QUEUE_SLOTS exists?) then (yes)
   else (no)
@@ -63,8 +61,8 @@ endif
 @enduml
 ```
 
-## 적용된 해결
-- 중복 진입 방지를 `WAITING_QUEUE_IN_USER_RECORD:{eventId}`의 `putIfAbsent`로 구현
+## 적용된 해결 (현재 코드)
+- 중복 진입 방지를 `WAITING_USER_IDS:{eventId}`의 `putIfAbsent`로 구현
 - 중복 진입 시 `IllegalStateException`을 던지고, 409(CONFLICT)로 응답
 - RedisLock 기반 중복 방지는 제거
 

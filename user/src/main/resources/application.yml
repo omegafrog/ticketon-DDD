@@ -2,8 +2,8 @@ server:
   port: 9004
 
 spring:
-  # application:
-    # name: user-service  # app 모듈에서 통합 관리
+  application:
+    name: user  # app 모듈에서 통합 관리
   rabbitmq:
     host: localhost # RabbitMQ host ip
     port: 5672 # RabbitMQ port

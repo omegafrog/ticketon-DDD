@@ -1,5 +1,7 @@
 package org.codenbug.seat.infra;
 
+import java.util.List;
+
 import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.springframework.stereotype.Repository;
@@ -22,5 +24,10 @@ public class SeatLayoutRepositoryImpl implements SeatLayoutRepository {
 	@Override
 	public SeatLayout findSeatLayout(Long id) {
 		return jpaSeatRepository.findSeatLayoutById(id);
+	}
+
+	@Override
+	public List<SeatLayout> findSeatLayouts(List<Long> ids) {
+		return jpaSeatRepository.findAllById(ids);
 	}
 }

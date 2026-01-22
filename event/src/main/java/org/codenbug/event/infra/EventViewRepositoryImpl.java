@@ -1,9 +1,7 @@
 package org.codenbug.event.infra;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.codenbug.event.domain.QEvent;
 import org.codenbug.event.domain.QSeatLayoutStats;
 import org.codenbug.event.global.EventListFilter;
@@ -12,10 +10,7 @@ import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.event.query.RedisViewCountService;
 import org.codenbug.seat.domain.QSeat;
 import org.codenbug.seat.domain.QSeatLayout;
-import org.redisson.api.RBucket;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,16 +19,12 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 @Repository
 @Transactional(value = "readOnlyTransactionManager", readOnly = true)
 public class EventViewRepositoryImpl implements EventViewRepository {
@@ -43,28 +34,15 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	private final QEvent event = QEvent.event;
 	private final QSeatLayout seatLayout = QSeatLayout.seatLayout;
 	private final QSeatLayoutStats seatStats = QSeatLayoutStats.seatLayoutStats;
-	private final RedissonClient redissonClient;
-	private final ObjectMapper objectMapper;
 
 	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory,
-		RedisViewCountService redisViewCountService, RedissonClient redissonClient, ObjectMapper objectMapper) {
+		RedisViewCountService redisViewCountService) {
 		this.readOnlyQueryFactory = readOnlyQueryFactory;
 		this.redisViewCountService = redisViewCountService;
-		this.redissonClient = redissonClient;
-		this.objectMapper = objectMapper;
 	}
 
 	@Override
 	public Page<EventListProjection> findEventList(String keyword, EventListFilter filter, Pageable pageable) {
-		String cacheKey = generateCacheKey(keyword, filter, pageable);
-		RBucket< Page<EventListProjection>> bucket = redissonClient.getBucket(cacheKey);
-
-		Page<EventListProjection> cachedResult = bucket.get();
-		if (cachedResult != null) {
-			log.info("Cache hit for event list: {}", cacheKey);
-			return cachedResult;
-		}
-
 		// 동적 조건 생성
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
@@ -139,56 +117,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			.where(whereClause)
 			.fetchOne();
 
-		PageImpl<EventListProjection> result = new PageImpl<>(results, pageable, total != null ? total : 0);
-		bucket.set(result, calculateTTL(keyword, filter), TimeUnit.MINUTES);
-
-		return result;
-	}
-	private int calculateTTL(String keyword, EventListFilter filter) {
-		int baseMinutes = 10; // 기본 TTL
-		int complexity = calculateComplexity(keyword, filter);
-
-		// 복잡도가 높을수록 TTL 감소
-		return Math.max(1, baseMinutes - (complexity * 2));
-	}
-
-	private int calculateComplexity(String keyword, EventListFilter filter) {
-		int complexity = 0;
-
-		// 각 조건별 복잡도 가중치
-		if (keyword != null && !keyword.isEmpty()) {
-			complexity += 3; // 키워드는 가장 다양함
-		}
-		if (filter !=null && filter.getCostRange() != null) {
-			complexity += 2; // 가격 범위도 다양함
-		}
-		if (filter !=null && (filter.getEventCategoryList() != null || filter.getCategoryId() != null)) {
-			complexity += 1; // 카테고리는 상대적으로 제한적
-		}
-		if (filter !=null && filter.getLocationList() != null) {
-			complexity += 2; // 지역도 다양함
-		}
-
-		return complexity;
-	}
-
-	private String generateCacheKey(String keyword, EventListFilter filter, Pageable pageable) {
-		try {
-			// 캐시 키에 포함할 모든 정보를 객체로 구성
-			var cacheKeyData = new Object() {
-				public final String keywordData = keyword;
-				public final EventListFilter filterData = filter;
-				public final int page = pageable.getPageNumber();
-				public final int size = pageable.getPageSize();
-				public final String sort = pageable.getSort().toString();
-			};
-			
-			String keyDataJson = objectMapper.writeValueAsString(cacheKeyData);
-			return "eventSearch:" + DigestUtils.md5Hex(keyDataJson);
-		} catch (Exception e) {
-			log.error("Failed to generate cache key", e);
-			return "eventSearch:default";
-		}
+		return new PageImpl<>(results, pageable, total != null ? total : 0);
 	}
 
 	@Override
@@ -360,7 +289,6 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	}
 
 	@Override
-	@Cacheable(value = "eventSearch", key = "'single:' + #eventId")
 	public EventListProjection findEventById(String eventId) {
 		QSeat seat = QSeat.seat;
 		EventListProjection dbResult = readOnlyQueryFactory

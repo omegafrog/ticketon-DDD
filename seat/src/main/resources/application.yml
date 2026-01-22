@@ -2,8 +2,8 @@ server:
   port: 9005
 
 spring:
-  # application:
-    # name: seat-service  # app 모듈에서 통합 관리
+  application:
+    name: seat  # app 모듈에서 통합 관리
   profiles:
     include: secret
   datasource:

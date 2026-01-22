@@ -2,8 +2,8 @@ server:
   port: 9003
 
 spring:
-  # application:
-    # name: purchase-service  # app 모듈에서 통합 관리
+  application:
+    name: purchase  # app 모듈에서 통합 관리
   profiles:
     include: secret
   datasource:

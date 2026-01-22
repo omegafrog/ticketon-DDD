@@ -3,8 +3,7 @@
 ## 문제
 - DISPATCH 메시지를 받은 시점에 `sseConnection`이 `null`일 수 있다.
 - 이는 heartbeat 콜백으로 인해 연결 해제 시 `sseConnection` 삭제가 먼저 발생하는 레이스 때문이다.
-- `sseConnection == null` 처리 이후에도 `sseConnection.getEventId()`를 호출하면 NPE가 발생한다.
-- NPE로 인해 Redis Stream ack가 수행되지 않으면 메시지가 pending에 남을 수 있다.
+- 과거 코드에서는 `sseConnection == null` 이후에도 `sseConnection.getEventId()`를 호출해 NPE가 발생할 수 있었다.
 
 ## 재현 조건
 - 유저가 연결을 끊거나 heartbeat가 끊어져 `sseConnection`이 제거된 직후
@@ -15,13 +14,15 @@
 - ack 누락으로 pending 메시지 누적
 - 유저 상태 승급(ACK) 처리가 지연되거나 재처리 필요
 
-## 해결 방법
-- `sseConnection == null`일 때는 정리 로직을 수행한 뒤 **즉시 ack 후 return**한다.
-- `eventId` 불일치 케이스도 필요 시 ack 처리하여 stale 메시지가 pending에 남지 않도록 한다.
+## 해결 방법 (현재 코드 반영)
+- `sseConnection == null`이면 정리 로직 후 **즉시 ACK**하고 종료한다. (NPE 방지)
+- `eventId` 불일치 케이스는 `SKIP_ACK`로 반환하여 ACK하지 않는다.
 
 ## 관련 코드
 - `broker/src/main/java/org/codenbug/broker/infra/EntryStreamMessageListener.java`
-  - `onMessage()`에서 null 가드 후 `acknowledge(...)` 실행
+  - `EntryDispatchService.handle(...)` 결과가 `ACK`일 때만 `acknowledge(...)` 실행
+- `broker/src/main/java/org/codenbug/broker/app/EntryDispatchService.java`
+  - `sseConnection == null` 처리 후 즉시 `ACK` 반환
 
 ```plantuml
 @startuml
@@ -37,7 +38,7 @@ if (sseConnection == null?) then
   -->log "count incremented";
   -->increment ENTRY_QUEUE_SLOTS[eventId];
   -->delete ENTRY_TOKEN_STORAGE[userId];
-  -->sseConnection.getEventId();\n(NPE 발생 가능)
+  -->acknowledge(stream, group, messageId)
 else
   if (sseConnection.eventId != eventId?) then
   --> (*)
@@ -45,8 +46,7 @@ else
     -->sseConnection.status = IN_PROGRESS;
     -->emitter = sseConnection.emitter;
     -->token = generateEntryAuthToken(eventId,userId);
-    -->put token in hash;
-    -->expire token;
+    -->set ENTRY_TOKEN:<userId> with TTL;
 
     -->emitter.send(eventId,userId,status,token);
     note right

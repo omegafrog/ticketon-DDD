@@ -15,6 +15,7 @@ include 'platform:common'
 include 'platform:message'
 include 'platform:gateway'
 include 'platform:eureka'
+include 'nplus1-test'
 
 project(':platform:common').projectDir = file('platform/common')
 project(':platform:message').projectDir = file('platform/message')

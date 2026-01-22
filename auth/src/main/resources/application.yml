@@ -1,4 +1,6 @@
 spring:
+  application:
+    name: auth
   rabbitmq:
     host: localhost # RabbitMQ host ip
     port: 5672 # RabbitMQ port
@@ -78,6 +80,15 @@ custom:
   cookie:
     domain: localhost
 service:
+  user:
+    base-url: http://user
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
   user:
     base-url: http://localhost:9000
 sns:

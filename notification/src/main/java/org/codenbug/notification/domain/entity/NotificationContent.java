@@ -2,10 +2,16 @@ package org.codenbug.notification.domain.entity;
 
 import java.util.Objects;
 
+import jakarta.persistence.Embeddable;
+
+@Embeddable
 public class NotificationContent {
-    private final String title;
-    private final String content;
-    private final String targetUrl;
+    private String title;
+    private String content;
+    private String targetUrl;
+
+    protected NotificationContent() {
+    }
 
     public NotificationContent(String title, String content, String targetUrl) {
         this.title = validateAndNormalizeTitle(title);

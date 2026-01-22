@@ -4,7 +4,7 @@ spring:
       port: 6379
       host: redis.ticketone.site
   application:
-    name: broker-service # Eureka에 등록될 서비스의 고유 이름
+    name: broker # Eureka에 등록될 서비스의 고유 이름
 
 eureka:
   client:

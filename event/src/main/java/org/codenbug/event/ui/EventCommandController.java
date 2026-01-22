@@ -8,8 +8,6 @@ import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;
 import org.codenbug.event.domain.EventId;
 import org.codenbug.event.global.UpdateEventRequest;
-import org.codenbug.event.query.EventListProjection;
-import org.codenbug.event.query.EventViewRepository;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.ResponseEntity;
@@ -39,16 +37,12 @@ public class EventCommandController {
 	private final UpdateEventService updateEventService;
 	private final FindEventService findEventService;
 	private final ImageUploadService imageUploadService;
-	private final EventViewRepository eventViewRepository;
-
 	public EventCommandController(RegisterEventService registerEventService, UpdateEventService updateEventService,
-		FindEventService findEventService, ImageUploadService imageUploadService,
-		EventViewRepository eventViewRepository) {
+		FindEventService findEventService, ImageUploadService imageUploadService) {
 		this.registerEventService = registerEventService;
 		this.updateEventService = updateEventService;
 		this.findEventService = findEventService;
 		this.imageUploadService = imageUploadService;
-		this.eventViewRepository = eventViewRepository;
 	}
 
 	@Operation(summary = "이벤트 등록", description = "새로운 이벤트를 등록합니다. 매니저 권한이 필요합니다.")
@@ -83,18 +77,17 @@ public class EventCommandController {
 	@AuthNeeded
 	@RoleRequired({Role.MANAGER, Role.ADMIN})
 	@PutMapping("/{eventId}")
-	public ResponseEntity<RsData<EventListProjection>> updateEvent(
+	public ResponseEntity<RsData<EventId>> updateEvent(
 		@Parameter(description = "수정할 이벤트 ID", required = true)
 		@PathVariable String eventId,
 		@Parameter(description = "이벤트 수정 정보", required = true)
 		@Valid @RequestBody UpdateEventRequest request
 	) {
 		updateEventService.updateEvent(new EventId(eventId), request);
-		EventListProjection updatedEvent = eventViewRepository.findEventById(eventId);
 		return ResponseEntity.ok(new RsData<>(
 			"200",
 			"이벤트 수정 성공",
-			updatedEvent
+			new EventId(eventId)
 		));
 	}
 

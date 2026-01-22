@@ -1,0 +1,22 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: lb://auth # event 모듈이 실행될 주소
+              predicates:
+                - Path=/api/v1/auth/**
+            - id: broker-service
+              uri: lb://broker
+              predicates:
+                - Path=/api/v1/broker/**
+            - id: main-service # 규칙의 고유 ID
+              uri: lb://app # user 모듈이 실행될 주소
+              predicates:
+                - Path=/api/v1/** # 이 경로 패턴의 요청이 오면 위 uri로 전달합니다.
+          default-filters: AuthorizationFilter
