@@ -48,6 +48,7 @@ public class EntryPromoter {
   private final ExecutorService executorService;
 
   private static final String PROMOTION_TASK_LIST_KEY = "PROMOTION_TASK_LIST";
+  private static final String EVENT_STATUSES_HASH_KEY = "event_statuses";
   private static final int THREAD_POOL_SIZE = 10; // 스레드 풀 크기 설정
   private static final int QUEUE_CAPACITY = 100; // 작업 큐 용량 설정
 
@@ -183,11 +184,15 @@ public class EntryPromoter {
    */
   private void executePromotionScript(String eventId) {
     try {
+      if (!isEventOpen(eventId)) {
+        return;
+      }
+
       String entryCountHashKey = ENTRY_QUEUE_SLOTS_KEY_NAME; // ex: "ENTRY_QUEUE_SLOTS"
       String waitingRecordHash = "WAITING_QUEUE_INDEX_RECORD:" + eventId; // ex: "WAITING_QUEUE_INDEX_RECORD:42"
       String waitingZsetKey = WAITING_QUEUE_KEY_NAME + ":" + eventId; // ex: "waiting:42"
       String waitingInUserHash = WAITING_USER_IDS_KEY_NAME + ":" + eventId; // ex:
-                                                                                        // "WAITING_USER_IDS:42"
+                                                                                         // "WAITING_USER_IDS:42"
       String entryStreamKey = ENTRY_QUEUE_KEY_NAME; // ex: "ENTRY_QUEUE"
 
       List<String> scriptKeys = List.of(entryCountHashKey, waitingRecordHash, waitingZsetKey,
@@ -203,6 +208,14 @@ public class EntryPromoter {
     } catch (Exception e) {
       log.error("Error executing promotion script for event {}: {}", eventId, e.getMessage(), e);
     }
+  }
+
+  private boolean isEventOpen(String eventId) {
+    Object raw = stringRedisTemplate.opsForHash().get(EVENT_STATUSES_HASH_KEY, eventId);
+    if (raw == null) {
+      return false;
+    }
+    return "OPEN".equalsIgnoreCase(raw.toString().trim());
   }
 
   private List<String> scanWaitingQueueKeys() {

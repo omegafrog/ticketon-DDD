@@ -15,10 +15,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import jakarta.persistence.EntityManagerFactory;
-
 
 @Configuration
 public class DatabaseConfig {
@@ -48,7 +45,7 @@ public class DatabaseConfig {
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
                 "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
                 "org.codenbug.notification.domain.entity", "org.codenbug.event.category.domain");
-
+        em.setPersistenceUnitName("primaryPersistenceUnit");
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
@@ -71,7 +68,7 @@ public class DatabaseConfig {
         em.setPackagesToScan("org.codenbug.user.domain", "org.codenbug.event.domain",
                 "org.codenbug.seat.domain", "org.codenbug.purchase.domain",
                 "org.codenbug.notification.domain.entity", "org.codenbug.event.category.domain");
-
+        em.setPersistenceUnitName("readOnlyPersistenceUnit");
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
@@ -86,11 +83,12 @@ public class DatabaseConfig {
         return em;
     }
 
+
     @Primary
     @Bean(name = {"transactionManager", "primaryTransactionManager"})
     public PlatformTransactionManager primaryTransactionManager(
-            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory primaryEntityManagerFactory) {
-        return new JpaTransactionManager(primaryEntityManagerFactory);
+        @Qualifier("primaryEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
+        return new JpaTransactionManager(entityManagerFactory);
     }
 
     @Bean(name = "readOnlyTransactionManager")
@@ -99,16 +97,5 @@ public class DatabaseConfig {
         return new JpaTransactionManager(readOnlyEntityManagerFactory);
     }
 
-    @Primary
-    @Bean(name = "primaryQueryFactory")
-    public JPAQueryFactory primaryQueryFactory(
-            @Qualifier("primaryEntityManagerFactory") EntityManagerFactory primaryEntityManagerFactory) {
-        return new JPAQueryFactory(() -> primaryEntityManagerFactory.createEntityManager());
-    }
 
-    @Bean(name = "readOnlyQueryFactory")
-    public JPAQueryFactory readOnlyQueryFactory(
-            @Qualifier("readOnlyEntityManagerFactory") EntityManagerFactory readOnlyEntityManagerFactory) {
-        return new JPAQueryFactory(() -> readOnlyEntityManagerFactory.createEntityManager());
-    }
 }

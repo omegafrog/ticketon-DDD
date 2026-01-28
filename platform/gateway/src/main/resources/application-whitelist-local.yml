@@ -3,31 +3,3 @@ spring:
     activate:
       on-profile: local
 
-filter:
-  whitelist:
-    # method must be uppercase
-    urls:
-      - method: POST
-        url: "/api/v1/auth/register"
-      - method: POST
-        url: "/api/v1/auth/login"
-      - method: "*"
-        url: "/api/v1/auth/social/**"
-      - method: POST
-        url: "/api/v1/events/list"
-      - method: GET
-        url: "/api/v1/events/{id}"
-      - method: PUT
-        url: "/static/**"
-      - method: GET
-        url: "/static/**"
-      - method: "*"
-        url: "/static/events/images/**"
-      - method: GET
-        url: "/swagger-ui/**"
-      - method: GET
-        url: "/swagger-ui.html"
-      - method: GET
-        url: "/v3/api-docs/**"
-      - method: GET
-        url: "/webjars/**"

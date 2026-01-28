@@ -11,6 +11,7 @@ import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.seat.app.UpdateSeatLayoutService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
@@ -21,12 +22,14 @@ public class UpdateEventService {
 	private final EventRepository eventRepository;
 	private final UpdateSeatLayoutService updateSeatLayoutService;
 	private final EventCategoryService eventCategoryService;
+	private final StringRedisTemplate redisTemplate;
 
 	public UpdateEventService(EventRepository eventRepository, UpdateSeatLayoutService updateSeatLayoutService,
-		EventCategoryService eventCategoryService) {
+		EventCategoryService eventCategoryService,  StringRedisTemplate redisTemplate){
 		this.eventRepository = eventRepository;
 		this.updateSeatLayoutService = updateSeatLayoutService;
 		this.eventCategoryService = eventCategoryService;
+		this.redisTemplate = redisTemplate;
 	}
 
 
@@ -62,8 +65,10 @@ public class UpdateEventService {
 		return new ManagerId(userSecurityToken.getUserId());
 	}
 
+	@Transactional
 	public void changeStatus(String eventId, String status) {
 		Event event = eventRepository.findEvent(new EventId(eventId));
 		event.updateStatus(EventStatus.valueOf(status.toUpperCase()));
+		redisTemplate.opsForHash().put("event_statuses", eventId, status);
 	}
 }

@@ -41,7 +41,8 @@ out/
 
 /docker/
 /node_modules/
-/k6/
+/k6/*
+!/k6/sse-throughput-test.js
 /package.json
 /terraform/
 /.claude/
