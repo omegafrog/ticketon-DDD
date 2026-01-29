@@ -1,0 +1,217 @@
+[k6] starting
+time="2026-01-29T10:42:01+09:00" level=info msg="Automatic extension resolution is enabled. The current k6 binary doesn't satisfy all dependencies, it's required to provision a custom binary." deps="k6/x/redis;k6/x/sse"
+time="2026-01-29T10:42:02+09:00" level=info msg="A new k6 binary has been provisioned with version(s): k6:v1.5.0 k6/x/redis:v0.3.6 k6/x/sse:v0.1.11"
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: /mnt/e/workspace/ticketon-DDD/.sisyphus/bench/sse-throughput-test.js
+        output: -
+
+     scenarios: (100.00%) 2 scenarios, 51 max VUs, 6m30s max duration (incl. graceful stop):
+              * admin_controller_scenario: 1 iterations shared among 1 VUs (maxDuration: 6m0s, exec: adminController, gracefulStop: 30s)
+              * main_scenario: 1 iterations for each of 50 VUs (maxDuration: 1m0s, exec: default, gracefulStop: 30s)
+
+time="2026-01-29T10:42:02+09:00" level=info msg="--- K6 Setup: Initializing event statuses to CLOSED ---" source=console
+
+Run                         [ 100% ] setup()
+admin_controller_scenario   [   0% ]
+main_scenario               [   0% ]
+
+Run                         [ 100% ] setup()
+admin_controller_scenario   [   0% ]
+main_scenario               [   0% ]
+time="2026-01-29T10:42:05+09:00" level=info msg="--- K6 Setup: Event statuses set to CLOSED ---" source=console
+time="2026-01-29T10:42:05+09:00" level=info msg="--- Admin Controller: Waiting until all VUs entered waiting endpoint (WAITING_QUEUE_IDX barrier) ---" source=console
+
+running (0m03.0s), 51/51 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs   0m00.3s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 50 VUs  0m00.3s/1m0s  00/50 iters, 1 per VU
+
+running (0m04.0s), 51/51 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs   0m01.3s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 50 VUs  0m01.3s/1m0s  00/50 iters, 1 per VU
+
+running (0m05.0s), 51/51 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs   0m02.3s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 50 VUs  0m02.3s/1m0s  00/50 iters, 1 per VU
+
+running (0m06.0s), 51/51 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs   0m03.3s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 50 VUs  0m03.3s/1m0s  00/50 iters, 1 per VU
+time="2026-01-29T10:42:08+09:00" level=info msg="--- Admin Controller: Barrier met in 3330ms. Setting events to OPEN ---" source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="--- Admin Controller: All events set to OPEN ---" source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:09+09:00" level=info msg="[connectSse] Disconnecting start for eventId: 0dc2efd8-f760-11f0-8e3b-2a897f646219." source=console
+time="2026-01-29T10:42:09+09:00" level=info msg=disconnected source=console
+
+running (0m07.0s), 35/51 VUs, 16 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  30% ] 50 VUs  0m04.3s/1m0s  15/50 iters, 1 per VU
+time="2026-01-29T10:42:10+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:10+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:10+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:10+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:10+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:10+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:10+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:10+09:00" level=info msg=disconnected source=console
+
+running (0m08.0s), 31/51 VUs, 20 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  38% ] 50 VUs  0m05.3s/1m0s  19/50 iters, 1 per VU
+time="2026-01-29T10:42:11+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:11+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:11+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:11+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:11+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:11+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:11+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:11+09:00" level=info msg=disconnected source=console
+
+running (0m09.0s), 27/51 VUs, 24 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  46% ] 50 VUs  0m06.3s/1m0s  23/50 iters, 1 per VU
+time="2026-01-29T10:42:12+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:12+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:12+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:12+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:12+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:12+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:12+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:12+09:00" level=info msg=disconnected source=console
+
+running (0m10.0s), 23/51 VUs, 28 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  54% ] 50 VUs  0m07.3s/1m0s  27/50 iters, 1 per VU
+time="2026-01-29T10:42:13+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:13+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:13+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:13+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:13+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:13+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:13+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:13+09:00" level=info msg=disconnected source=console
+
+running (0m11.0s), 19/51 VUs, 32 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  62% ] 50 VUs  0m08.3s/1m0s  31/50 iters, 1 per VU
+time="2026-01-29T10:42:14+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:14+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:14+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:14+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:14+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:14+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:14+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:14+09:00" level=info msg=disconnected source=console
+
+running (0m12.0s), 15/51 VUs, 36 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  70% ] 50 VUs  0m09.3s/1m0s  35/50 iters, 1 per VU
+time="2026-01-29T10:42:15+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:15+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:15+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:15+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:15+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:15+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:15+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:15+09:00" level=info msg=disconnected source=console
+
+running (0m13.0s), 11/51 VUs, 40 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  78% ] 50 VUs  0m10.3s/1m0s  39/50 iters, 1 per VU
+time="2026-01-29T10:42:16+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:16+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:16+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:16+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:16+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:16+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:16+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:16+09:00" level=info msg=disconnected source=console
+
+running (0m14.0s), 07/51 VUs, 44 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  86% ] 50 VUs  0m11.3s/1m0s  43/50 iters, 1 per VU
+time="2026-01-29T10:42:17+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:17+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:17+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:17+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:17+09:00" level=info msg="[connectSse] Disconnecting start for eventId: ba1d5e02-f834-11f0-999b-05d0f9a25396." source=console
+time="2026-01-29T10:42:17+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:17+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:17+09:00" level=info msg=disconnected source=console
+
+running (0m15.0s), 03/51 VUs, 48 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario               [  94% ] 50 VUs  0m12.3s/1m0s  47/50 iters, 1 per VU
+time="2026-01-29T10:42:18+09:00" level=info msg="[connectSse] Disconnecting start for eventId: b55834d0-f834-11f0-999b-a7e49b723099." source=console
+time="2026-01-29T10:42:18+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:18+09:00" level=info msg="[connectSse] Disconnecting start for eventId: be54c626-f834-11f0-999b-9fdbde76a760." source=console
+time="2026-01-29T10:42:18+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:18+09:00" level=info msg="[connectSse] Disconnecting start for eventId: bc113ec4-f834-11f0-999b-1786beee8658." source=console
+time="2026-01-29T10:42:18+09:00" level=info msg=disconnected source=console
+time="2026-01-29T10:42:18+09:00" level=info msg="--- K6 Teardown: Resetting event statuses to OPEN ---" source=console
+
+running (0m16.0s), 00/51 VUs, 51 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario             ✓ [ 100% ] 50 VUs  0m13.2s/1m0s  50/50 iters, 1 per VU
+
+running (0m17.0s), 00/51 VUs, 51 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario             ✓ [ 100% ] 50 VUs  0m13.2s/1m0s  50/50 iters, 1 per VU
+
+running (0m18.0s), 00/51 VUs, 51 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario             ✓ [ 100% ] 50 VUs  0m13.2s/1m0s  50/50 iters, 1 per VU
+time="2026-01-29T10:42:21+09:00" level=info msg="--- K6 Teardown: Event statuses reset to OPEN ---" source=console
+SSE Throughput Test Summary
+BASE_URL: http://localhost:8080
+Scenario: custom
+Event IDs: 5 (hotRatio=0%)
+Users (vus/iterations): 50
+Success rate: 100.00%
+P95 connection time: 9702.30 ms
+Completed users: 50
+IN_ENTRY events: 50
+SSE events: 271
+Login failures: 0
+Login final failures: 0
+SSE failures: 0
+Disconnect failures: 0
+Barrier wait max: 3330 ms
+P95 OPEN->IN_PROGRESS: n/a ms
+P95 login batch delay: 2999 ms
+running (0m18.5s), 00/51 VUs, 51 complete and 0 interrupted iterations
+admin_controller_scenario ✓ [ 100% ] 1 VUs   0m03.9s/6m0s  1/1 shared iters
+main_scenario             ✓ [ 100% ] 50 VUs  0m13.2s/1m0s  50/50 iters, 1 per VU

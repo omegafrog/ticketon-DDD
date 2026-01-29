@@ -1,0 +1,426 @@
+[k6] starting
+time="2026-01-29T10:33:11+09:00" level=info msg="Automatic extension resolution is enabled. The current k6 binary doesn't satisfy all dependencies, it's required to provision a custom binary." deps="k6/x/redis;k6/x/sse"
+time="2026-01-29T10:33:12+09:00" level=info msg="A new k6 binary has been provisioned with version(s): k6:v1.5.0 k6/x/redis:v0.3.6 k6/x/sse:v0.1.11"
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: /mnt/e/workspace/ticketon-DDD/.sisyphus/bench/sse-throughput-test.js
+        output: -
+
+     scenarios: (100.00%) 2 scenarios, 2 max VUs, 6m30s max duration (incl. graceful stop):
+              * admin_controller_scenario: 1 iterations shared among 1 VUs (maxDuration: 6m0s, exec: adminController, gracefulStop: 30s)
+              * main_scenario: 1 iterations for each of 1 VUs (maxDuration: 1m0s, exec: default, gracefulStop: 30s)
+
+time="2026-01-29T10:33:12+09:00" level=info msg="--- K6 Setup: Initializing event statuses to CLOSED ---" source=console
+time="2026-01-29T10:33:12+09:00" level=error msg="Failed to update event 0dc2efd8-f760-11f0-8e3b-2a897f646219 status to CLOSED: 503 - {\"timestamp\":\"2026-01-29T01:33:12.626+00:00\",\"path\":\"/api/v1/events/0dc2efd8-f760-11f0-8e3b-2a897f646219\",\"status\":503,\"error\":\"Service Unavailable\",\"requestId\":\"7164db4b-2018\"}" source=console
+time="2026-01-29T10:33:13+09:00" level=error msg="Failed to update event b55834d0-f834-11f0-999b-a7e49b723099 status to CLOSED: 503 - {\"timestamp\":\"2026-01-29T01:33:13.142+00:00\",\"path\":\"/api/v1/events/b55834d0-f834-11f0-999b-a7e49b723099\",\"status\":503,\"error\":\"Service Unavailable\",\"requestId\":\"7164db4b-2019\"}" source=console
+
+Run                         [ 100% ] setup()
+admin_controller_scenario   [   0% ]
+main_scenario               [   0% ]
+time="2026-01-29T10:33:13+09:00" level=error msg="Failed to update event ba1d5e02-f834-11f0-999b-05d0f9a25396 status to CLOSED: 503 - {\"timestamp\":\"2026-01-29T01:33:13.648+00:00\",\"path\":\"/api/v1/events/ba1d5e02-f834-11f0-999b-05d0f9a25396\",\"status\":503,\"error\":\"Service Unavailable\",\"requestId\":\"7164db4b-2020\"}" source=console
+time="2026-01-29T10:33:14+09:00" level=error msg="Failed to update event bc113ec4-f834-11f0-999b-1786beee8658 status to CLOSED: 503 - {\"timestamp\":\"2026-01-29T01:33:14.154+00:00\",\"path\":\"/api/v1/events/bc113ec4-f834-11f0-999b-1786beee8658\",\"status\":503,\"error\":\"Service Unavailable\",\"requestId\":\"7164db4b-2021\"}" source=console
+
+Run                         [ 100% ] setup()
+admin_controller_scenario   [   0% ]
+main_scenario               [   0% ]
+time="2026-01-29T10:33:14+09:00" level=error msg="Failed to update event be54c626-f834-11f0-999b-9fdbde76a760 status to CLOSED: 503 - {\"timestamp\":\"2026-01-29T01:33:14.659+00:00\",\"path\":\"/api/v1/events/be54c626-f834-11f0-999b-9fdbde76a760\",\"status\":503,\"error\":\"Service Unavailable\",\"requestId\":\"7164db4b-2022\"}" source=console
+time="2026-01-29T10:33:15+09:00" level=info msg="--- K6 Setup: Event statuses set to CLOSED ---" source=console
+time="2026-01-29T10:33:15+09:00" level=info msg="--- Admin Controller: Waiting until all VUs entered waiting endpoint (WAITING_QUEUE_IDX barrier) ---" source=console
+
+running (0m03.0s), 2/2 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m00.4s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 1 VUs  0m00.4s/1m0s  0/1 iters, 1 per VU
+
+running (0m04.0s), 2/2 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m01.4s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 1 VUs  0m01.4s/1m0s  0/1 iters, 1 per VU
+
+running (0m05.0s), 2/2 VUs, 0 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m02.4s/6m0s  0/1 shared iters
+main_scenario               [   0% ] 1 VUs  0m02.4s/1m0s  0/1 iters, 1 per VU
+
+running (0m06.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m03.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m07.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m04.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m08.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m05.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m09.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m06.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m10.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m07.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m11.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m08.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m12.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m09.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m13.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m10.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m14.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m11.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m15.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m12.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m16.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m13.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m17.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m14.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m18.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m15.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m19.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m16.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m20.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m17.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m21.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m18.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m22.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m19.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m23.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m20.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m24.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m21.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m25.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m22.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m26.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m23.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m27.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m24.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m28.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m25.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m29.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m26.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m30.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m27.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m31.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m28.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m32.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m29.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m33.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m30.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m34.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m31.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m35.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m32.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m36.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m33.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m37.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m34.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m38.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m35.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m39.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m36.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m40.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m37.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m41.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m38.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m42.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m39.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m43.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m40.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m44.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m41.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m45.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m42.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m46.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m43.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m47.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m44.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m48.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m45.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m49.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m46.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m50.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m47.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m51.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m48.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m52.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m49.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m53.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m50.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m54.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m51.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m55.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m52.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m56.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m53.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m57.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m54.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m58.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m55.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (0m59.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m56.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m00.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m57.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m01.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m58.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m02.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  0m59.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m03.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m00.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m04.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m01.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m05.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m02.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m06.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m03.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m07.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m04.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m08.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m05.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m09.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m06.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m10.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m07.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m11.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m08.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m12.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m09.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m13.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m10.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m14.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m11.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m15.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m12.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m16.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m13.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m17.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m14.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m18.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m15.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m19.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m16.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m20.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m17.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m21.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m18.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m22.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m19.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m23.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m20.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m24.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m21.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m25.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m22.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m26.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m23.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m27.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m24.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m28.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m25.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m29.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m26.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m30.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m27.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m31.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m28.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m32.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m29.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m33.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m30.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m34.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m31.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m35.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m32.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m36.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m33.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m37.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m34.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m38.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m35.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m39.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m36.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU
+
+running (1m40.0s), 1/2 VUs, 1 complete and 0 interrupted iterations
+admin_controller_scenario   [   0% ] 1 VUs  1m37.4s/6m0s  0/1 shared iters
+main_scenario             ✓ [ 100% ] 1 VUs  0m03.0s/1m0s  1/1 iters, 1 per VU

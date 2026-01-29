@@ -1,0 +1,8 @@
+[meta] branch=main sha=edeb2e5 scenario=custom
+[meta] base_url=http://localhost:8080 broker_base_url=<default-to-base_url> redis_url=redis://127.0.0.1:6379
+[meta] event_ids=0dc2efd8-f760-11f0-8e3b-2a897f646219,b55834d0-f834-11f0-999b-a7e49b723099,ba1d5e02-f834-11f0-999b-05d0f9a25396,bc113ec4-f834-11f0-999b-1786beee8658,be54c626-f834-11f0-999b-9fdbde76a760
+[meta] expected_vus=50
+[meta] k6_version:
+k6 v1.5.0 (commit/7961cefa12, go1.25.5, linux/amd64)
+[k6] exit_code=99
+[meta] wall_clock_ms=23951

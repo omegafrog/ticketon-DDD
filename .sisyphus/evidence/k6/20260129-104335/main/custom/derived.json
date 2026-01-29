@@ -1,0 +1,9 @@
+{
+  "expectedVUs": 50,
+  "testRunDurationMs": 17974.763415,
+  "completedUsers": 50,
+  "barrierWaitMaxMs": 3357,
+  "httpReqFailedRate": 0,
+  "loginFinalFailures": null,
+  "sseFailures": null
+}

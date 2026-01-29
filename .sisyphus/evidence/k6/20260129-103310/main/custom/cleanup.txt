@@ -1,0 +1,18 @@
+[cleanup] starting scoped deletes
+[cleanup] redis-cli not found; using k6/x/redis for cleanup
+time="2026-01-29T10:33:10+09:00" level=info msg="Automatic extension resolution is enabled. The current k6 binary doesn't satisfy all dependencies, it's required to provision a custom binary." deps=k6/x/redis
+time="2026-01-29T10:33:11+09:00" level=info msg="A new k6 binary has been provisioned with version(s): k6/x/redis:v0.3.6 k6:v1.5.0"
+
+
+  █ TOTAL RESULTS 
+
+    EXECUTION
+    iteration_duration...: avg=6.42ms min=6.42ms med=6.42ms max=6.42ms p(90)=6.42ms p(95)=6.42ms
+    iterations...........: 1      153.227281/s
+
+    NETWORK
+    data_received........: 760 B  117 kB/s
+    data_sent............: 1.9 kB 295 kB/s
+
+
+
