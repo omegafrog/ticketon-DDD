@@ -24,10 +24,23 @@ public class RestEventClient implements EventClient {
   }
 
   @Override
-  public int getSeatCount(String eventId) throws JsonProcessingException {
+  public int getSeatCount(String eventId) {
     ResponseEntity<String> forEntity =
         restTemplate.getForEntity(url + "/api/v1/events/" + eventId, String.class);
+    try{
+      return objectMapper.readTree(forEntity.getBody()).get("data").get("seatCount").asInt();
+    }catch (JsonProcessingException e){
+      throw new RuntimeException(e);
+    }
+  }
 
-    return objectMapper.readTree(forEntity.getBody()).get("data").get("seatCount").asInt();
+  @Override
+  public String getSeatStatus(String eventId) {
+    ResponseEntity<String> forEntity = restTemplate.getForEntity(url + "/api/v1/events/" + eventId, String.class);
+    try{
+      return objectMapper.readTree(forEntity.getBody()).get("data").get("status").asText();
+    }catch (JsonProcessingException e){
+      throw new RuntimeException(e);
+    }
   }
 }
