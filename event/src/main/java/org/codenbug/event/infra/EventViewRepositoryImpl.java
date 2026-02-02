@@ -25,6 +25,8 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
+import jakarta.persistence.EntityNotFoundException;
+
 @Repository
 @Transactional(value = "readOnlyTransactionManager", readOnly = true)
 public class EventViewRepositoryImpl implements EventViewRepository {
@@ -321,8 +323,8 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				.and(event.metaData.deleted.isFalse()))
 			.fetchOne();
 
-		if (dbResult == null) {
-			return null;
+		if(dbResult.getEventId() == null){
+			throw new EntityNotFoundException("Event not found");
 		}
 
 		// Redis에서 실시간 viewCount 조회 및 적용

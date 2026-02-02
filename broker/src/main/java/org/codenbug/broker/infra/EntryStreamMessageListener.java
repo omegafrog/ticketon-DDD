@@ -3,8 +3,7 @@ package org.codenbug.broker.infra;
 import java.time.Duration;
 import java.util.Map;
 
-import org.codenbug.broker.app.EntryDispatchService;
-import org.codenbug.broker.app.EntryDispatchService.DispatchResult;
+import org.codenbug.broker.app.SSEEntryDispatchService.DispatchResult;
 import org.codenbug.broker.config.InstanceConfig;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -27,7 +26,7 @@ public class EntryStreamMessageListener
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final RedisConnectionFactory redisConnectionFactory;
-  private final EntryDispatchService entryDispatchService;
+  private final EntryDispatchServiceFacade entryDispatchService;
   private final RedisConfig redisConfig;
   private final InstanceConfig instanceConfig;
 
@@ -35,7 +34,7 @@ public class EntryStreamMessageListener
   private StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer;
 
   public EntryStreamMessageListener(RedisTemplate<String, Object> redisTemplate,
-      RedisConnectionFactory redisConnectionFactory, EntryDispatchService entryDispatchService,
+      RedisConnectionFactory redisConnectionFactory, EntryDispatchServiceFacade entryDispatchService,
       RedisConfig redisConfig, InstanceConfig instanceConfig) {
     this.redisTemplate = redisTemplate;
     this.redisConnectionFactory = redisConnectionFactory;
