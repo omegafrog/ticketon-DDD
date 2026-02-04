@@ -11,15 +11,15 @@ server:
 
 
 spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   application:
     name: api-gateway
   config:
     import:
       - optional:classpath:/application-secret.yml
-      - optional:classpath:/application-gateway-routes-local.yml
-      - optional:classpath:/application-gateway-routes-prod.yml
-      - optional:classpath:/application-whitelist-local.yml
-      - optional:classpath:/application-whitelist-prod.yml
   cloud:
     gateway:
       server:

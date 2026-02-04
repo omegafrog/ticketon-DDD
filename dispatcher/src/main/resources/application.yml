@@ -4,12 +4,11 @@ server:
 spring:
   profiles:
     include: secret
-    active: dev
 
   data:
     redis:
-      port: 6379
-      host: localhost
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 management:
   endpoints:
     web:

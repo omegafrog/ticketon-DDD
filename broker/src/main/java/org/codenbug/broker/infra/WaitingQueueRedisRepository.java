@@ -4,31 +4,38 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 
 import java.util.Map;
 
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class WaitingQueueRedisRepository {
 
-  private final RedisTemplate<String, Object> redisTemplate;
+  private final StringRedisTemplate redisTemplate;
+	private final ObjectMapper objectMapper;
 
-  public WaitingQueueRedisRepository(RedisTemplate<String, Object> redisTemplate) {
-    this.redisTemplate = redisTemplate;
-  }
+	public WaitingQueueRedisRepository(StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
+    	this.redisTemplate = redisTemplate;
+		this.objectMapper = objectMapper;
+	}
 
   public boolean entryQueueCountExists(String eventId) {
-    return Boolean.TRUE
-        .equals(redisTemplate.opsForHash().hasKey(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId));
+    Boolean exists = redisTemplate.opsForHash().hasKey(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId);
+    return Boolean.TRUE.equals(exists);
   }
 
-  public void updateEntryQueueCount(String eventId, int seatCount) {
-    redisTemplate.opsForHash().put(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, seatCount);
+  public void updateEntryQueueCount(String eventId, int slotCount) {
+	  redisTemplate.opsForHash().put(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, String.valueOf(slotCount));
+  }
+  public void incrementEntryQueueCount(String eventId) {
+    redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, 1);
   }
 
   public boolean recordWaitingUserIfAbsent(String eventId, String userId) {
-    Boolean inserted = redisTemplate.opsForHash()
-        .putIfAbsent(WAITING_USER_IDS_KEY_NAME + ":" + eventId, userId, "true");
-    return Boolean.TRUE.equals(inserted);
+	  return redisTemplate.opsForHash()
+		  .putIfAbsent(WAITING_USER_IDS_KEY_NAME + ":" + eventId, userId, "true");
   }
 
   public long incrementWaitingQueueIdx(String eventId) {
@@ -38,14 +45,71 @@ public class WaitingQueueRedisRepository {
   }
 
   public void saveUserToWaitingQueue(String userId, String eventId, long idx) {
-    redisTemplate.opsForZSet().add(WAITING_QUEUE_KEY_NAME + ":" + eventId,
-        Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId), idx);
+		try {
+			redisTemplate.opsForZSet().add(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId, idx);
+		}catch (Exception e) {
+			throw new RuntimeException(e);
+		}
   }
 
-  public void saveAdditionalUserData(String userId, String eventId, long idx, String instanceId) {
-    redisTemplate.opsForHash().put("WAITING_QUEUE_INDEX_RECORD:" + eventId, userId,
-        Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId, QUEUE_MESSAGE_IDX_KEY_NAME,
-            String.valueOf(idx), QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId,
-            QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME, instanceId));
+  public void saveAdditionalUserData(String userId, String eventId, long idx, String instanceId){
+		try {
+			redisTemplate.opsForHash().put("WAITING_QUEUE_INDEX_RECORD:" + eventId, userId,
+				objectMapper.writeValueAsString(
+					Map.of(QUEUE_MESSAGE_USER_ID_KEY_NAME, userId, QUEUE_MESSAGE_IDX_KEY_NAME,
+						String.valueOf(idx), QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId,
+						QUEUE_MESSAGE_INSTANCE_ID_KEY_NAME, instanceId)));
+		}catch (JsonProcessingException e) {
+			throw new RuntimeException(e);
+		}
   }
+
+	public Long getUserRank(String eventId, String userId) {
+		return redisTemplate.opsForZSet().rank(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId);
+	}
+
+	public void deleteUserFromEntry(String userId) {
+		redisTemplate.delete(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId);
+	}
+
+	public void deleteUserFromWaiting(String eventId, String userId) {
+		redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId);
+	}
+
+	public boolean isUserExistInWaiting(String eventId, String userId) {
+		return redisTemplate.opsForZSet().score(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId) != null;
+	}
+
+	public void updateWaitingLastSeen(String eventId, String userId, long epochMillis) {
+		redisTemplate.opsForZSet().add(WAITING_LAST_SEEN_KEY_NAME + ":" + eventId, userId, epochMillis);
+	}
+
+	public boolean setUserQueueEventIfAbsent(String userId, String eventId) {
+		Boolean inserted = redisTemplate.opsForValue()
+			.setIfAbsent(USER_QUEUE_EVENT_KEY_NAME + ":" + userId, eventId);
+		return Boolean.TRUE.equals(inserted);
+	}
+
+	public String getUserQueueEvent(String userId) {
+		Object value = redisTemplate.opsForValue().get(USER_QUEUE_EVENT_KEY_NAME + ":" + userId);
+		return value == null ? null : value.toString();
+	}
+
+	public boolean isUserExistInEntry(String userId) {
+		return redisTemplate.opsForValue().get(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId) != null;
+	}
+
+	public String getEntryToken(String userId) {
+		Object value = redisTemplate.opsForValue().get(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId);
+		return value == null ? null : value.toString();
+	}
+
+	public void updateEntryLastSeen(String userId, long epochMillis) {
+		redisTemplate.opsForZSet().add(ENTRY_LAST_SEEN_KEY_NAME, userId, epochMillis);
+	}
+
+	public void refreshUserQueueEventTtl(String userId, long ttlSeconds) {
+		redisTemplate.expire(USER_QUEUE_EVENT_KEY_NAME + ":" + userId, ttlSeconds,
+			java.util.concurrent.TimeUnit.SECONDS);
+	}
 }

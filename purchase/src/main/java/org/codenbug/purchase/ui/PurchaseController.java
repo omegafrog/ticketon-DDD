@@ -1,10 +1,5 @@
 package org.codenbug.purchase.ui;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
@@ -26,6 +21,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -56,7 +56,7 @@ public class PurchaseController {
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
-		entryTokenValidator.validate(userId, entryAuthToken);
+		entryTokenValidator.validate(userId, entryAuthToken, request.getEventId());
 		InitiatePaymentResponse response = purchaseService.initiatePayment(request, userId);
 		return ResponseEntity.ok(new RsData<>("200", "결제 준비 완료", response));
 	}
@@ -79,8 +79,7 @@ public class PurchaseController {
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
-		entryTokenValidator.validate(userId, entryAuthToken);
-		ConfirmPaymentResponse response = purchaseService.confirmPaymentWithSaga(request, userId);
+		ConfirmPaymentResponse response = purchaseService.confirmPaymentWithSaga(request, userId, entryAuthToken);
 		return ResponseEntity.ok(new RsData<>("200", "결제 승인 완료", response));
 	}
 

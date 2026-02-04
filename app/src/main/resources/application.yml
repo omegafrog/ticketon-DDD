@@ -9,7 +9,10 @@ spring:
     port: 5672 # RabbitMQ port
     username : root # RabbitMQ 웹 관리 콘솔 아이디
     password: root # RabbitMQ 웹 관리 콘솔 비밀번호
-
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   datasource:
     primary:
       url: jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
