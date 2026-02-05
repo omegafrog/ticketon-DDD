@@ -9,6 +9,10 @@ server:
         max-connections: 2000
         max-idle-time: 30s
 
+eureka:
+  client:
+    service-url:
+      hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
 
 spring:
   data:

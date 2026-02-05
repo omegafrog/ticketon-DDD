@@ -1,5 +1,4 @@
 import http from 'k6/http';
-import sse from 'k6/x/sse';
 import redis from 'k6/x/redis';
 import {check, fail, sleep} from 'k6';
 import {Counter, Trend} from 'k6/metrics';
@@ -21,7 +20,11 @@ const BURST_OFFSET_MS = parseInt(__ENV.BURST_OFFSET_MS || '3000', 10); // Burst 
 const ADMIN_OPEN_DELAY_MS = parseInt(__ENV.ADMIN_OPEN_DELAY_MS || '15000', 10);
 const WAIT_FOR_IN_ENTRY = (__ENV.WAIT_FOR_IN_ENTRY || '1') === '1';
 const LOGIN_TIMEOUT = `${parseInt(__ENV.LOGIN_TIMEOUT_MS || '10000', 10)}ms`;
-const SSE_TIMEOUT = `${parseInt(__ENV.SSE_TIMEOUT_MS || '120000', 10)}ms`;
+const POLLING_ENTER_TIMEOUT = `${parseInt(__ENV.POLLING_ENTER_TIMEOUT_MS || '10000', 10)}ms`;
+const POLLING_CURRENT_TIMEOUT = `${parseInt(__ENV.POLLING_CURRENT_TIMEOUT_MS || '5000', 10)}ms`;
+const MAX_POLL_MS = parseInt(__ENV.MAX_POLL_MS || String(HOLD_MS || 120000), 10);
+const MIN_POLL_AFTER_MS = Math.max(parseInt(__ENV.MIN_POLL_AFTER_MS || '200', 10), 0);
+const MAX_POLL_AFTER_MS = Math.max(parseInt(__ENV.MAX_POLL_AFTER_MS || '5000', 10), 0);
 const LOGIN_EMAIL_DOMAIN = __ENV.LOGIN_EMAIL_DOMAIN || 'example.com';
 const ADMIN_EMAIL = __ENV.ADMIN_EMAIL || 'admin@example.com';
 const ADMIN_PASSWORD = __ENV.ADMIN_PASSWORD || 'password123';
@@ -54,7 +57,7 @@ const redisClient = new redis.Client(REDIS_URL);
 export const options = {
     thresholds: {
         http_req_failed: ['rate<0.05'],
-        sse_connection_time: [`p(95)<${__ENV.SSE_P95_THRESHOLD || 5000}`],
+        polling_enter_time_ms: [`p(95)<${__ENV.POLLING_ENTER_P95_THRESHOLD || __ENV.SSE_P95_THRESHOLD || 5000}`],
         completed_users: [`count==${DEFAULT_VUS}`],
         barrier_wait_ms: [`max<${BARRIER_TIMEOUT_MS}`],
     },
@@ -80,15 +83,17 @@ export const options = {
     },
 };
 
-const connectionTime = new Trend('sse_connection_time');
+const pollingEnterTimeMs = new Trend('polling_enter_time_ms');
+const pollingCurrentTimeMs = new Trend('polling_current_time_ms');
+const pollingPromoteTimeMs = new Trend('polling_promote_time_ms');
 const loginFailures = new Counter('login_failures');
 const loginFinalFailures = new Counter('login_final_failures');
-const sseFailures = new Counter('sse_failures');
+const pollingFailures = new Counter('polling_failures');
+const pollingTimeoutFailures = new Counter('polling_timeout_failures');
+const pollingRequests = new Counter('polling_requests');
 const disconnectFailures = new Counter('disconnect_failures');
 const completedUsers = new Counter('completed_users');
-const inEntryCount = new Counter('in_entry_events');
-const inProgressBeforeEntryCount = new Counter('in_progress_before_entry_events');
-const sseEventCount = new Counter('sse_events');
+const entryTokenReceivedCount = new Counter('entry_token_received');
 const barrierWaitMs = new Trend('barrier_wait_ms');
 const openToPromoteMs = new Trend('open_to_promote_ms');
 const loginBatchDelayMs = new Trend('login_batch_delay_ms');
@@ -262,178 +267,147 @@ function loginUserWithRetry(email, password, jar) {
     loginFinalFailures.add(1);
     return null;
 }
-function connectSse(eventId, accessToken, jar, runId) {
-    if (VERBOSE_LOGS) {
-        console.log(`[connectSse] Starting connection for eventId: ${eventId}`);
-    }
-    const params = {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: 'text/event-stream',
-            'Cache-Control': 'no-cache',
+function pollingEnterWaiting(eventId, accessToken, jar) {
+    const start = Date.now();
+    const res = http.get(
+        `${BROKER_BASE_URL}/api/v1/broker/polling/events/${eventId}/waiting`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            tags: { name: 'polling_enter_waiting' },
+            timeout: POLLING_ENTER_TIMEOUT,
+            jar,
         },
-        timeout: SSE_TIMEOUT,
-        tags: { name: 'sse_connect' },
-        jar,
-    };
+    );
+    pollingEnterTimeMs.add(Date.now() - start);
 
-    let inEntryReceived = false;
-    let promoted = false;
-    let sseClosed = false;
-    let done = false;
-
-    const startConnect = Date.now();
-    const res = sse.open(`${BROKER_BASE_URL}/api/v1/broker/events/${eventId}/tickets/waiting`, params, (client) => {
-        client.on('open', () => {
-            if (VERBOSE_LOGS) {
-                console.log(`[connectSse] SSE connection opened for eventId: ${eventId}`);
-            }
-        });
-
-        client.on('event', async (event) => {
-            if (done) {
-                return;
-            }
-            if (VERBOSE_LOGS) {
-                console.log(`[connectSse] Received SSE event for eventId: ${eventId}, data: ${event.data}`);
-            }
-            if (!event || !event.data) {
-                return;
-            }
-            try {
-                const rawData = normalizeSseData(event.data);
-                let parsed;
-                try {
-                    parsed = JSON.parse(rawData);
-                    if (VERBOSE_LOGS) {
-                        console.log(`[connectSse] Parsed SSE event for eventId: ${eventId}, status: ${parsed.status}`);
-                    }
-                    sseEventCount.add(1);
-                } catch (e) {
-                    if (VERBOSE_LOGS) {
-                        console.log(`[connectSse] Failed to parse SSE event data as JSON for eventId: ${eventId}, error: ${e}`);
-                    }
-                    return;
-                }
-
-                if (parsed.status === 'IN_ENTRY') {
-                    if (!inEntryReceived) { // Only process once per VU
-                        if (VERBOSE_LOGS) {
-                            console.log(`[connectSse] IN_ENTRY received for eventId: ${eventId}. Waiting for IN_PROGRESS...`);
-                        }
-                        inEntryReceived = true;
-                        inEntryCount.add(1);
-                    }
-                } else if (parsed.status === 'IN_PROGRESS') {
-                    done = true;
-                    if (!inEntryReceived) {
-                        inProgressBeforeEntryCount.add(1);
-                        inEntryReceived = true;
-                        if (VERBOSE_LOGS) {
-                            console.log(`[connectSse] IN_PROGRESS received for eventId: ${eventId} BEFORE IN_ENTRY. Treating as promoted.`);
-                        }
-                    }
-
-                    if (VERBOSE_LOGS) {
-                        console.log(`[connectSse] IN_PROGRESS received for eventId: ${eventId}. Disconnecting.`);
-                    }
-
-                    // Promotion timing (requires adminController to write open timestamp to Redis)
-                    // if (WRITE_OPEN_AT_REDIS && runId) {
-                    //     try {
-                    //         console.log("hi")
-                    //         console.log(buildOpenAtKey(runId))
-                    //         const openAtRaw = await redisClient.get(buildOpenAtKey(runId));
-                    //         console.log("bye", openAtRaw)
-                    //         const openAt = Number(openAtRaw) || 0;
-                    //         if (openAt > 0) {
-                    //             openToPromoteMs.add(Date.now() - openAt);
-                    //         }
-                    //     } catch (e) {
-                    //         console.log(e)
-                    //         // ignore
-                    //     }
-                    // }
-
-                    completedUsers.add(1);
-                    // Close SSE first to stop receiving events, then best-effort disconnect (bounded timeout).
-                    console.log(`[connectSse] Disconnecting start for eventId: ${eventId}.`);
-                    client.close();
-                    console.log("disconnected")
-                    disconnect(eventId, accessToken, jar);
-                    promoted = true;
-                    sseClosed = true;
-                }
-            } catch (e) {
-                if (VERBOSE_LOGS) {
-                    console.log(`[connectSse] Error in SSE event handler for eventId: ${eventId}, error: ${e}`);
-                }
-                // ignore
-            }
-        });
-
-        client.on('error', (e) => {
-            if (VERBOSE_LOGS) {
-                console.log(`[connectSse] SSE connection error for eventId: ${eventId}, error: ${e.error()}`);
-            }
-            if (!promoted) {
-                sseFailures.add(1);
-            }
-            sseClosed = true;
-            // The sse.open call will naturally terminate upon error or server-side close.
-        });
+    const ok = check(res, {
+        'polling enter status 200': (r) => r && r.status === 200,
     });
-    if (VERBOSE_LOGS) {
-        console.log(res);
-    }
-    const checkOk = check(res, {
-        'sse status 200': (r) => r && r.status === 200,
-    });
-    if (!checkOk) {
-        sseFailures.add(1);
+
+    if (!ok) {
+        pollingFailures.add(1);
         if (VERBOSE_LOGS) {
-            console.log(`[connectSse] Initial SSE connection check failed for eventId: ${eventId}`);
+            console.log(`[pollingEnterWaiting] status=${res?.status} body=${res?.body}`);
         }
         return false;
     }
 
-    connectionTime.add(Date.now() - startConnect);
-
-    return inEntryReceived;
+    return true;
 }
 
-function normalizeSseData(raw) {
-    let data = String(raw).trim();
-    if (data.startsWith('data:')) {
-        data = data.substring(5).trim();
+function pollingFetchCurrent(eventId, accessToken, jar) {
+    const start = Date.now();
+    const res = http.get(
+        `${BROKER_BASE_URL}/api/v1/broker/polling/events/${eventId}/current`,
+        {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            tags: { name: 'polling_current' },
+            timeout: POLLING_CURRENT_TIMEOUT,
+            jar,
+        },
+    );
+    pollingCurrentTimeMs.add(Date.now() - start);
+    pollingRequests.add(1);
+
+    if (!res || res.status !== 200) {
+        pollingFailures.add(1);
+        if (VERBOSE_LOGS) {
+            console.log(`[pollingFetchCurrent] status=${res?.status} body=${res?.body}`);
+        }
+        return null;
     }
-    if (data.startsWith('"') && data.endsWith('"')) {
-        data = data.substring(1, data.length - 1);
+
+    let parsed;
+    try {
+        parsed = res.json();
+    } catch (_) {
+        pollingFailures.add(1);
+        if (VERBOSE_LOGS) {
+            console.log(`[pollingFetchCurrent] invalid json: ${res.body}`);
+        }
+        return null;
     }
-    data = data.replace(/\\"/g, '"');
-    return data;
+
+    const data = parsed && parsed.data ? parsed.data : null;
+    if (!data) {
+        pollingFailures.add(1);
+        return null;
+    }
+
+    return {
+        state: String(data.state || ''),
+        rank: data.rank,
+        entryAuthToken: data.entryAuthToken,
+        pollAfterMs: Number(data.pollAfterMs) || 0,
+    };
 }
 
-function disconnect(eventId, accessToken, jar) {
-    const res = http.post(
-        `${BROKER_BASE_URL}/api/v1/broker/events/${eventId}/tickets/disconnect`,
+function clampPollAfterMs(rawMs) {
+    let ms = Number(rawMs);
+    if (!Number.isFinite(ms) || ms < 0) {
+        ms = 0;
+    }
+    if (MAX_POLL_AFTER_MS > 0) {
+        ms = Math.min(ms, MAX_POLL_AFTER_MS);
+    }
+    ms = Math.max(ms, MIN_POLL_AFTER_MS);
+    return ms;
+}
+
+function pollingWaitForEntry(eventId, accessToken, jar, runId) {
+    const start = Date.now();
+
+    while (true) {
+        if (Date.now() - start > MAX_POLL_MS) {
+            pollingTimeoutFailures.add(1);
+            return null;
+        }
+
+        const current = pollingFetchCurrent(eventId, accessToken, jar);
+        if (current && current.state === 'ENTRY' && current.entryAuthToken) {
+            entryTokenReceivedCount.add(1);
+            pollingPromoteTimeMs.add(Date.now() - start);
+            completedUsers.add(1);
+
+            // Promotion timing (requires adminController to write open timestamp to Redis)
+            // NOTE: xk6-redis access is async in this script; keep disabled by default.
+            // if (WRITE_OPEN_AT_REDIS && runId) { ... }
+
+            return String(current.entryAuthToken);
+        }
+
+        const sleepMs = clampPollAfterMs(current ? current.pollAfterMs : 1000);
+        sleep(sleepMs / 1000);
+    }
+}
+
+function pollingDisconnectWaiting(eventId, accessToken, jar) {
+    const res = http.del(
+        `${BROKER_BASE_URL}/api/v1/broker/polling/events/${eventId}/waiting`,
         null,
         {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
             },
-            tags: { name: 'disconnect' },
+            tags: { name: 'polling_disconnect_waiting' },
             timeout: DISCONNECT_TIMEOUT,
             jar,
         },
     );
 
     const ok = check(res, {
-        'disconnect status 200': (r) => r.status === 200,
+        'polling disconnect status 200': (r) => r && r.status === 200,
     });
 
     if (!ok) {
         disconnectFailures.add(1);
+        if (VERBOSE_LOGS) {
+            console.log(`[pollingDisconnectWaiting] status=${res?.status} body=${res?.body}`);
+        }
     }
 }
 
@@ -587,19 +561,34 @@ export default function (data) {
         fail('login failed');
     }
 
-    connectSse(eventId, session.accessToken, jar, data?.runId);
-    // completedUsers.add(1) is now handled inside connectSse's event handler
-    // sseFailures are handled inside connectSse as well
+    const entered = pollingEnterWaiting(eventId, session.accessToken, jar);
+    if (!entered) {
+        fail('polling enter failed');
+    }
+
+    try {
+        if (WAIT_FOR_IN_ENTRY) {
+            const token = pollingWaitForEntry(eventId, session.accessToken, jar, data?.runId);
+            if (!token) {
+                fail('polling current timeout');
+            }
+        } else {
+            // For scenarios that only measure join throughput.
+            completedUsers.add(1);
+        }
+    } finally {
+        pollingDisconnectWaiting(eventId, session.accessToken, jar);
+    }
 }
 
 
 export function handleSummary(data) {
     const completed = data.metrics.completed_users?.values?.count || 0;
-    const inEntryEvents = data.metrics.in_entry_events?.values?.count || 0;
-    const sseEvents = data.metrics.sse_events?.values?.count || 0;
+    const entryTokens = data.metrics.entry_token_received?.values?.count || 0;
     const loginFailuresCount = data.metrics.login_failures?.values?.count || 0;
     const loginFinalFailuresCount = data.metrics.login_final_failures?.values?.count || 0;
-    const sseFailuresCount = data.metrics.sse_failures?.values?.count || 0;
+    const pollingFailuresCount = data.metrics.polling_failures?.values?.count || 0;
+    const pollingTimeoutFailuresCount = data.metrics.polling_timeout_failures?.values?.count || 0;
     const disconnectFailuresCount = data.metrics.disconnect_failures?.values?.count || 0;
     const barrierMax = data.metrics.barrier_wait_ms?.values?.max;
     const openToPromoteP95 = data.metrics.open_to_promote_ms?.values?.['p(95)'];
@@ -608,28 +597,30 @@ export function handleSummary(data) {
     const total = DEFAULT_VUS;
     const okRate = total > 0 ? completed / total : 0;
     const summary = [
-        'SSE Throughput Test Summary',
+        'Polling Throughput Test Summary',
         `BASE_URL: ${BASE_URL}`,
         `Scenario: ${SCENARIO || 'custom'}`,
         `Event IDs: ${EVENT_IDS.length} (hotRatio=${(HOT_RATIO * 100).toFixed(0)}%)`,
         `Users (vus/iterations): ${DEFAULT_VUS}`,
         `Success rate: ${(okRate * 100).toFixed(2)}%`,
-        `P95 connection time: ${data.metrics.sse_connection_time?.values['p(95)']?.toFixed(2) || 'n/a'} ms`,
+        `P95 enter time: ${data.metrics.polling_enter_time_ms?.values['p(95)']?.toFixed(2) || 'n/a'} ms`,
+        `P95 current time: ${data.metrics.polling_current_time_ms?.values['p(95)']?.toFixed(2) || 'n/a'} ms`,
+        `P95 promote time: ${data.metrics.polling_promote_time_ms?.values['p(95)']?.toFixed(2) || 'n/a'} ms`,
         `Completed users: ${completed}`,
-        `IN_ENTRY events: ${inEntryEvents}`,
-        `SSE events: ${sseEvents}`,
+        `Entry tokens: ${entryTokens}`,
         `Login failures: ${loginFailuresCount}`,
         `Login final failures: ${loginFinalFailuresCount}`,
-        `SSE failures: ${sseFailuresCount}`,
+        `Polling failures: ${pollingFailuresCount}`,
+        `Polling timeout failures: ${pollingTimeoutFailuresCount}`,
         `Disconnect failures: ${disconnectFailuresCount}`,
         `Barrier wait max: ${barrierMax != null ? barrierMax.toFixed(0) : 'n/a'} ms`,
-        `P95 OPEN->IN_PROGRESS: ${openToPromoteP95 != null ? openToPromoteP95.toFixed(2) : 'n/a'} ms`,
+        `P95 OPEN->ENTRY: ${openToPromoteP95 != null ? openToPromoteP95.toFixed(2) : 'n/a'} ms`,
         `P95 login batch delay: ${loginBatchDelayP95 != null ? loginBatchDelayP95.toFixed(0) : 'n/a'} ms`,
     ];
-    const sseThroughputSummary = summary.join('\n');
+    const throughputSummary = summary.join('\n');
 
     return {
-        'stdout': sseThroughputSummary,
+        'stdout': throughputSummary,
         'summary.json': JSON.stringify(data, null, 2), // 모든 메트릭 데이터를 JSON 파일로 저장
     };
 }

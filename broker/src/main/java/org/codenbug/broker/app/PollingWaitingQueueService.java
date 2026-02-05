@@ -27,6 +27,9 @@ public class PollingWaitingQueueService {
 
 	public void enter( String eventId) {
 		String userId = LoggedInUserContext.get().getUserId();
+		if (waitingQueueRedisRepository.isUserExistInEntry(userId)) {
+			throw new IllegalStateException("이미 입장 토큰이 발급되었습니다.");
+		}
 		boolean setQueueEvent = waitingQueueRedisRepository.setUserQueueEventIfAbsent(userId, eventId);
 		if (!setQueueEvent) {
 			String currentEventId = waitingQueueRedisRepository.getUserQueueEvent(userId);
@@ -67,7 +70,7 @@ public class PollingWaitingQueueService {
 				"ENTRY",
 				null,
 				entryToken,
-				calculatePollAfterMs(null, true)
+				calculatePollAfterMs(eventId, null, true)
 			);
 		}
 
@@ -79,7 +82,7 @@ public class PollingWaitingQueueService {
 				"WAITING",
 				adjustedRank,
 				null,
-				calculatePollAfterMs(adjustedRank, false)
+				calculatePollAfterMs(eventId, adjustedRank, false)
 			);
 		}
 
@@ -87,11 +90,41 @@ public class PollingWaitingQueueService {
 			"NONE",
 			null,
 			null,
-			calculatePollAfterMs(null, false)
+			calculatePollAfterMs(eventId, null, false)
 		);
 	}
 
-	private long calculatePollAfterMs(Long rank, boolean hasEntryToken) {
+	private long calculatePollAfterMs(String eventId, Long rank, boolean hasEntryToken) {
+		long baseMs = calculateBasePollAfterMs(rank, hasEntryToken);
+		if (hasEntryToken) {
+			return baseMs;
+		}
+
+		String eventStatus = waitingQueueRedisRepository.getEventStatus(eventId);
+		if (eventStatus != null && !"OPEN".equals(eventStatus)) {
+			return 30000L;
+		}
+
+		long adaptedMs = baseMs;
+
+		Long entrySlots = waitingQueueRedisRepository.getEntryQueueSlots(eventId);
+		if (entrySlots != null && entrySlots <= 0) {
+			adaptedMs = Math.max(adaptedMs, 8000L);
+		}
+
+		if (rank != null && rank > 100) {
+			Long waitingSize = waitingQueueRedisRepository.getWaitingQueueSize(eventId);
+			if (waitingSize != null && waitingSize >= 5000) {
+				adaptedMs = Math.max(adaptedMs, 10000L);
+			} else if (waitingSize != null && waitingSize >= 1000) {
+				adaptedMs = Math.max(adaptedMs, 7000L);
+			}
+		}
+
+		return adaptedMs;
+	}
+
+	private long calculateBasePollAfterMs(Long rank, boolean hasEntryToken) {
 		if (hasEntryToken) {
 			return 1000L;
 		}

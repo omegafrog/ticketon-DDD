@@ -36,6 +36,11 @@ public class WaitingQueueEntryService {
   public SseEmitter entry(String eventId) throws JsonProcessingException {
     // 로그인한 유저 id 조회
     String id = getLoggedInUserId();
+
+		if (waitingQueueRepository.isUserExistInEntry(id)) {
+			throw new IllegalStateException("이미 입장 토큰이 발급되었습니다.");
+		}
+
     SseEmitter emitter;
     // emitter 생성 및 저장
     try {

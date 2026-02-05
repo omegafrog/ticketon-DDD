@@ -67,14 +67,6 @@ server:
     accept-count: 500
 
 
-logging:
-  level:
-    org.codenbug: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    org.apache.catalina.core.ContainerBase: INFO
-    org.springframework.boot.web.embedded.tomcat: debug
-
 
 custom:
   cookie:
@@ -87,8 +79,12 @@ eureka:
   client:
     service-url:
       defaultZone: http://127.0.0.1:8761/eureka/
+      hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
     register-with-eureka: true
     fetch-registry: true
+  instance:
+    hostname: ${EUREKA_INSTANCE_HOST_NAME:localhost}
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
   user:
     base-url: http://localhost:9000
 sns:

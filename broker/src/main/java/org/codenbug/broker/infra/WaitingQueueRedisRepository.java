@@ -112,4 +112,25 @@ public class WaitingQueueRedisRepository {
 		redisTemplate.expire(USER_QUEUE_EVENT_KEY_NAME + ":" + userId, ttlSeconds,
 			java.util.concurrent.TimeUnit.SECONDS);
 	}
+
+	public String getEventStatus(String eventId) {
+		Object value = redisTemplate.opsForHash().get(EVENT_STATUSES_HASH_KEY, eventId);
+		return value == null ? null : value.toString();
+	}
+
+	public Long getEntryQueueSlots(String eventId) {
+		Object value = redisTemplate.opsForHash().get(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId);
+		if (value == null) {
+			return null;
+		}
+		try {
+			return Long.parseLong(value.toString());
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+
+	public Long getWaitingQueueSize(String eventId) {
+		return redisTemplate.opsForZSet().size(WAITING_QUEUE_KEY_NAME + ":" + eventId);
+	}
 }

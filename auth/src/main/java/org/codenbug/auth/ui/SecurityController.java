@@ -82,7 +82,7 @@ public class SecurityController {
       @Parameter(description = "로그인 정보", required = true) @RequestBody LoginRequest request,
       HttpServletResponse resp) {
     long startTime = System.currentTimeMillis();
-    log.info("Login request started for email: {}", request.getEmail());
+    log.debug("Login request started for email: {}", request.getEmail());
 
     try {
       TokenInfo tokenInfo = authService.loginEmail(request);
@@ -94,7 +94,7 @@ public class SecurityController {
 
       long endTime = System.currentTimeMillis();
       long duration = endTime - startTime;
-      log.info("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
+      log.debug("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
 
       return ResponseEntity.ok(new RsData<>("200", "login success.",
           tokenInfo.getAccessToken().getRawValue()));
@@ -164,8 +164,8 @@ public class SecurityController {
           required = false) String redirectUrl,
       HttpServletResponse response) {
 
-    log.info(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
-    log.info(">> 콜백 시 사용된 리다이렉트 URL: {}", redirectUrl);
+    log.debug(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
+    log.debug(">> 콜백 시 사용된 리다이렉트 URL: {}", redirectUrl);
 
     try {
 
@@ -209,7 +209,7 @@ public class SecurityController {
       Cookie refreshTokenCookie = createRefreshTokenCookie(tokenInfo.getRefreshToken());
       response.addCookie(refreshTokenCookie);
 
-      log.info("Token refresh successful for user: {}", request.getHeader("User-Id"));
+      log.debug("Token refresh successful for user: {}", request.getHeader("User-Id"));
 
       return ResponseEntity.ok(new RsData<>("200", "토큰 재발급 성공",
           tokenInfo.getAccessToken().getRawValue()));

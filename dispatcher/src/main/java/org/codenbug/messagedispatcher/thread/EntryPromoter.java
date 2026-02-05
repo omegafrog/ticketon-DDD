@@ -75,7 +75,7 @@ public class EntryPromoter {
 
   @PreDestroy
   public void shutdown() {
-    log.info("Shutting down EntryPromoteThread executor service...");
+    log.debug("Shutting down EntryPromoteThread executor service...");
     executorService.shutdown();
     try {
       if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
@@ -123,7 +123,7 @@ public class EntryPromoter {
         stringRedisTemplate.opsForList().rightPush(taskListKey, eventId);
       }
 
-      log.info("Created temporary task list {} with {} tasks", taskListKey, keys.size());
+      log.debug("Created temporary task list {} with {} tasks", taskListKey, keys.size());
 
       // 3) 멀티스레딩으로 작업 처리 with backpressure monitoring
       ThreadPoolExecutor tpe = (ThreadPoolExecutor) executorService;

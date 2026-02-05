@@ -37,6 +37,7 @@ public class RedisConfig {
 	public static final String WAITING_LAST_SEEN_KEY_NAME = "WAITING_LAST_SEEN";
 	public static final String ENTRY_LAST_SEEN_KEY_NAME = "ENTRY_LAST_SEEN";
 	public static final String USER_QUEUE_EVENT_KEY_NAME = "USER_QUEUE_EVENT";
+	public static final String EVENT_STATUSES_HASH_KEY = "event_statuses";
 	private static final String ENTRY_USER_STREAM_GROUP = "ENTRY_CONSUMER_GROUP";
 
 	@Value("${spring.data.redis.host}")

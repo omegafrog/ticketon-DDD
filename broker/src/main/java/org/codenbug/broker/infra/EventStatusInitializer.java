@@ -1,5 +1,7 @@
 package org.codenbug.broker.infra;
 
+import static org.codenbug.broker.infra.RedisConfig.*;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -7,8 +9,6 @@ import org.springframework.web.client.RestTemplate;
 
 @Component
 public class EventStatusInitializer {
-
-    private static final String EVENT_STATUSES_HASH_KEY = "event_statuses";
 
     private final StringRedisTemplate stringRedisTemplate;
     private final RestTemplate restTemplate;
