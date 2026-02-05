@@ -89,6 +89,9 @@ eureka:
       defaultZone: http://127.0.0.1:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    hostname: ${EUREKA_HOST_NAME:localhost}
   user:
     base-url: http://localhost:9000
 sns:

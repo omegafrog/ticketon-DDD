@@ -39,6 +39,12 @@ public class EventRepositoryImpl implements EventRepository {
 	}
 
 	@Override
+	public Event findEventForUpdate(EventId id) {
+		return jpaEventRepository.findByIdForUpdate(id)
+			.orElseThrow(() -> new EntityNotFoundException("Cannot find event"));
+	}
+
+	@Override
 	public Event findBySeatLayoutId(SeatLayoutId seatLayoutId) {
 		return jpaEventRepository.findBySeatLayoutId(seatLayoutId);
 	}

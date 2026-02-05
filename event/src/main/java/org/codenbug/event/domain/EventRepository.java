@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 public interface EventRepository {
 	Event save(Event event);
 	Event findEvent(EventId id);
+	Event findEventForUpdate(EventId id);
 	Event findBySeatLayoutId(SeatLayoutId seatLayoutId);
 	int markDeleted(EventId id);
 	boolean isVersionAndStatusValid(EventId id, Long version, EventStatus status);

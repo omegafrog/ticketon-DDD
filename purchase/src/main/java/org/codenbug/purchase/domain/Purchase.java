@@ -43,6 +43,13 @@ public class Purchase {
 
 	private int amount;
 
+	/**
+	 * 결제 핵심 필드(payment-relevant fields) 변경 감지를 위한 스냅샷 버전.
+	 * - 결제 요청 시점에 Event 서비스의 salesVersion을 캡처
+	 */
+	@Column(name = "expected_sales_version")
+	private Long expectedSalesVersion;
+
 	@Enumerated(EnumType.STRING)
 	private PaymentMethod paymentMethod;
 
@@ -62,11 +69,12 @@ public class Purchase {
 
 	protected Purchase(){}
 
-	public Purchase( String eventId, String orderId, int amount ,  UserId userid){
+	public Purchase(String eventId, String orderId, int amount, Long expectedSalesVersion, UserId userid) {
 		this.purchaseId = new PurchaseId(Util.ID.createUUID());
 		this.orderId = orderId;
 		this.eventId = eventId;
 		this.amount = amount;
+		this.expectedSalesVersion = expectedSalesVersion;
 		this.userId = userid;
 		this.paymentStatus = PaymentStatus.IN_PROGRESS;
 	}

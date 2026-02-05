@@ -155,4 +155,65 @@ public class EventInformation {
 			throw new IllegalStateException("booking end date must be before event start date");
 	}
 
+	// NOTE: Explicit getters are kept to support tooling that does not process Lombok.
+	public String getTitle() {
+		return title;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public Integer getAgeLimit() {
+		return ageLimit;
+	}
+
+	public String getRestrictions() {
+		return restrictions;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public LocalDateTime getBookingStart() {
+		return bookingStart;
+	}
+
+	public LocalDateTime getBookingEnd() {
+		return bookingEnd;
+	}
+
+	public LocalDateTime getEventStart() {
+		return eventStart;
+	}
+
+	public LocalDateTime getEventEnd() {
+		return eventEnd;
+	}
+
+	public Integer getViewCount() {
+		return viewCount;
+	}
+
+	public Boolean getSeatSelectable() {
+		return seatSelectable;
+	}
+
+	public int getMinPrice() {
+		return minPrice;
+	}
+
+	public int getMaxPrice() {
+		return maxPrice;
+	}
+
+	public EventStatus getStatus() {
+		return status;
+	}
+
+	public EventCategoryId getCategoryId() {
+		return categoryId;
+	}
+
 }

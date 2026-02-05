@@ -32,6 +32,7 @@ public class EventInternalController {
 			seatSelectable,
 			status,
 			event.getVersion(),
+			event.getSalesVersion(),
 			event.getEventInformation().getTitle()
 		);
 		return ResponseEntity.ok(response);

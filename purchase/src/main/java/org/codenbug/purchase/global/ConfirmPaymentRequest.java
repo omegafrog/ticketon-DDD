@@ -12,4 +12,5 @@ public class ConfirmPaymentRequest {
 	private String paymentKey;
 	private String orderId;
 	private Integer amount;
+	private String provider;
 }

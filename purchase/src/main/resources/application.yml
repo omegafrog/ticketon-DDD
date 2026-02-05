@@ -43,6 +43,12 @@ services:
   seat:
     base-url: http://localhost:9005
 
+purchase:
+  payment:
+    hold-ttl-seconds: 60
+  outbox:
+    publish-interval-ms: 500
+
 # Purchase 모듈 관련 설정
 # custom:
 #   purchase:

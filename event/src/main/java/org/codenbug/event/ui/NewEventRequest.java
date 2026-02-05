@@ -3,11 +3,13 @@ package org.codenbug.event.ui;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.codenbug.common.exception.ControllerParameterValidationFailedException;
 import org.codenbug.common.exception.FieldError;
 import org.codenbug.event.domain.EventCategoryId;
 import org.codenbug.seat.global.RegisterSeatLayoutDto;
 import org.hibernate.validator.constraints.Length;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -88,5 +90,62 @@ public class NewEventRequest {
 			throw new ControllerParameterValidationFailedException("파라미터 validation 실패했습니다.",
 					fieldErrors);
 		}
+	}
+
+	// NOTE: Explicit getters are kept to support tooling that does not process Lombok.
+	public String getTitle() {
+		return title;
+	}
+
+	public EventCategoryId getCategoryId() {
+		return categoryId;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getRestriction() {
+		return restriction;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public RegisterSeatLayoutDto getSeatLayout() {
+		return seatLayout;
+	}
+
+	public LocalDateTime getStartDate() {
+		return startDate;
+	}
+
+	public LocalDateTime getEndDate() {
+		return endDate;
+	}
+
+	public LocalDateTime getBookingStart() {
+		return bookingStart;
+	}
+
+	public LocalDateTime getBookingEnd() {
+		return bookingEnd;
+	}
+
+	public int getAgeLimit() {
+		return ageLimit;
+	}
+
+	public boolean isSeatSelectable() {
+		return seatSelectable;
+	}
+
+	public int getMinPrice() {
+		return minPrice;
+	}
+
+	public int getMaxPrice() {
+		return maxPrice;
 	}
 }

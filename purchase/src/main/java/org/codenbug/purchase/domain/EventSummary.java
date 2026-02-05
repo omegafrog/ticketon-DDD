@@ -11,5 +11,6 @@ public class EventSummary {
 	private final boolean seatSelectable;
 	private final String status;
 	private final Long version;
+	private final Long salesVersion;
 	private final String title;
 }

@@ -30,6 +30,7 @@ public class EventServiceClient implements EventInfoProvider {
 			response.isSeatSelectable(),
 			response.getStatus(),
 			response.getVersion(),
+			response.getSalesVersion(),
 			response.getTitle()
 		);
 	}

@@ -99,9 +99,15 @@ public class PurchaseService {
 	 */
 	public InitiatePaymentResponse initiatePayment(InitiatePaymentRequest request, String userId) {
 		paymentValidationService.validatePaymentRequest(request.getEventId(), request.getAmount());
+		EventSummary eventSummary = paymentValidationService.getEventSummary(request.getEventId());
 
-		Purchase purchase = new Purchase(request.getEventId(), request.getOrderId(), request.getAmount(),
-			new UserId(userId));
+		Purchase purchase = new Purchase(
+			request.getEventId(),
+			request.getOrderId(),
+			request.getAmount(),
+			eventSummary.getSalesVersion(),
+			new UserId(userId)
+		);
 
 		purchaseRepository.save(purchase);
 		return new InitiatePaymentResponse(purchase.getPurchaseId().getValue(), purchase.getPaymentStatus().name());

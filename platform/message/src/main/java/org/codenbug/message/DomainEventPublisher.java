@@ -25,6 +25,11 @@ public class DomainEventPublisher {
     public void handleEventUpdated(EventUpdatedEvent event) {
         sendAsJson(EventUpdatedEvent.TOPIC, event);
     }
+
+	@TransactionalEventListener
+	public void handleEventNonCoreUpdated(EventNonCoreUpdatedEvent event) {
+		sendAsJson(EventNonCoreUpdatedEvent.TOPIC, event);
+	}
     
     @TransactionalEventListener
     public void handleUserRegistered(UserRegisteredEvent event) {

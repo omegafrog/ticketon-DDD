@@ -13,5 +13,6 @@ public class EventSummaryResponse {
 	private boolean seatSelectable;
 	private String status;
 	private Long version;
+	private Long salesVersion;
 	private String title;
 }

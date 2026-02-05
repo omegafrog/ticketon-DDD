@@ -8,12 +8,19 @@ import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.domain.SeatLayoutId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import jakarta.persistence.LockModeType;
+
 public interface JpaEventRepository extends JpaRepository<Event, EventId>, JpaSpecificationExecutor<Event> {
 	Event findBySeatLayoutId(SeatLayoutId seatLayoutId);
+
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select e from Event e where e.eventId = :id")
+	java.util.Optional<Event> findByIdForUpdate(@Param("id") EventId id);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update Event e set e.metaData.deleted = true, e.metaData.modifiedAt = :modifiedAt where e.eventId = :id")

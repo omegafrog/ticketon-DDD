@@ -245,6 +245,7 @@ function loginUser(email, password, jar) {
 function loginUserWithRetry(email, password, jar) {
     for (let attempt = 1; attempt <= MAX_LOGIN_RETRIES; attempt += 1) {
         const session = loginUser(email, password, jar);
+        console.log(session)
         if (session) {
             return session;
         }

@@ -152,3 +152,7 @@ filter:
         url: "/v3/api-docs/**"
       - method: GET
         url: "/webjars/**"
+eureka:
+  instance:
+    hostname: ${EUREKA_HOST_NAME:localhost}
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}

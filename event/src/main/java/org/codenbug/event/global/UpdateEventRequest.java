@@ -28,4 +28,57 @@ public class UpdateEventRequest {
 	private RegisterSeatLayoutDto seatLayout;
 
 	protected UpdateEventRequest() {}
+
+	// NOTE: Explicit getters are kept to support tooling that does not process Lombok.
+	public String getTitle() {
+		return title;
+	}
+
+	public EventCategoryId getCategoryId() {
+		return categoryId;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getRestriction() {
+		return restriction;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public LocalDateTime getStartDate() {
+		return startDate;
+	}
+
+	public LocalDateTime getEndDate() {
+		return endDate;
+	}
+
+	public LocalDateTime getBookingStart() {
+		return bookingStart;
+	}
+
+	public LocalDateTime getBookingEnd() {
+		return bookingEnd;
+	}
+
+	public EventStatus getStatus() {
+		return status;
+	}
+
+	public Integer getAgeLimit() {
+		return ageLimit;
+	}
+
+	public Boolean getSeatSelectable() {
+		return seatSelectable;
+	}
+
+	public RegisterSeatLayoutDto getSeatLayout() {
+		return seatLayout;
+	}
 }

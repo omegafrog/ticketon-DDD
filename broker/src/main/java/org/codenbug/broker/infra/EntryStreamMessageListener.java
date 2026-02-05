@@ -3,7 +3,7 @@ package org.codenbug.broker.infra;
 import java.time.Duration;
 import java.util.Map;
 
-import org.codenbug.broker.app.SSEEntryDispatchService.DispatchResult;
+import org.codenbug.broker.app.EntryDispatchService;
 import org.codenbug.broker.config.InstanceConfig;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -26,7 +26,7 @@ public class EntryStreamMessageListener
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final RedisConnectionFactory redisConnectionFactory;
-  private final EntryDispatchServiceFacade entryDispatchService;
+  private final EntryDispatchService entryDispatchService;
   private final RedisConfig redisConfig;
   private final InstanceConfig instanceConfig;
 
@@ -34,7 +34,7 @@ public class EntryStreamMessageListener
   private StreamMessageListenerContainer<String, MapRecord<String, String, String>> streamMessageListenerContainer;
 
   public EntryStreamMessageListener(RedisTemplate<String, Object> redisTemplate,
-      RedisConnectionFactory redisConnectionFactory, EntryDispatchServiceFacade entryDispatchService,
+      RedisConnectionFactory redisConnectionFactory, EntryDispatchService entryDispatchService,
       RedisConfig redisConfig, InstanceConfig instanceConfig) {
     this.redisTemplate = redisTemplate;
     this.redisConnectionFactory = redisConnectionFactory;
@@ -95,8 +95,8 @@ public class EntryStreamMessageListener
 
     String userId = normalizeId(body.get("userId"));
     String eventId = normalizeId(body.get("eventId"));
-    DispatchResult result = entryDispatchService.handle(userId, eventId);
-    if (result == DispatchResult.ACK) {
+    EntryDispatchService.DispatchResult result = entryDispatchService.handle(userId, eventId);
+    if (result == EntryDispatchService.DispatchResult.ACK) {
       acknowledge(instanceStreamName, groupName, message);
     }
   }
