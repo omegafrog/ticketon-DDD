@@ -17,22 +17,30 @@ import lombok.extern.slf4j.Slf4j;
 public class WaitingQueueEntryService {
 
   private final SseEmitterService sseEmitterService;
-  private final WaitingQueueRedisRepository waitingQueueRepository;
-  private final EventClient eventClient;
-  private final InstanceConfig instanceConfig;
+	private final WaitingQueueRedisRepository waitingQueueRepository;
+	private final EventClient eventClient;
+	private final org.codenbug.broker.infra.EventStatusInitializer eventStatusInitializer;
+	private final InstanceConfig instanceConfig;
 
-  public WaitingQueueEntryService(SseEmitterService sseEmitterService,
-      WaitingQueueRedisRepository waitingQueueRepository, EventClient eventClient,
-      InstanceConfig instanceConfig) {
-    this.sseEmitterService = sseEmitterService;
-    this.waitingQueueRepository = waitingQueueRepository;
-    this.eventClient = eventClient;
-    this.instanceConfig = instanceConfig;
-  }
+	public WaitingQueueEntryService(SseEmitterService sseEmitterService,
+		WaitingQueueRedisRepository waitingQueueRepository, EventClient eventClient,
+		org.codenbug.broker.infra.EventStatusInitializer eventStatusInitializer,
+		InstanceConfig instanceConfig) {
+		this.sseEmitterService = sseEmitterService;
+		this.waitingQueueRepository = waitingQueueRepository;
+		this.eventClient = eventClient;
+		this.eventStatusInitializer = eventStatusInitializer;
+		this.instanceConfig = instanceConfig;
+	}
 
   public SseEmitter entry(String eventId) throws JsonProcessingException {
     // 로그인한 유저 id 조회
     String id = getLoggedInUserId();
+
+		if (waitingQueueRepository.isUserExistInEntry(id)) {
+			throw new IllegalStateException("이미 입장 토큰이 발급되었습니다.");
+		}
+
     SseEmitter emitter;
     // emitter 생성 및 저장
     try {
@@ -56,12 +64,14 @@ public class WaitingQueueEntryService {
    */
   private void enter(String userId, String eventId) throws JsonProcessingException {
 
-    if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
-      int seatCount = eventClient.getSeatCount(eventId);
-      waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
-    }
+		if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
+			int seatCount = eventClient.getSeatCount(eventId);
+			waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
+		}
 
-    boolean inserted = waitingQueueRepository.recordWaitingUserIfAbsent(eventId, userId);
+		eventStatusInitializer.ensureInitialized(eventId);
+
+		boolean inserted = waitingQueueRepository.recordWaitingUserIfAbsent(eventId, userId);
     if (!inserted) {
       throw new IllegalStateException("이미 대기열에 존재합니다.");
     }

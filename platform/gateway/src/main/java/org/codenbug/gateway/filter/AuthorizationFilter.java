@@ -65,11 +65,11 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			RefreshToken refreshToken = null;
 
 			if (checkWhiteList(config, exchange, chain, request)) {
-				log.info("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
+				log.debug("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
 				return chain.filter(exchange);
 			}
 			
-			log.info("=== PROCESSING REQUEST: {} ===", request.getURI().getPath());
+			log.debug("=== PROCESSING REQUEST: {} ===", request.getURI().getPath());
 
 			// check token validation
 			try {

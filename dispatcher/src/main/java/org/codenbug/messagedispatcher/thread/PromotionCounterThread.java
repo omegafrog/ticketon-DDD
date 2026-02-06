@@ -24,7 +24,7 @@ public class PromotionCounterThread {
 
 		// 승격된 사용자가 있을 경우에만 로그를 남깁니다.
 		if (count > 0) {
-			log.info("[METRICS] Promotions per second (TPS): {}", count);
+			log.debug("[METRICS] Promotions per second (TPS): {}", count);
 		}
 	}
 }

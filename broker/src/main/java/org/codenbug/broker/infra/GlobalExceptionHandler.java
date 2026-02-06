@@ -1,5 +1,6 @@
 package org.codenbug.broker.infra;
 
+import org.codenbug.common.RsData;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,20 +25,23 @@ public class GlobalExceptionHandler {
    * @return API 응답
    */
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<String> handleAllExceptions(Exception e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+  public ResponseEntity<RsData<Void>> handleAllExceptions(Exception e) {
+    log.error("Unhandled exception", e);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(new RsData<>(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e.getMessage(), null));
   }
 
   @ExceptionHandler(RuntimeException.class)
-  public ResponseEntity<String> handleRuntimeExceptions(RuntimeException e) {
-    e.printStackTrace();
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+  public ResponseEntity<RsData<Void>> handleRuntimeExceptions(RuntimeException e) {
+    log.error("Unhandled runtime exception", e);
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .body(new RsData<>(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e.getMessage(), null));
   }
 
   @ExceptionHandler(IllegalStateException.class)
-  public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+  public ResponseEntity<RsData<Void>> handleIllegalStateException(IllegalStateException e) {
+    return ResponseEntity.status(HttpStatus.CONFLICT)
+        .body(new RsData<>(HttpStatus.CONFLICT.toString(), e.getMessage(), null));
   }
 
   // @ExceptionHandler(AccessDeniedException.class)

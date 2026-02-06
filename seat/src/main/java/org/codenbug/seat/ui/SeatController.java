@@ -1,10 +1,5 @@
 package org.codenbug.seat.ui;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
@@ -27,6 +22,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -73,7 +72,7 @@ public class SeatController {
 	public ResponseEntity<RsData<SeatSelectResponse>> selectSeat(
 			@PathVariable("event-id") String eventId, @RequestBody SeatSelectRequest seatSelectRequest,
 			@RequestHeader("entryAuthToken") String entryAuthToken) {
-		entryTokenValidator.validate(LoggedInUserContext.get().getUserId(), entryAuthToken);
+		entryTokenValidator.validate(LoggedInUserContext.get().getUserId(), entryAuthToken, eventId);
 
 		SeatSelectResponse seatSelectResponse = updateSeatLayoutService.selectSeat(eventId,
 				seatSelectRequest, LoggedInUserContext.get().getUserId());
@@ -97,7 +96,7 @@ public class SeatController {
 			@RequestHeader("entryAuthToken") String entryAuthToken) {
 		String userId = LoggedInUserContext.get().getUserId();
 
-		entryTokenValidator.validate(userId, entryAuthToken);
+		entryTokenValidator.validate(userId, entryAuthToken, eventId);
 		updateSeatLayoutService.cancelSeat(eventId, seatCancelRequest, userId);
 		return ResponseEntity.ok(new RsData<>("200", "좌석 취소 성공", null));
 	}

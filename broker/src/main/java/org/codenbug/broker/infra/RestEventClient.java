@@ -18,9 +18,9 @@ public class RestEventClient implements EventClient {
   @Value("${custom.events.url}")
   private String url;
 
-  public RestEventClient(ObjectMapper objectMapper) {
+  public RestEventClient(ObjectMapper objectMapper, RestTemplate restTemplate ) {
     this.objectMapper = objectMapper;
-    this.restTemplate = new RestTemplate();
+    this.restTemplate = restTemplate;
   }
 
   @Override

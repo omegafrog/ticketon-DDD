@@ -8,6 +8,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import org.codenbug.common.exception.AccessDeniedException;
+import org.codenbug.common.redis.EntryTokenValidator;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.purchase.domain.EventChangeDetectedException;
 import org.codenbug.purchase.domain.EventInfoProvider;
@@ -65,6 +66,7 @@ public class PurchaseService {
 	private final RefundDomainService refundDomainService;
 	private final RefundRepository refundRepository;
 	private final EventInfoProvider eventInfoProvider;
+	private final EntryTokenValidator entryTokenValidator;
 	private final PlatformTransactionManager transactionManager;
 
 	public PurchaseService(PGApiService pgApiService, PurchaseRepository purchaseRepository,
@@ -73,6 +75,7 @@ public class PurchaseService {
 		PaymentValidationService paymentValidationService, NotificationEventPublisher notificationEventPublisher,
 		RefundDomainService refundDomainService, RefundRepository refundRepository,
 		EventInfoProvider eventInfoProvider,
+		EntryTokenValidator entryTokenValidator,
 		@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager) {
 		this.pgApiService = pgApiService;
 		this.purchaseRepository = purchaseRepository;
@@ -86,6 +89,7 @@ public class PurchaseService {
 		this.refundDomainService = refundDomainService;
 		this.refundRepository = refundRepository;
 		this.eventInfoProvider = eventInfoProvider;
+		this.entryTokenValidator = entryTokenValidator;
 		this.transactionManager = transactionManager;
 	}
 
@@ -269,7 +273,8 @@ public class PurchaseService {
 	 * Saga 패턴 기반 결제 승인 통합 메서드
 	 * 명시적 트랜잭션 관리를 통한 일관성 보장
 	 */
-	public ConfirmPaymentResponse confirmPaymentWithSaga(ConfirmPaymentRequest request, String userId) {
+	public ConfirmPaymentResponse confirmPaymentWithSaga(ConfirmPaymentRequest request, String userId,
+		String entryAuthToken) {
 		log.info("[confirmPaymentWithSaga] 시작 - purchaseId: {}, userId: {}", request.getPurchaseId(), userId);
 
 		// Phase 1: 사전 검증 및 Event version 캡처 (트랜잭션 1)
@@ -279,6 +284,8 @@ public class PurchaseService {
 				log.info("[confirmPaymentWithSaga] Phase 1 시작 - 사전 검증 및 Event version 캡처");
 				return preparePayment(request.getPurchaseId(), userId);
 			});
+
+		entryTokenValidator.validate(userId, entryAuthToken, preResult.getEventId());
 
 		try {
 			// Phase 2: 외부 결제 API 호출 (트랜잭션 외부)

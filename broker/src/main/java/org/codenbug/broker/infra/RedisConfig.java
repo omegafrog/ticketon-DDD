@@ -1,9 +1,6 @@
 package org.codenbug.broker.infra;
 
 import org.codenbug.broker.config.InstanceConfig;
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +34,10 @@ public class RedisConfig {
 	public static final String WAITING_USER_IDS_KEY_NAME = "WAITING_USER_IDS";
 	public static final String ENTRY_TOKEN_STORAGE_KEY_NAME = "ENTRY_TOKEN";
 	public static final String WAITING_QUEUE_START_IDX_KEY = "WAITING_QUEUE_START_IDX";
+	public static final String WAITING_LAST_SEEN_KEY_NAME = "WAITING_LAST_SEEN";
+	public static final String ENTRY_LAST_SEEN_KEY_NAME = "ENTRY_LAST_SEEN";
+	public static final String USER_QUEUE_EVENT_KEY_NAME = "USER_QUEUE_EVENT";
+	public static final String EVENT_STATUSES_HASH_KEY = "event_statuses";
 	private static final String ENTRY_USER_STREAM_GROUP = "ENTRY_CONSUMER_GROUP";
 
 	@Value("${spring.data.redis.host}")
@@ -77,17 +78,6 @@ public class RedisConfig {
 		redisTemplate.afterPropertiesSet();
 
 		return redisTemplate;
-	}
-
-	@Bean
-	public RedissonClient redissonClient(){
-		Config config = new Config();
-		config.useSingleServer()
-			.setAddress("redis://"+redisHost + ":"+redisPort)
-			.setConnectionMinimumIdleSize(1)
-			.setConnectionPoolSize(64)
-			.setDatabase(0);
-		return Redisson.create();
 	}
 
 	/**

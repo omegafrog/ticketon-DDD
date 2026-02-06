@@ -31,6 +31,10 @@ public class SseEmitterService {
 
   public SseEmitter add(String userId, String eventId) {
 
+		if (emitterMap.containsKey(userId)) {
+			throw new IllegalStateException("이미 대기열에 연결되어 있습니다.");
+		}
+
     // 새로운 emitter 생성
     SseEmitter emitter = new SseEmitter(0L);
     // emitter연결이 끊어질 때 만약 entry상태라면 entry count를 1 증가
