@@ -13,7 +13,7 @@ COPY . .
 RUN chmod +x ./gradlew
 # Build the 'broker' module, skipping tests for a faster build.
 # The --no-daemon option is recommended for CI/CD and containerized environments.
-RUN ./gradlew :eureka:build -x test --no-daemon
+RUN ./gradlew :platform:eureka:build -x test --no-daemon
 
 # =================================================================
 # Stage 2: Create the final, minimal production image
@@ -24,7 +24,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Copy the built JAR file from the builder stage
-COPY --from=builder /app/eureka/build/libs/*.jar app.jar
+COPY --from=builder /app/platform/eureka/build/libs/*.jar app.jar
 
 # Command to run the application
 ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/app/config/application.yml", "app.jar"]
