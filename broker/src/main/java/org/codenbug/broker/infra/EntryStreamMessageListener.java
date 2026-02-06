@@ -5,6 +5,8 @@ import java.util.Map;
 
 import org.codenbug.broker.app.EntryDispatchService;
 import org.codenbug.broker.config.InstanceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.stream.Consumer;
@@ -17,12 +19,13 @@ import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import lombok.extern.slf4j.Slf4j;
+import jakarta.annotation.PreDestroy;
 
-@Slf4j
 @Component
 public class EntryStreamMessageListener
     implements StreamListener<String, MapRecord<String, String, String>> {
+
+  private static final Logger log = LoggerFactory.getLogger(EntryStreamMessageListener.class);
 
   private final RedisTemplate<String, Object> redisTemplate;
   private final RedisConnectionFactory redisConnectionFactory;
@@ -84,6 +87,27 @@ public class EntryStreamMessageListener
         "Started listening to Redis Stream '{}' with consumer group '{}' and consumer name '{}'",
         instanceStreamName, groupName, consumerName);
 
+  }
+
+  @PreDestroy
+  public void stopListeningAndCleanup() {
+    String instanceStreamName = redisConfig.getInstanceDispatchStreamName();
+
+    try {
+      if (streamMessageListenerContainer != null) {
+        streamMessageListenerContainer.stop();
+      }
+    } catch (Exception e) {
+      log.warn("Failed to stop Redis Stream listener container for stream '{}'", instanceStreamName,
+          e);
+    }
+
+    try {
+      Boolean deleted = redisTemplate.delete(instanceStreamName);
+      log.info("Cleaned up Redis stream key '{}' (deleted={})", instanceStreamName, deleted);
+    } catch (Exception e) {
+      log.warn("Failed to cleanup Redis stream key '{}'", instanceStreamName, e);
+    }
   }
 
   @Override

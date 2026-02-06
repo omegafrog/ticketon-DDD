@@ -1,0 +1,12 @@
+# Keep the Docker build context minimal for runtime packaging.
+# This Dockerfile expects a prebuilt JAR under build/libs.
+
+**
+!.dockerignore
+!Dockerfile.runtime
+!build/
+!build/libs/
+!build/libs/*.jar
+
+# Exclude the plain (non-boot) JAR if present.
+build/libs/*plain.jar

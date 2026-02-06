@@ -10,15 +10,17 @@ import java.util.concurrent.TimeUnit;
 import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
 import org.codenbug.broker.service.SseEmitterService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service
-public class EntryDispatchService {
+@Component
+@Profile("mode-sse")
+public class SSEEntryDispatchService implements EntryDispatcherService {
 
   public enum DispatchResult {
     ACK,
@@ -29,13 +31,14 @@ public class EntryDispatchService {
   private final SseEmitterService sseEmitterService;
   private final EntryAuthService entryAuthService;
 
-  public EntryDispatchService(RedisTemplate<String, Object> redisTemplate,
+  public SSEEntryDispatchService(RedisTemplate<String, Object> redisTemplate,
       SseEmitterService sseEmitterService, EntryAuthService entryAuthService) {
     this.redisTemplate = redisTemplate;
     this.sseEmitterService = sseEmitterService;
     this.entryAuthService = entryAuthService;
   }
 
+  @Override
   public DispatchResult handle(String userId, String eventId) {
     SseConnection sseConnection = sseEmitterService.getEmitterMap().get(userId);
     // dispatcher가 유저 승급했는데, 유저는 정작 연결 끊은 상태

@@ -13,7 +13,7 @@ COPY . .
 RUN chmod +x ./gradlew
 # Build the 'broker' module, skipping tests for a faster build.
 # The --no-daemon option is recommended for CI/CD and containerized environments.
-RUN ./gradlew :gateway:build -x test --no-daemon
+RUN ./gradlew :platform:gateway:build -x test --no-daemon
 
 # =================================================================
 # Stage 2: Create the final, minimal production image
@@ -24,7 +24,7 @@ FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Copy the built JAR file from the builder stage
-COPY --from=builder /app/gateway/build/libs/*.jar app.jar
+COPY --from=builder /app/platform/gateway/build/libs/*.jar app.jar
 
 
 

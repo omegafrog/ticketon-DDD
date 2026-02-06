@@ -1,0 +1,35 @@
+# Reduce Docker build context size.
+# This repo is a multi-module Gradle project; Dockerfiles run Gradle inside the image,
+# so local build outputs/caches do not need to be sent as build context.
+
+# VCS
+.git/
+
+# Gradle caches (local)
+.gradle/
+**/.gradle/
+
+# Build outputs
+build/
+**/build/
+
+# Other common build outputs
+**/out/
+**/target/
+
+# IDE/editor
+.idea/
+.vscode/
+**/*.iml
+.classpath
+.project
+.settings/
+
+# OS/editor junk
+.DS_Store
+**/*.swp
+**/*.swo
+
+# Local run artifacts / reports
+summary.json
+**/*.log

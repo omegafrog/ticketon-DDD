@@ -15,7 +15,7 @@ RUN chmod +x ./gradlew
 
 # Build the 'broker' module, skipping tests for a faster build.
 # The --no-daemon option is recommended for CI/CD and containerized environments.
-RUN ./gradlew :dispatch:build -x test --no-daemon
+RUN ./gradlew :dispatcher:build -x test --no-daemon
 
 # =================================================================
 # Stage 2: Create the final, minimal production image

@@ -1,25 +1,15 @@
 spring:
   profiles:
-    include: secret
+    include: secret, polling
+    active: polling
   data:
     redis:
-      port: 6379
-      host: localhost
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   application:
     name: broker # Eureka에 등록될 서비스의 고유 이름
-  datasource:
-    url: jdbc:mysql://127.0.0.1:3306/ticketon?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: root
-    password: password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        jdbc:
-          batch_size: 100
+
+
   # H2 Database Configuration (commented out)
   # h2:
   #   console:
@@ -36,12 +26,17 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/ # Eureka 서버 주소
-      hostname: ${EUREKA_HOST_NAME:localhost}
+      hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
   instance:
     instance-id: ${spring.application.name}:${server.port}:${random.value}
+    hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
 custom:
   events:
-    url: http://localhost:9000
+    url: http://app
+
+services:
+  event:
+    base-url: ${EVENT_SERVICE_BASE_URL:http://app}
 
 server:
   port: 0
@@ -64,7 +59,7 @@ management:
       show-details: always
     metrics:
       enabled: true
-  metrics:
-    export:
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true

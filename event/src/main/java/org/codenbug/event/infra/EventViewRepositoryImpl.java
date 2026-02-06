@@ -308,7 +308,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
 				seatLayout.location.locationName,
-				seatLayout.seats.size().longValue(),
+				seatStats.seatCount.longValue(),
 				new CaseBuilder()
 					.when(seat.available.isTrue())
 					.then(1)

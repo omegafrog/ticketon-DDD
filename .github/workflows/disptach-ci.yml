@@ -98,6 +98,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: dispatcher JAR 빌드
+        run: ./gradlew :dispatcher:bootJar -x test --no-daemon
+
       - name: Docker Buildx 설치
         uses: docker/setup-buildx-action@v3
 
@@ -119,8 +128,8 @@ jobs:
       - name: 디스패치 서버 모듈 빌드 앤 푸시
         uses: docker/build-push-action@v6
         with:
-          context: .
-          file: dispatcher/Dockerfile
+          context: dispatcher
+          file: dispatcher/Dockerfile.runtime
           push: true
           tags: |
             ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-dispatcher-deploy:${{ needs.makeTagAndReleaseServer.outputs.tag_name }}

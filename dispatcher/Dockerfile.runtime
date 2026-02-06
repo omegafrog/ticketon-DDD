@@ -1,0 +1,8 @@
+# Runtime image only. The JAR is built in CI (outside Docker).
+FROM eclipse-temurin:21-jre-jammy
+
+WORKDIR /app
+
+COPY build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/app/config/application.yml", "app.jar"]
