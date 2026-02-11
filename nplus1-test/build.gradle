@@ -2,10 +2,21 @@ plugins {
     id 'application'
 }
 
+application {
+    // Benchmark runner (manual execution)
+    mainClass = 'org.codenbug.bench.MaterializedTriggerBenchmarkMain'
+}
+
 dependencies {
+    implementation 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testRuntimeOnly 'com.h2database:h2'
+
+    // Needed to instantiate EventViewRepositoryImpl (Querydsl)
+    testImplementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
 
     testImplementation project(':auth')
     testImplementation project(':event')
