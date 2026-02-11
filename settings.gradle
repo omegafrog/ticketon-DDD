@@ -1,8 +1,5 @@
 rootProject.name = 'ticketon-DDD'
 
-include 'seat'
-include 'user'
-include 'event'
 include 'auth'
 include 'app'
 include 'security-aop'
@@ -16,6 +13,8 @@ include 'platform:message'
 include 'platform:gateway'
 include 'platform:eureka'
 include 'nplus1-test'
+
+// user/event/seat were physically merged into :app
 
 project(':platform:common').projectDir = file('platform/common')
 project(':platform:message').projectDir = file('platform/message')

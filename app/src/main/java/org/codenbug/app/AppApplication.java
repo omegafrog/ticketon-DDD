@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(
-        scanBasePackages = {"org.codenbug.app", "org.codenbug.user", "org.codenbug.event",
+        scanBasePackages = {"org.codenbug.app", "org.codenbug.user", "org.codenbug.event", "org.codenbug.seat",
                 "org.codenbug.purchase", "org.codenbug.notification", "org.codenbug.redislock"})
 @EnableJpaAuditing
 @EnableScheduling

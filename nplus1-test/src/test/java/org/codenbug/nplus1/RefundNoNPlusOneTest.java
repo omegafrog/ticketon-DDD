@@ -45,7 +45,7 @@ class RefundNoNPlusOneTest {
         int refundCount = 3;
 
         for (int i = 0; i < refundCount; i++) {
-            Purchase purchase = new Purchase("event-1", "order-" + i, 1000, new UserId("user-" + i));
+            Purchase purchase = new Purchase("event-1", "order-" + i, 1000, 1L, new UserId("user-" + i));
             purchaseRepository.save(purchase);
 
             Refund refund = Refund.createUserRefund(purchase, 100, "reason-" + i, new UserId("user-" + i));

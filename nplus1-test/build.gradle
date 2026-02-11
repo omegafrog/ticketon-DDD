@@ -8,11 +8,10 @@ dependencies {
     testRuntimeOnly 'com.h2database:h2'
 
     testImplementation project(':auth')
-    testImplementation project(':event')
+    testImplementation project(':app')
     testImplementation project(':notification')
     testImplementation project(':purchase')
-    testImplementation project(':seat')
-    testImplementation project(':user')
+    // user/event/seat were physically merged into :app
 }
 
 tasks.named('test') {

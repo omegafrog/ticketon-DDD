@@ -45,7 +45,7 @@ class NPlusOnePurchaseRepositoryTest {
         int ticketsPerPurchase = 2;
 
         for (int i = 0; i < purchaseCount; i++) {
-            Purchase purchase = new Purchase("event-1", "order-" + i, 1000, new UserId("user-" + i));
+            Purchase purchase = new Purchase("event-1", "order-" + i, 1000, 1L, new UserId("user-" + i));
             purchaseRepository.save(purchase);
 
             for (int j = 0; j < ticketsPerPurchase; j++) {

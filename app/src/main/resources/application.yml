@@ -63,18 +63,14 @@ spring:
   #   driver-class-name: org.h2.Driver
   config:
     import:
-      - "optional:../user/src/main/resources/application.yml"
-      - "optional:../seat/src/main/resources/application.yml"
-      - "optional:../event/src/main/resources/application.yml"
-      - "optional:../event/src/main/resources/application-dev.yml"
       - "optional:../purchase/src/main/resources/application.yml"
       - "optional:../notification/src/main/resources/application.yml"
 
 services:
   event:
-    base-url: http://localhost:9002
+    base-url: http://localhost:${server.port}
   seat:
-    base-url: http://localhost:9005
+    base-url: http://localhost:${server.port}
 
 server:
   port: 9000
