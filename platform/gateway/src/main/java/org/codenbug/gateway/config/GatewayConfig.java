@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -23,6 +24,30 @@ import reactor.netty.resources.ConnectionProvider;
 @Configuration
 @EnableScheduling
 public class GatewayConfig {
+    @Value("${spring.cloud.gateway.httpclient.pool.max-connections:20000}")
+    private int httpClientPoolMaxConnections;
+
+    @Value("${gateway.http-client.pool.max-idle-time:20s}")
+    private Duration httpClientPoolMaxIdleTime;
+
+    @Value("${gateway.http-client.pool.max-life-time:3m}")
+    private Duration httpClientPoolMaxLifeTime;
+
+    @Value("${gateway.http-client.pool.acquire-timeout:4s}")
+    private Duration httpClientPoolAcquireTimeout;
+
+    @Value("${gateway.http-client.pool.evict-in-background:120s}")
+    private Duration httpClientPoolEvictInBackground;
+
+    @Value("${gateway.http-client.connect-timeout:2s}")
+    private Duration httpClientConnectTimeout;
+
+    @Value("${gateway.http-client.read-timeout:12s}")
+    private Duration httpClientReadTimeout;
+
+    @Value("${gateway.http-client.write-timeout:12s}")
+    private Duration httpClientWriteTimeout;
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
@@ -49,18 +74,21 @@ public class GatewayConfig {
     @Bean
     public ConnectionProvider connectionProvider() {
         this.connectionProvider = ConnectionProvider.builder("gateway-connection-pool")
-                .maxConnections(2000).maxIdleTime(Duration.ofSeconds(30))
-                .maxLifeTime(Duration.ofMinutes(5)).pendingAcquireTimeout(Duration.ofSeconds(30))
-                .evictInBackground(Duration.ofSeconds(120)).build();
+                .maxConnections(httpClientPoolMaxConnections)
+                .maxIdleTime(httpClientPoolMaxIdleTime)
+                .maxLifeTime(httpClientPoolMaxLifeTime)
+                .pendingAcquireTimeout(httpClientPoolAcquireTimeout)
+                .evictInBackground(httpClientPoolEvictInBackground)
+                .build();
         return this.connectionProvider;
     }
 
     @Bean
     public HttpClient httpClient(ConnectionProvider connectionProvider) {
         return HttpClient.create(connectionProvider)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000).doOnConnected(
-                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(30, TimeUnit.SECONDS))
-                                .addHandlerLast(new WriteTimeoutHandler(30, TimeUnit.SECONDS)));
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, (int) httpClientConnectTimeout.toMillis())
+                .doOnConnected(conn -> conn.addHandlerLast(new ReadTimeoutHandler(httpClientReadTimeout.toSeconds(), TimeUnit.SECONDS))
+                        .addHandlerLast(new WriteTimeoutHandler(httpClientWriteTimeout.toSeconds(), TimeUnit.SECONDS)));
     }
 
     @Bean
@@ -68,4 +96,3 @@ public class GatewayConfig {
         return new ReactorClientHttpConnector(httpClient);
     }
 }
-
