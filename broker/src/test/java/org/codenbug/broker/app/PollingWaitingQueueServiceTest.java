@@ -77,9 +77,9 @@ class PollingWaitingQueueServiceTest {
 		String userId = "u1";
 		String eventId = "e1";
 		when(waitingQueueRedisRepository.getEntryToken(userId)).thenReturn(null);
-		when(waitingQueueRedisRepository.isUserExistInWaiting(eventId, userId)).thenReturn(true);
 		when(waitingQueueRedisRepository.getUserRank(eventId, userId)).thenReturn(0L);
-		when(waitingQueueRedisRepository.getEventStatus(eventId)).thenReturn("CLOSED");
+		when(waitingQueueRedisRepository.getPollingAdaptiveContext(eventId, false)).thenReturn(
+			new WaitingQueueRedisRepository.PollingAdaptiveContext("CLOSED", null, null));
 
 		try (LoggedInUserContext ignored = LoggedInUserContext
 			.open(new UserSecurityToken(userId, "u1@test.local", Role.USER))) {
@@ -95,11 +95,9 @@ class PollingWaitingQueueServiceTest {
 		String userId = "u1";
 		String eventId = "e1";
 		when(waitingQueueRedisRepository.getEntryToken(userId)).thenReturn(null);
-		when(waitingQueueRedisRepository.isUserExistInWaiting(eventId, userId)).thenReturn(true);
 		when(waitingQueueRedisRepository.getUserRank(eventId, userId)).thenReturn(200L);
-		when(waitingQueueRedisRepository.getEventStatus(eventId)).thenReturn("OPEN");
-		when(waitingQueueRedisRepository.getEntryQueueSlots(eventId)).thenReturn(0L);
-		when(waitingQueueRedisRepository.getWaitingQueueSize(eventId)).thenReturn(5000L);
+		when(waitingQueueRedisRepository.getPollingAdaptiveContext(eventId, true)).thenReturn(
+			new WaitingQueueRedisRepository.PollingAdaptiveContext("OPEN", 0L, 5000L));
 
 		try (LoggedInUserContext ignored = LoggedInUserContext
 			.open(new UserSecurityToken(userId, "u1@test.local", Role.USER))) {
