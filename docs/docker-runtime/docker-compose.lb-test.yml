@@ -1,0 +1,131 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: lbtest-redis
+    networks:
+      - lbtest
+
+  eureka:
+    image: local/ticketon-eureka:latest
+    container_name: lbtest-eureka
+    volumes:
+      - ./eureka/application.yml:/app/config/application.yml:ro
+    ports:
+      - "18761:8761"
+    networks:
+      - lbtest
+
+  broker-1:
+    image: local/ticketon-broker:latest
+    container_name: lbtest-broker-1
+    environment:
+      SERVER_PORT: 9002
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_HOST_NAME: broker-1
+      EUREKA_INSTANCE_INSTANCE_ID: broker-1
+      CUSTOM_JWT_SECRET: "01234567890123456789012345678901"
+      CUSTOM_JWT_EXPIRATION: 300
+      CUSTOM_EVENTS_URL: http://app:9000
+    volumes:
+      - ./broker/application.yml:/app/config/application.yml:ro
+      - ./broker/application-secret.yml:/app/config/application-secret.yml:ro
+      - ./broker/application-prod.yml:/app/config/application-prod.yml:ro
+    depends_on:
+      - redis
+      - eureka
+    ports:
+      - "19005:9002"
+    networks:
+      - lbtest
+
+  broker-2:
+    image: local/ticketon-broker:latest
+    container_name: lbtest-broker-2
+    environment:
+      SERVER_PORT: 9002
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      EUREKA_CLIENT_HOST_NAME: broker-2
+      EUREKA_INSTANCE_INSTANCE_ID: broker-2
+      CUSTOM_JWT_SECRET: "01234567890123456789012345678901"
+      CUSTOM_JWT_EXPIRATION: 300
+      CUSTOM_EVENTS_URL: http://app:9000
+    volumes:
+      - ./broker/application.yml:/app/config/application.yml:ro
+      - ./broker/application-secret.yml:/app/config/application-secret.yml:ro
+      - ./broker/application-prod.yml:/app/config/application-prod.yml:ro
+    depends_on:
+      - redis
+      - eureka
+    ports:
+      - "19006:9002"
+    networks:
+      - lbtest
+
+  gateway-1:
+    image: local/ticketon-gateway:latest
+    container_name: lbtest-gateway-1
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_APPLICATION_INSTANCE_ID: gateway-1
+      CUSTOM_JWT_SECRET: "01234567890123456789012345678901"
+      GATEWAY_AUTH_CHECK_REFRESH_BLACKLIST_ON_EACH_REQUEST: false
+    volumes:
+      - ./gateway/application.yml:/app/config/application.yml:ro
+      - ./gateway/application-secret.yml:/app/config/application-secret.yml:ro
+      - ./gateway/application-prod.yml:/app/config/application-prod.yml:ro
+    depends_on:
+      - redis
+      - eureka
+      - broker-1
+      - broker-2
+    ports:
+      - "18080:8080"
+    networks:
+      - lbtest
+
+  gateway-2:
+    image: local/ticketon-gateway:latest
+    container_name: lbtest-gateway-2
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_APPLICATION_INSTANCE_ID: gateway-2
+      CUSTOM_JWT_SECRET: "01234567890123456789012345678901"
+      GATEWAY_AUTH_CHECK_REFRESH_BLACKLIST_ON_EACH_REQUEST: false
+    volumes:
+      - ./gateway/application.yml:/app/config/application.yml:ro
+      - ./gateway/application-secret.yml:/app/config/application-secret.yml:ro
+      - ./gateway/application-prod.yml:/app/config/application-prod.yml:ro
+    depends_on:
+      - redis
+      - eureka
+      - broker-1
+      - broker-2
+    ports:
+      - "18081:8080"
+    networks:
+      - lbtest
+
+  nginx-lb:
+    image: nginx:1.27-alpine
+    container_name: lbtest-nginx
+    depends_on:
+      - gateway-1
+      - gateway-2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "18000:80"
+    networks:
+      - lbtest
+
+networks:
+  lbtest:
+    driver: bridge

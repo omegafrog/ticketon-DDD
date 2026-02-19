@@ -2,7 +2,9 @@ package org.codenbug.gateway.filter;
 
 import org.codenbug.common.RefreshToken;
 
+import reactor.core.publisher.Mono;
+
 public interface RedisRefreshTokenBlackList {
 
-	void checkBlackList(RefreshToken refreshToken);
+	Mono<Void> checkBlackList(RefreshToken refreshToken);
 }

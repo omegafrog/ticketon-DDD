@@ -36,6 +36,9 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 	@Value("${custom.jwt.secret}")
 	private String jwtSecret;
 
+	@Value("${gateway.auth.check-refresh-blacklist-on-each-request:false}")
+	private boolean checkRefreshBlacklistOnEachRequest;
+
 	private final WhitelistProperties whitelistProperties;
 
 	private final RedisRefreshTokenBlackList refreshTokenStorage;
@@ -61,9 +64,6 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			ServerHttpRequest request = exchange.getRequest();
 			ServerHttpResponse response = exchange.getResponse();
 
-			AccessToken accessToken;
-			RefreshToken refreshToken = null;
-
 			if (checkWhiteList(config, exchange, chain, request)) {
 				log.debug("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
 				return chain.filter(exchange);
@@ -73,23 +73,47 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 
 			// check token validation
 			try {
-				accessToken = getAccessToken(request);
-				refreshToken = getRefreshToken(request);
+				AccessToken parsedAccessToken = getAccessToken(request);
+				validateAccessToken(parsedAccessToken);
+				parsedAccessToken.decode(jwtSecret);
 
-				validateToken(accessToken, refreshToken);
-				accessToken.decode(jwtSecret);
+				if (!checkRefreshBlacklistOnEachRequest) {
+					return forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken);
+				}
+
+				RefreshToken parsedRefreshToken = getRefreshToken(request);
+				validateRefreshToken(parsedRefreshToken);
+
+				return refreshTokenStorage.checkBlackList(parsedRefreshToken)
+					.then(Mono.defer(
+						() -> forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken)))
+					.onErrorResume(JwtException.class, e -> errorResponse(e, response))
+					.onErrorResume(RuntimeException.class, e -> sendUnauthorizedError(e, response));
 			} catch (ExpiredJwtException e) {
 				// refresh token
 				log.debug("access token is expired");
 
 				try {
-					TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
-					accessToken = tokenInfo.getAccessToken();
-					refreshToken = tokenInfo.getRefreshToken();
-					accessToken.decode(jwtSecret);
+					RefreshToken refreshToken = getRefreshToken(request);
+					validateRefreshToken(refreshToken);
+
+					return refreshTokenStorage.checkBlackList(refreshToken)
+						.then(Mono.defer(() -> {
+							TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
+							AccessToken refreshedAccessToken = tokenInfo.getAccessToken();
+							RefreshToken refreshedRefreshToken = tokenInfo.getRefreshToken();
+							refreshedAccessToken.decode(jwtSecret);
+							return forwardAuthorizedRequestWithRefreshCookie(exchange, chain, request,
+								refreshedAccessToken, refreshedRefreshToken);
+						}))
+						.onErrorResume(JwtException.class, jwtException -> errorResponse(jwtException, response))
+						.onErrorResume(RuntimeException.class,
+							runtimeException -> sendUnauthorizedError(runtimeException, response));
 				} catch (io.jsonwebtoken.JwtException refreshException) {
 					return sendUnauthorizedError(
 						new RuntimeException("인증 토큰이 유효하지 않습니다.", refreshException), response);
+				} catch (JwtException jwtException) {
+					return errorResponse(jwtException, response);
 				}
 
 			} catch (JwtException  e) {
@@ -100,17 +124,34 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 			} catch (RuntimeException e){
 				return sendUnauthorizedError(e, response);
 			}
-
-			ServerHttpRequest mutatedRequest = applyAuthorizationHeaders(accessToken, request,
-				refreshToken);
-
-			return chain.filter(exchange.mutate().request(mutatedRequest).build()).then(Mono.fromRunnable(() -> {
-			}));
 		};
 	}
 
-	private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request,
+	private Mono<Void> forwardAuthorizedRequest(ServerWebExchange exchange, GatewayFilterChain chain,
+		ServerHttpRequest request, AccessToken accessToken) {
+		ServerHttpRequest mutatedRequest = applyAuthorizationHeaders(accessToken, request);
+		return chain.filter(exchange.mutate().request(mutatedRequest).build());
+	}
+
+	private Mono<Void> forwardAuthorizedRequestWithRefreshCookie(ServerWebExchange exchange,
+		GatewayFilterChain chain, ServerHttpRequest request, AccessToken accessToken,
 		RefreshToken refreshToken) {
+		ServerHttpRequest mutatedRequest = applyAuthorizationHeadersWithRefreshCookie(accessToken, request,
+			refreshToken);
+		return chain.filter(exchange.mutate().request(mutatedRequest).build());
+	}
+
+	private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request) {
+		return request.mutate()
+			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
+			.header("User-Id", accessToken.getUserId())
+			.header("Role", accessToken.getRole())
+			.header("Email", accessToken.getEmail())
+			.build();
+	}
+
+	private ServerHttpRequest applyAuthorizationHeadersWithRefreshCookie(AccessToken accessToken,
+		ServerHttpRequest request, RefreshToken refreshToken) {
 		ServerHttpRequest mutatedRequest = request.mutate()
 			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
 			.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
@@ -133,10 +174,12 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		}
 	}
 
-	private void validateToken(AccessToken accessToken, RefreshToken refreshToken) {
+	private void validateAccessToken(AccessToken accessToken) {
 		Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
+	}
+
+	private void validateRefreshToken(RefreshToken refreshToken) {
 		Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
-		refreshTokenStorage.checkBlackList(refreshToken);
 	}
 
 	private Mono<Void> errorResponse(JwtException e, ServerHttpResponse response) {
@@ -214,4 +257,3 @@ public class AuthorizationFilter extends AbstractGatewayFilterFactory<Authorizat
 		return request.getCookies().getFirst("refreshToken");
 	}
 }
-
