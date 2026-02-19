@@ -1,24 +1,34 @@
 server:
   port: 8080 # 게이트웨이는 8080 포트에서 실행됩니다.
   netty:
-    connection-timeout: 30s
-    max-connections: 2000
+    connection-timeout: ${GATEWAY_SERVER_NETTY_CONNECTION_TIMEOUT:5s}
+    max-connections: ${GATEWAY_SERVER_NETTY_MAX_CONNECTIONS:30000}
   reactor:
     netty:
       pool:
-        max-connections: 2000
-        max-idle-time: 30s
+        max-connections: ${GATEWAY_REACTOR_NETTY_POOL_MAX_CONNECTIONS:15000}
+        max-idle-time: ${GATEWAY_REACTOR_NETTY_POOL_MAX_IDLE_TIME:15s}
 
 eureka:
   client:
     service-url:
       hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
+  instance:
+    hostname: ${EUREKA_HOST_NAME:localhost}
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 
 spring:
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: ${GATEWAY_REDIS_POOL_MAX_ACTIVE:256}
+          max-idle: ${GATEWAY_REDIS_POOL_MAX_IDLE:64}
+          min-idle: ${GATEWAY_REDIS_POOL_MIN_IDLE:16}
+          max-wait: ${GATEWAY_REDIS_POOL_MAX_WAIT:200ms}
   application:
     name: api-gateway
   config:
@@ -90,11 +100,11 @@ spring:
           default-filters: AuthorizationFilter
 
       httpclient:
-        max-header-size: 16KB
-        max-initial-line-length: 4KB
+        max-header-size: ${GATEWAY_HTTPCLIENT_MAX_HEADER_SIZE:16KB}
+        max-initial-line-length: ${GATEWAY_HTTPCLIENT_MAX_INITIAL_LINE_LENGTH:4KB}
         pool:
-          max-connections: 2000
-          acquire-timeout: 30000
+          max-connections: ${GATEWAY_HTTPCLIENT_POOL_MAX_CONNECTIONS:20000}
+          acquire-timeout: ${GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT_MILLIS:4000}
 
 springdoc:
   swagger-ui:
@@ -128,6 +138,19 @@ management:
       export:
         enabled: true
 
+gateway:
+  auth:
+    check-refresh-blacklist-on-each-request: ${GATEWAY_AUTH_CHECK_REFRESH_BLACKLIST_ON_EACH_REQUEST:false}
+  http-client:
+    pool:
+      acquire-timeout: ${GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT:4s}
+      max-idle-time: ${GATEWAY_HTTPCLIENT_POOL_MAX_IDLE_TIME:20s}
+      max-life-time: ${GATEWAY_HTTPCLIENT_POOL_MAX_LIFE_TIME:3m}
+      evict-in-background: ${GATEWAY_HTTPCLIENT_POOL_EVICT_IN_BACKGROUND:30s}
+    connect-timeout: ${GATEWAY_HTTPCLIENT_CONNECT_TIMEOUT:2s}
+    read-timeout: ${GATEWAY_HTTPCLIENT_READ_TIMEOUT:12s}
+    write-timeout: ${GATEWAY_HTTPCLIENT_WRITE_TIMEOUT:12s}
+
 filter:
   whitelist:
     # method must be uppercase
@@ -156,7 +179,3 @@ filter:
         url: "/v3/api-docs/**"
       - method: GET
         url: "/webjars/**"
-eureka:
-  instance:
-    hostname: ${EUREKA_HOST_NAME:localhost}
-    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
