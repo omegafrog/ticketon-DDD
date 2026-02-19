@@ -1,0 +1,76 @@
+server:
+  port: 8080
+  netty:
+    connection-timeout: ${GATEWAY_SERVER_NETTY_CONNECTION_TIMEOUT:5s}
+    max-connections: ${GATEWAY_SERVER_NETTY_MAX_CONNECTIONS:30000}
+  reactor:
+    netty:
+      pool:
+        max-connections: ${GATEWAY_REACTOR_NETTY_POOL_MAX_CONNECTIONS:15000}
+        max-idle-time: ${GATEWAY_REACTOR_NETTY_POOL_MAX_IDLE_TIME:15s}
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      lettuce:
+        pool:
+          enabled: true
+          max-active: ${GATEWAY_REDIS_POOL_MAX_ACTIVE:256}
+          max-idle: ${GATEWAY_REDIS_POOL_MAX_IDLE:64}
+          min-idle: ${GATEWAY_REDIS_POOL_MIN_IDLE:16}
+          max-wait: ${GATEWAY_REDIS_POOL_MAX_WAIT:200ms}
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: broker-service
+              uri: lb://broker
+              predicates:
+                - Path=/api/v1/broker/**
+          default-filters: AuthorizationFilter
+          httpclient:
+            pool:
+              max-connections: ${GATEWAY_HTTPCLIENT_POOL_MAX_CONNECTIONS:20000}
+              acquire-timeout: ${GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT_MILLIS:4000}
+            connect-timeout: ${GATEWAY_HTTPCLIENT_CONNECT_TIMEOUT_MILLIS:2000}
+            response-timeout: ${GATEWAY_HTTPCLIENT_RESPONSE_TIMEOUT:12s}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://eureka:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    hostname: ${EUREKA_HOST_NAME:gateway}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+gateway:
+  auth:
+    check-refresh-blacklist-on-each-request: ${GATEWAY_AUTH_CHECK_REFRESH_BLACKLIST_ON_EACH_REQUEST:false}
+  http-client:
+    pool:
+      acquire-timeout: ${GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT:4s}
+      max-idle-time: ${GATEWAY_HTTPCLIENT_POOL_MAX_IDLE_TIME:20s}
+      max-life-time: ${GATEWAY_HTTPCLIENT_POOL_MAX_LIFE_TIME:3m}
+      evict-in-background: ${GATEWAY_HTTPCLIENT_POOL_EVICT_IN_BACKGROUND:30s}
+    connect-timeout: ${GATEWAY_HTTPCLIENT_CONNECT_TIMEOUT:2s}
+    read-timeout: ${GATEWAY_HTTPCLIENT_READ_TIMEOUT:12s}
+    write-timeout: ${GATEWAY_HTTPCLIENT_WRITE_TIMEOUT:12s}
+
+filter:
+  whitelist:
+    urls:
+      - method: GET
+        url: "/actuator/**"
