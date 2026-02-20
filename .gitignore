@@ -40,9 +40,13 @@ out/
 /*.lock.db
 
 /docker/
+!/docker/
+/docker/*
+!/docker/AGENTS.md
 /node_modules/
 /k6/*
 !/k6/sse-throughput-test.js
+!/k6/AGENTS.md
 /package.json
 /terraform/
 /.claude/
@@ -53,5 +57,5 @@ out/
 /scripts/
 /k6/node_modules
 **/application-secret.yml
-AGENTS.md
 /.sisyphus/
+.serena
