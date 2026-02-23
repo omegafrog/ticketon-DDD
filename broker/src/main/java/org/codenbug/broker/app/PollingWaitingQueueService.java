@@ -74,9 +74,9 @@ public class PollingWaitingQueueService {
 			);
 		}
 
-		if (waitingQueueRedisRepository.isUserExistInWaiting(eventId, userId)) {
-			Long rank = waitingQueueRedisRepository.getUserRank(eventId, userId);
-			Long adjustedRank = rank == null ? null : rank + 1;
+		Long rank = waitingQueueRedisRepository.getUserRank(eventId, userId);
+		if (rank != null) {
+			Long adjustedRank = rank + 1;
 			waitingQueueRedisRepository.updateWaitingLastSeen(eventId, userId, System.currentTimeMillis());
 			return new PollingQueueInfo(
 				"WAITING",
@@ -100,20 +100,24 @@ public class PollingWaitingQueueService {
 			return baseMs;
 		}
 
-		String eventStatus = waitingQueueRedisRepository.getEventStatus(eventId);
+		boolean includeWaitingQueueSize = rank != null && rank > 100;
+		WaitingQueueRedisRepository.PollingAdaptiveContext context =
+			waitingQueueRedisRepository.getPollingAdaptiveContext(eventId, includeWaitingQueueSize);
+
+		String eventStatus = context.eventStatus();
 		if (eventStatus != null && !"OPEN".equals(eventStatus)) {
 			return 30000L;
 		}
 
 		long adaptedMs = baseMs;
 
-		Long entrySlots = waitingQueueRedisRepository.getEntryQueueSlots(eventId);
+		Long entrySlots = context.entryQueueSlots();
 		if (entrySlots != null && entrySlots <= 0) {
 			adaptedMs = Math.max(adaptedMs, 8000L);
 		}
 
-		if (rank != null && rank > 100) {
-			Long waitingSize = waitingQueueRedisRepository.getWaitingQueueSize(eventId);
+		if (includeWaitingQueueSize) {
+			Long waitingSize = context.waitingQueueSize();
 			if (waitingSize != null && waitingSize >= 5000) {
 				adaptedMs = Math.max(adaptedMs, 10000L);
 			} else if (waitingSize != null && waitingSize >= 1000) {
