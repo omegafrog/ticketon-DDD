@@ -39,10 +39,7 @@ out/
 /*.trace.db
 /*.lock.db
 
-/docker/
-!/docker/
 /docker/*
-!/docker/AGENTS.md
 /node_modules/
 /k6/*
 !/k6/sse-throughput-test.js
@@ -59,3 +56,4 @@ out/
 **/application-secret.yml
 /.sisyphus/
 .serena
+.opencode/
