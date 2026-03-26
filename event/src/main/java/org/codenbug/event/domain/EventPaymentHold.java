@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 @Table(
 	name = "event_payment_hold",
-	indexes = {#
+	indexes = {
 		@Index(name = "idx_event_payment_hold_event_id", columnList = "event_id"),
 		@Index(name = "idx_event_payment_hold_active", columnList = "event_id,status,expires_at")
 	}
