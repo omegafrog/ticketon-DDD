@@ -5,40 +5,35 @@ import java.util.List;
 
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.codenbug.purchase.infra.es.JpaPurchaseOutboxRepository;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class PurchaseOutboxPublisher {
+public class PurchaseConfirmScheduler {
 	private static final int BATCH_SIZE = 50;
 
-	private final RabbitTemplate rabbitTemplate;
 	private final JpaPurchaseOutboxRepository outboxRepository;
+	private final PurchaseConfirmWorker confirmWorker;
 
-	public PurchaseOutboxPublisher(RabbitTemplate rabbitTemplate, JpaPurchaseOutboxRepository outboxRepository) {
-		this.rabbitTemplate = rabbitTemplate;
+	public PurchaseConfirmScheduler(JpaPurchaseOutboxRepository outboxRepository, PurchaseConfirmWorker confirmWorker) {
 		this.outboxRepository = outboxRepository;
+		this.confirmWorker = confirmWorker;
 	}
 
 	@Scheduled(fixedDelayString = "${purchase.outbox.publish-interval-ms:500}")
-	public void publish() {
-		List<PurchaseOutboxMessage> batch = outboxRepository.findUnpublished(PageRequest.of(0, BATCH_SIZE));
+	public void processPendingConfirms() {
+		List<PurchaseOutboxMessage> batch = outboxRepository.findUnpublishedByQueueName(
+			PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE,
+			PageRequest.of(0, BATCH_SIZE)
+		);
 		if (batch.isEmpty()) {
 			return;
 		}
 
 		for (PurchaseOutboxMessage msg : batch) {
 			try {
-				MessageProperties props = new MessageProperties();
-				props.setMessageId(msg.getMessageId());
-				props.setContentType(MessageProperties.CONTENT_TYPE_JSON);
-				Message message = new Message(msg.getPayloadJson().getBytes(java.nio.charset.StandardCharsets.UTF_8), props);
-				rabbitTemplate.send(msg.getQueueName(), message);
-
+				confirmWorker.process(msg.getMessageId(), msg.getPayloadJson());
 				msg.markPublished(LocalDateTime.now());
 				outboxRepository.save(msg);
 			} catch (Exception e) {

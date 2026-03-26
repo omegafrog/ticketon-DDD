@@ -14,4 +14,12 @@ public interface JpaPurchaseOutboxRepository extends JpaRepository<PurchaseOutbo
 		order by m.id asc
 	""")
 	List<PurchaseOutboxMessage> findUnpublished(Pageable pageable);
+
+	@Query("""
+		select m from PurchaseOutboxMessage m
+		where m.publishedAt is null
+		  and m.queueName = :queueName
+		order by m.id asc
+	""")
+	List<PurchaseOutboxMessage> findUnpublishedByQueueName(String queueName, Pageable pageable);
 }
