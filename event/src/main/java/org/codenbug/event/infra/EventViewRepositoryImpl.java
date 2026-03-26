@@ -64,13 +64,13 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				event.eventInformation.status.stringValue(),
 				event.eventInformation.categoryId.value,
 				seatLayout.location.locationName,
-				seatStats.seatCount.longValue() // 🔥 최적화: 서브쿼리 → 머터리얼라이즈 뷰 조인
+				seatStats.seatCount.coalesce(0).longValue() // 🔥 최적화: 서브쿼리 → 머터리얼라이즈 뷰 조인
 			))
 			.from(event)
 			.join(seatLayout).on(
 				seatLayout.id.eq(event.seatLayoutId.value)
 			)
-			.join(seatStats).on(
+			.leftJoin(seatStats).on(
 				seatStats.layoutId.eq(event.seatLayoutId.value)
 			)
 			.where(whereClause)
