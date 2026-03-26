@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaPurchaseEventStoreRepository extends JpaRepository<PurchaseStoredEvent, Long> {
 	boolean existsByPurchaseIdAndCommandId(String purchaseId, String commandId);
-	List<PurchaseStoredEvent> findByPurchaseIdOrderBySeqAsc(String purchaseId);
+	List<PurchaseStoredEvent> findByPurchaseIdOrderByIdAsc(String purchaseId);
 }

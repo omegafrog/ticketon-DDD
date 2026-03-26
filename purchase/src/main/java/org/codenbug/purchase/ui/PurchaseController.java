@@ -6,6 +6,7 @@ import org.codenbug.common.redis.EntryTokenValidator;
 import org.codenbug.purchase.app.PurchaseService;
 import org.codenbug.purchase.app.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.es.PurchaseConfirmQueryService;
+import org.codenbug.purchase.app.es.PurchaseInitCommandService;
 import org.codenbug.purchase.global.CancelPaymentRequest;
 import org.codenbug.purchase.global.CancelPaymentResponse;
 import org.codenbug.purchase.global.ConfirmPaymentAcceptedResponse;
@@ -41,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Purchase", description = "결제 및 티켓 구매 API")
 public class PurchaseController {
 	private final PurchaseService purchaseService;
+	private final PurchaseInitCommandService initCommandService;
 	private final PurchaseConfirmCommandService confirmCommandService;
 	private final PurchaseConfirmQueryService confirmQueryService;
 	private final EntryTokenValidator entryTokenValidator;
@@ -64,7 +66,7 @@ public class PurchaseController {
 		String userId = LoggedInUserContext.get().getUserId();
 
 		entryTokenValidator.validate(userId, entryAuthToken, request.getEventId());
-		InitiatePaymentResponse response = purchaseService.initiatePayment(request, userId);
+		InitiatePaymentResponse response = initCommandService.initiatePayment(request, userId);
 		return ResponseEntity.ok(new RsData<>("200", "결제 준비 완료", response));
 	}
 

@@ -3,6 +3,7 @@ package org.codenbug.purchase.app.es;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 import org.codenbug.purchase.domain.Purchase;
@@ -11,7 +12,6 @@ import org.codenbug.purchase.global.ConfirmPaymentRequest;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseConfirmStatusProjectionRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
-import org.codenbug.purchase.infra.es.JpaPurchaseEventStreamRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseOutboxRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +29,6 @@ class PurchaseConfirmCommandServiceTest {
 
 	@Mock
 	private PurchaseRepository purchaseRepository;
-	@Mock
-	private JpaPurchaseEventStreamRepository streamRepository;
 	@Mock
 	private JpaPurchaseEventStoreRepository eventStoreRepository;
 	@Mock
@@ -54,7 +52,6 @@ class PurchaseConfirmCommandServiceTest {
 
 		verify(eventStoreRepository, never()).save(any());
 		verify(outboxRepository, never()).save(any());
-		verify(streamRepository, never()).save(any());
 	}
 
 	@Test
@@ -66,8 +63,19 @@ class PurchaseConfirmCommandServiceTest {
 		when(purchase.getExpectedSalesVersion()).thenReturn(1L);
 		when(purchase.getEventId()).thenReturn("e1");
 		when(eventStoreRepository.existsByPurchaseIdAndCommandId("p1", "confirm:p1")).thenReturn(false);
-		when(streamRepository.findById("p1")).thenReturn(Optional.empty());
-		when(streamRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+		when(eventStoreRepository.save(any())).thenAnswer(invocation -> {
+			Object arg = invocation.getArgument(0);
+			if (arg != null) {
+				try {
+					Field idField = arg.getClass().getDeclaredField("id");
+					idField.setAccessible(true);
+					idField.set(arg, 1L);
+				} catch (ReflectiveOperationException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			return arg;
+		});
 		when(statusProjectionRepository.findById("p1")).thenReturn(Optional.empty());
 
 		service.requestConfirm(req, "u1");

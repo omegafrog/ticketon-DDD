@@ -23,7 +23,7 @@ public class PurchasePaymentFinalizationService {
 	private final MessagePublisher publisher;
 
 	public PurchasePaymentFinalizationService(PurchaseRepository purchaseRepository, TicketRepository ticketRepository,
-		PurchaseDomainService purchaseDomainService, MessagePublisher publisher) {
+			PurchaseDomainService purchaseDomainService, MessagePublisher publisher) {
 		this.purchaseRepository = purchaseRepository;
 		this.ticketRepository = ticketRepository;
 		this.purchaseDomainService = purchaseDomainService;
@@ -32,36 +32,24 @@ public class PurchasePaymentFinalizationService {
 
 	public ConfirmPaymentResponse finalizePayment(String purchaseId, ConfirmedPaymentInfo paymentInfo, String userId) {
 		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
-			.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
+				.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
 
-		PurchaseDomainService.PurchaseConfirmationResult result =
-			purchaseDomainService.confirmPurchase(purchase, paymentInfo, userId);
+		PurchaseDomainService.PurchaseConfirmationResult result = purchaseDomainService.confirmPurchase(purchase,
+				paymentInfo, userId);
 
 		purchase.markAsCompleted();
 		ticketRepository.saveAll(result.getTickets());
 		purchaseRepository.save(purchase);
 
-		publisher.publishSeatPurchasedEvent(
-			purchase.getEventId(),
-			result.getSeatLayout().getLayoutId(),
-			result.getSeatIds(),
-			userId
-		);
+		publisher.publishSeatPurchasedEvent(purchase.getEventId(), result.getSeatLayout().getLayoutId(),
+				result.getSeatIds(), userId);
 
 		PaymentMethod methodEnum = PaymentMethod.from(paymentInfo.getMethod());
 		LocalDateTime localDateTime = OffsetDateTime.parse(paymentInfo.getApprovedAt())
-			.atZoneSameInstant(ZoneId.of("Asia/Seoul"))
-			.toLocalDateTime();
+				.atZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime();
 
-		return new ConfirmPaymentResponse(
-			paymentInfo.getPaymentKey(),
-			paymentInfo.getOrderId(),
-			paymentInfo.getOrderName(),
-			paymentInfo.getTotalAmount(),
-			paymentInfo.getStatus(),
-			methodEnum,
-			localDateTime,
-			new ConfirmPaymentResponse.Receipt(paymentInfo.getReceipt().getUrl())
-		);
+		return new ConfirmPaymentResponse(paymentInfo.getPaymentKey(), paymentInfo.getOrderId(),
+				paymentInfo.getOrderName(), paymentInfo.getTotalAmount(), paymentInfo.getStatus(), methodEnum,
+				localDateTime, new ConfirmPaymentResponse.Receipt(paymentInfo.getReceipt().getUrl()));
 	}
 }
