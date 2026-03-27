@@ -17,18 +17,23 @@ cast((select count(*) from seat s2_0 where sl1_0.id = s2_0.layout_id) as signed)
 ## 최적화 솔루션: 머터리얼라이즈 뷰
 
 ### 1. 머터리얼라이즈 테이블 생성
+
+실행용 SQL은 별도 파일로 분리했습니다: `docs/platform/common/seat_layout_stats_materialized.sql`
+
 ```sql
 -- 좌석 레이아웃별 집계 테이블 생성
 CREATE TABLE seat_layout_stats (
     layout_id BIGINT PRIMARY KEY,
-    seat_count INT NOT NULL,
+    seat_count INT NOT NULL DEFAULT 0,
+    min_price INT NOT NULL DEFAULT 0,
+    max_price INT NOT NULL DEFAULT 0,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_layout_seat_count (layout_id, seat_count)
 );
 
 -- 초기 데이터 로드
-INSERT INTO seat_layout_stats (layout_id, seat_count)
-SELECT layout_id, COUNT(*) as seat_count
+INSERT INTO seat_layout_stats (layout_id, seat_count, min_price, max_price)
+SELECT layout_id, COUNT(*) as seat_count, COALESCE(MIN(amount), 0), COALESCE(MAX(amount), 0)
 FROM seat 
 GROUP BY layout_id;
 ```
@@ -52,7 +57,9 @@ limit 0,20;
 select e1_0.id,
        e1_0.title,
        sl1_0.location,
-       sls1_0.seat_count
+       sls1_0.seat_count,
+       sls1_0.min_price,
+       sls1_0.max_price
 from event e1_0
 join seat_layout sl1_0 on sl1_0.id = e1_0.seat_layout_id
 join seat_layout_stats sls1_0 on sls1_0.layout_id = e1_0.seat_layout_id
@@ -79,28 +86,60 @@ limit 0,20;
 
 ### 1. 트리거를 통한 자동 업데이트
 ```sql
--- Seat 삽입 시 트리거
 DELIMITER $$
-CREATE TRIGGER seat_insert_trigger 
+CREATE TRIGGER seat_ai_stats 
 AFTER INSERT ON seat
 FOR EACH ROW
 BEGIN
-    INSERT INTO seat_layout_stats (layout_id, seat_count)
-    VALUES (NEW.layout_id, 1)
+    INSERT INTO seat_layout_stats (layout_id, seat_count, min_price, max_price)
+    VALUES (NEW.layout_id, 1, NEW.amount, NEW.amount)
     ON DUPLICATE KEY UPDATE 
     seat_count = seat_count + 1,
+    min_price = IF(seat_count = 0, NEW.amount, LEAST(min_price, NEW.amount)),
+    max_price = GREATEST(max_price, NEW.amount),
     last_updated = CURRENT_TIMESTAMP;
 END$$
 
--- Seat 삭제 시 트리거  
-CREATE TRIGGER seat_delete_trigger
+CREATE TRIGGER seat_ad_stats
 AFTER DELETE ON seat  
 FOR EACH ROW
 BEGIN
-    UPDATE seat_layout_stats 
-    SET seat_count = seat_count - 1,
-        last_updated = CURRENT_TIMESTAMP
-    WHERE layout_id = OLD.layout_id;
+    INSERT INTO seat_layout_stats (layout_id, seat_count, min_price, max_price)
+    SELECT OLD.layout_id, COUNT(*), COALESCE(MIN(amount), 0), COALESCE(MAX(amount), 0)
+    FROM seat
+    WHERE layout_id = OLD.layout_id
+    ON DUPLICATE KEY UPDATE
+    seat_count = VALUES(seat_count),
+    min_price = VALUES(min_price),
+    max_price = VALUES(max_price),
+    last_updated = CURRENT_TIMESTAMP;
+END$$
+
+CREATE TRIGGER seat_au_stats
+AFTER UPDATE ON seat
+FOR EACH ROW
+BEGIN
+    INSERT INTO seat_layout_stats (layout_id, seat_count, min_price, max_price)
+    SELECT NEW.layout_id, COUNT(*), COALESCE(MIN(amount), 0), COALESCE(MAX(amount), 0)
+    FROM seat
+    WHERE layout_id = NEW.layout_id
+    ON DUPLICATE KEY UPDATE
+    seat_count = VALUES(seat_count),
+    min_price = VALUES(min_price),
+    max_price = VALUES(max_price),
+    last_updated = CURRENT_TIMESTAMP;
+
+    IF OLD.layout_id <> NEW.layout_id THEN
+        INSERT INTO seat_layout_stats (layout_id, seat_count, min_price, max_price)
+        SELECT OLD.layout_id, COUNT(*), COALESCE(MIN(amount), 0), COALESCE(MAX(amount), 0)
+        FROM seat
+        WHERE layout_id = OLD.layout_id
+        ON DUPLICATE KEY UPDATE
+        seat_count = VALUES(seat_count),
+        min_price = VALUES(min_price),
+        max_price = VALUES(max_price),
+        last_updated = CURRENT_TIMESTAMP;
+    END IF;
 END$$
 DELIMITER ;
 ```
@@ -108,26 +147,43 @@ DELIMITER ;
 ### 2. 배치 정합성 검증
 ```sql
 -- 정합성 검증 쿼리
-SELECT s.layout_id, s.actual_count, sls.seat_count as cached_count,
-       ABS(s.actual_count - sls.seat_count) as diff
+SELECT s.layout_id,
+       s.actual_count,
+       sls.seat_count AS cached_count,
+       s.actual_min,
+       sls.min_price AS cached_min,
+       s.actual_max,
+       sls.max_price AS cached_max
 FROM (
-    SELECT layout_id, COUNT(*) as actual_count 
+    SELECT layout_id,
+           COUNT(*) AS actual_count,
+           COALESCE(MIN(amount), 0) AS actual_min,
+           COALESCE(MAX(amount), 0) AS actual_max
     FROM seat 
     GROUP BY layout_id
 ) s
 JOIN seat_layout_stats sls ON s.layout_id = sls.layout_id
-WHERE s.actual_count != sls.seat_count;
+WHERE s.actual_count != sls.seat_count
+   OR s.actual_min != sls.min_price
+   OR s.actual_max != sls.max_price;
 
 -- 데이터 동기화
 UPDATE seat_layout_stats sls
 JOIN (
-    SELECT layout_id, COUNT(*) as actual_count 
+    SELECT layout_id,
+           COUNT(*) AS actual_count,
+           COALESCE(MIN(amount), 0) AS actual_min,
+           COALESCE(MAX(amount), 0) AS actual_max
     FROM seat 
     GROUP BY layout_id
 ) s ON sls.layout_id = s.layout_id
 SET sls.seat_count = s.actual_count,
+    sls.min_price = s.actual_min,
+    sls.max_price = s.actual_max,
     sls.last_updated = CURRENT_TIMESTAMP
-WHERE sls.seat_count != s.actual_count;
+WHERE sls.seat_count != s.actual_count
+   OR sls.min_price != s.actual_min
+   OR sls.max_price != s.actual_max;
 ```
 
 ## 도입 고려사항

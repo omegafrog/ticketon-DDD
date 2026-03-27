@@ -8,6 +8,7 @@
 - [api_query_analysis.md](api_query_analysis.md)
 - [jpa-delete-and-insert.md](jpa-delete-and-insert.md)
 - [materialized_view_optimization.md](materialized_view_optimization.md)
+- [seat_layout_stats_materialized.sql](seat_layout_stats_materialized.sql)
 - [multithreading_raceCondition.md](multithreading_raceCondition.md)
 - [mysql-replication-and-batch-setup.md](mysql-replication-and-batch-setup.md)
 - [simple-batch-setup.md](simple-batch-setup.md)
