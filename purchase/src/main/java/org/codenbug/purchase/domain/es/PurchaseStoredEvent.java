@@ -17,7 +17,6 @@ import lombok.Getter;
 @Table(
 	name = "purchase_event_store",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uq_purchase_event_store_purchase_seq", columnNames = {"purchase_id", "seq"}),
 		@UniqueConstraint(name = "uq_purchase_event_store_purchase_command", columnNames = {"purchase_id", "command_id"})
 	}
 )
@@ -28,9 +27,6 @@ public class PurchaseStoredEvent {
 
 	@Column(name = "purchase_id", nullable = false, length = 64)
 	private String purchaseId;
-
-	@Column(name = "seq", nullable = false)
-	private long seq;
 
 	@Column(name = "event_type", nullable = false, length = 64)
 	private String eventType;
@@ -51,10 +47,9 @@ public class PurchaseStoredEvent {
 
 	protected PurchaseStoredEvent() {}
 
-	public PurchaseStoredEvent(String purchaseId, long seq, String eventType, String commandId, String payloadJson,
+	public PurchaseStoredEvent(String purchaseId, String eventType, String commandId, String payloadJson,
 		String metadataJson, LocalDateTime occurredAt) {
 		this.purchaseId = purchaseId;
-		this.seq = seq;
 		this.eventType = eventType;
 		this.commandId = commandId;
 		this.payloadJson = payloadJson;

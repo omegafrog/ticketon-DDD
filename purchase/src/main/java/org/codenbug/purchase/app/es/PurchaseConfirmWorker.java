@@ -2,7 +2,6 @@ package org.codenbug.purchase.app.es;
 
 import static org.codenbug.common.transaction.TransactionExecutor.*;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -20,8 +19,6 @@ import org.codenbug.purchase.infra.client.EventPaymentHoldClient;
 import org.codenbug.purchase.infra.client.EventPaymentHoldCreateResponse;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -43,17 +40,13 @@ public class PurchaseConfirmWorker {
 	private final PurchasePaymentFinalizationService finalizationService;
 	private final int holdTtlSeconds;
 
-	public PurchaseConfirmWorker(
-		ObjectMapper objectMapper,
-		@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
-		JpaPurchaseProcessedMessageRepository processedMessageRepository,
-		JpaPurchaseEventStoreRepository eventStoreRepository,
-		PurchaseEventAppendService eventAppendService,
-		EventPaymentHoldClient holdClient,
-		PaymentProviderRouter paymentProviderRouter,
-		PurchasePaymentFinalizationService finalizationService,
-		@Value("${purchase.payment.hold-ttl-seconds:60}") int holdTtlSeconds
-	) {
+	public PurchaseConfirmWorker(ObjectMapper objectMapper,
+			@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
+			JpaPurchaseProcessedMessageRepository processedMessageRepository,
+			JpaPurchaseEventStoreRepository eventStoreRepository, PurchaseEventAppendService eventAppendService,
+			EventPaymentHoldClient holdClient, PaymentProviderRouter paymentProviderRouter,
+			PurchasePaymentFinalizationService finalizationService,
+			@Value("${purchase.payment.hold-ttl-seconds:60}") int holdTtlSeconds) {
 		this.objectMapper = objectMapper;
 		this.transactionManager = transactionManager;
 		this.processedMessageRepository = processedMessageRepository;
@@ -65,9 +58,7 @@ public class PurchaseConfirmWorker {
 		this.holdTtlSeconds = holdTtlSeconds;
 	}
 
-	@RabbitListener(queues = PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE)
-	public void handle(Message message) {
-		String messageId = message.getMessageProperties().getMessageId();
+	public void process(String messageId, String payloadJson) {
 		if (messageId == null || messageId.isBlank()) {
 			return;
 		}
@@ -76,44 +67,31 @@ public class PurchaseConfirmWorker {
 			return;
 		}
 
-		String body = new String(message.getBody(), StandardCharsets.UTF_8);
-		String purchaseId = extractPurchaseId(body);
+		String purchaseId = extractPurchaseId(payloadJson);
 		if (purchaseId == null) {
 			return;
 		}
 
 		ConfirmContext ctx = loadConfirmContext(purchaseId);
 		if (ctx == null) {
-			executeInTransaction(transactionManager,
-				() -> {
-					eventAppendService.appendAndUpdateProjection(
-						purchaseId,
-						"confirm:" + purchaseId,
-						PurchaseEventType.PG_CONFIRM_FAILED,
-						Map.of("reason", "missing_confirm_requested"),
-						PurchaseConfirmStatus.FAILED,
-						"missing confirm request"
-					);
-					return null;
-				});
+			executeInTransaction(transactionManager, () -> {
+				eventAppendService.appendAndUpdateProjection(purchaseId, "confirm:" + purchaseId,
+						PurchaseEventType.PG_CONFIRM_FAILED, Map.of("reason", "missing_confirm_requested"),
+						PurchaseConfirmStatus.FAILED, "missing confirm request");
+				return null;
+			});
 			return;
 		}
 		if (ctx.terminal) {
 			return;
 		}
 
-		executeInTransaction(transactionManager,
-			() -> {
-				eventAppendService.appendAndUpdateProjection(
-					purchaseId,
-					ctx.commandId,
-					PurchaseEventType.PROCESSING_STARTED,
-					Map.of("purchaseId", purchaseId),
-					PurchaseConfirmStatus.PROCESSING,
-					"processing"
-				);
-				return null;
-			});
+		executeInTransaction(transactionManager, () -> {
+			eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
+					PurchaseEventType.PROCESSING_STARTED, Map.of("purchaseId", purchaseId),
+					PurchaseConfirmStatus.PROCESSING, "processing");
+			return null;
+		});
 
 		EventPaymentHoldCreateResponse holdResponse;
 		try {
@@ -123,74 +101,49 @@ public class PurchaseConfirmWorker {
 			}
 		} catch (HttpClientErrorException ex) {
 			if (EventPaymentHoldClient.isHoldRejected(ex)) {
-				executeInTransaction(transactionManager,
-					() -> {
-						eventAppendService.appendAndUpdateProjection(
-							purchaseId,
-							ctx.commandId,
-							PurchaseEventType.HOLD_REJECTED,
-							Map.of("eventId", ctx.eventId),
-							PurchaseConfirmStatus.REJECTED,
-							"event changed"
-						);
-						return null;
-					});
+				executeInTransaction(transactionManager, () -> {
+					eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
+							PurchaseEventType.HOLD_REJECTED, Map.of("eventId", ctx.eventId),
+							PurchaseConfirmStatus.REJECTED, "event changed");
+					return null;
+				});
 				return;
 			}
 			throw ex;
 		}
 
-		executeInTransaction(transactionManager,
-			() -> {
-				eventAppendService.appendAndUpdateProjection(
-					purchaseId,
-					ctx.commandId,
-					PurchaseEventType.HOLD_ACQUIRED,
-					Map.of("holdToken", holdResponse.getHoldToken(), "expiresAt", holdResponse.getExpiresAt().toString()),
-					PurchaseConfirmStatus.PROCESSING,
-					"hold acquired"
-				);
-				return null;
-			});
+		executeInTransaction(transactionManager, () -> {
+			eventAppendService.appendAndUpdateProjection(
+					purchaseId, ctx.commandId, PurchaseEventType.HOLD_ACQUIRED, Map.of("holdToken",
+							holdResponse.getHoldToken(), "expiresAt", holdResponse.getExpiresAt().toString()),
+					PurchaseConfirmStatus.PROCESSING, "hold acquired");
+			return null;
+		});
 
-		executeInTransaction(transactionManager,
-			() -> {
-				eventAppendService.appendAndUpdateProjection(
-					purchaseId,
-					ctx.commandId,
+		executeInTransaction(transactionManager, () -> {
+			eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
 					PurchaseEventType.PG_CONFIRM_REQUESTED,
-					Map.of("provider", ctx.provider, "paymentKey", ctx.paymentKey),
-					PurchaseConfirmStatus.PROCESSING,
-					"pg confirm requested"
-				);
-				return null;
-			});
+					Map.of("provider", ctx.provider, "paymentKey", ctx.paymentKey), PurchaseConfirmStatus.PROCESSING,
+					"pg confirm requested");
+			return null;
+		});
 
 		try {
 			PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
-			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount, ctx.commandId);
+			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount,
+					ctx.commandId);
 
-			executeInTransaction(transactionManager,
-				() -> {
-					eventAppendService.appendAndUpdateProjection(
-						purchaseId,
-						ctx.commandId,
+			executeInTransaction(transactionManager, () -> {
+				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
 						PurchaseEventType.PG_CONFIRM_SUCCEEDED,
 						Map.of("paymentKey", paymentInfo.getPaymentKey(), "status", paymentInfo.getStatus()),
-						PurchaseConfirmStatus.PROCESSING,
-						"pg confirm succeeded"
-					);
-					ConfirmPaymentInfoAndResponse ignored = finalizeInTransaction(purchaseId, ctx, paymentInfo);
-					eventAppendService.appendAndUpdateProjection(
-						purchaseId,
-						ctx.commandId,
-						PurchaseEventType.PAYMENT_COMPLETED,
-						Map.of("purchaseId", purchaseId),
-						PurchaseConfirmStatus.DONE,
-						"done"
-					);
-					return null;
-				});
+						PurchaseConfirmStatus.PROCESSING, "pg confirm succeeded");
+				ConfirmPaymentInfoAndResponse ignored = finalizeInTransaction(purchaseId, ctx, paymentInfo);
+				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
+						PurchaseEventType.PAYMENT_COMPLETED, Map.of("purchaseId", purchaseId),
+						PurchaseConfirmStatus.DONE, "done");
+				return null;
+			});
 
 			try {
 				holdClient.consumeHold(ctx.eventId, holdResponse.getHoldToken());
@@ -198,18 +151,12 @@ public class PurchaseConfirmWorker {
 				// best-effort
 			}
 		} catch (Exception ex) {
-			executeInTransaction(transactionManager,
-				() -> {
-					eventAppendService.appendAndUpdateProjection(
-						purchaseId,
-						ctx.commandId,
-						PurchaseEventType.PG_CONFIRM_FAILED,
-						Map.of("error", ex.getClass().getSimpleName()),
-						PurchaseConfirmStatus.FAILED,
-						"pg confirm failed"
-					);
-					return null;
-				});
+			executeInTransaction(transactionManager, () -> {
+				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
+						PurchaseEventType.PG_CONFIRM_FAILED, Map.of("error", ex.getClass().getSimpleName()),
+						PurchaseConfirmStatus.FAILED, "pg confirm failed");
+				return null;
+			});
 			try {
 				holdClient.releaseHold(ctx.eventId, holdResponse.getHoldToken());
 			} catch (Exception ignore) {
@@ -239,7 +186,7 @@ public class PurchaseConfirmWorker {
 	}
 
 	private ConfirmContext loadConfirmContext(String purchaseId) {
-		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderBySeqAsc(purchaseId);
+		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(purchaseId);
 		if (events.isEmpty()) {
 			return null;
 		}
@@ -283,7 +230,7 @@ public class PurchaseConfirmWorker {
 	}
 
 	private ConfirmPaymentInfoAndResponse finalizeInTransaction(String purchaseId, ConfirmContext ctx,
-		ConfirmedPaymentInfo paymentInfo) {
+			ConfirmedPaymentInfo paymentInfo) {
 		finalizationService.finalizePayment(purchaseId, paymentInfo, ctx.userId);
 		return new ConfirmPaymentInfoAndResponse();
 	}

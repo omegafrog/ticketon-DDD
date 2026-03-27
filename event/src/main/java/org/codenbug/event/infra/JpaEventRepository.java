@@ -18,7 +18,7 @@ import jakarta.persistence.LockModeType;
 public interface JpaEventRepository extends JpaRepository<Event, EventId>, JpaSpecificationExecutor<Event> {
 	Event findBySeatLayoutId(SeatLayoutId seatLayoutId);
 
-	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Lock(LockModeType.PESSIMISTIC_READ)
 	@Query("select e from Event e where e.eventId = :id")
 	java.util.Optional<Event> findByIdForUpdate(@Param("id") EventId id);
 

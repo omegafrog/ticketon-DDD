@@ -1,6 +1,7 @@
 package org.codenbug.purchase.domain.es;
 
 public enum PurchaseEventType {
+	PAYMENT_INITIATED,
 	CONFIRM_REQUESTED,
 	PROCESSING_STARTED,
 	HOLD_REJECTED,

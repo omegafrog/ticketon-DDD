@@ -20,6 +20,10 @@ dependencies {
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.awaitility:awaitility:4.2.0'
+    testImplementation 'org.testcontainers:junit-jupiter:1.21.3'
+    testImplementation 'org.testcontainers:mysql:1.21.3'
+    testImplementation 'org.testcontainers:rabbitmq:1.21.3'
+    testImplementation 'org.testcontainers:testcontainers:1.21.3'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -34,6 +38,13 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    environment 'DOCKER_HOST', System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock'
+    environment 'DOCKER_API_VERSION', System.getenv('DOCKER_API_VERSION') ?: '1.53'
+    environment 'TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE',
+            System.getenv('TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE') ?: '/var/run/docker.sock'
+    systemProperty 'docker.host', System.getenv('DOCKER_HOST') ?: 'unix:///var/run/docker.sock'
+    systemProperty 'docker.api.version', System.getenv('DOCKER_API_VERSION') ?: '1.53'
+    systemProperty 'docker.tls.verify', '0'
 }
 tasks.named('bootJar'){
     enabled=false
