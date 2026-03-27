@@ -1,6 +1,7 @@
 package org.codenbug.purchase.app.es;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,18 +52,20 @@ public class PurchaseConfirmCommandService {
 		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
 			.orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
 		purchase.validate(request.getOrderId(), request.getAmount(), userId);
-		if (purchase.getExpectedSalesVersion() == null) {
-			throw new IllegalStateException("expectedSalesVersion is not set. Call /payments/init first.");
-		}
 
 		boolean alreadyRequested = eventStoreRepository.existsByPurchaseIdAndCommandId(purchaseId, commandId);
 		if (!alreadyRequested) {
+			Long expectedSalesVersion = resolveExpectedSalesVersionFromInitEvent(purchaseId, purchase);
+			if (expectedSalesVersion == null) {
+				throw new IllegalStateException("expectedSalesVersion is missing in init context. purchaseId=" + purchaseId);
+			}
+
 			LocalDateTime now = LocalDateTime.now();
 			String payloadJson = toJson(Map.of(
 				"purchaseId", purchaseId,
 				"userId", userId,
 				"eventId", purchase.getEventId(),
-				"expectedSalesVersion", purchase.getExpectedSalesVersion(),
+				"expectedSalesVersion", expectedSalesVersion,
 				"paymentKey", request.getPaymentKey(),
 				"orderId", request.getOrderId(),
 				"amount", request.getAmount(),
@@ -97,6 +100,42 @@ public class PurchaseConfirmCommandService {
 
 		String statusUrl = "/api/v1/payments/confirm/" + purchaseId + "/status";
 		return new ConfirmPaymentAcceptedResponse(purchaseId, "PENDING", statusUrl);
+	}
+
+	private Long resolveExpectedSalesVersionFromInitEvent(String purchaseId, Purchase purchase) {
+		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(purchaseId);
+		for (int i = events.size() - 1; i >= 0; i--) {
+			PurchaseStoredEvent event = events.get(i);
+			if (!PurchaseEventType.PAYMENT_INITIATED.name().equals(event.getEventType())) {
+				continue;
+			}
+			Long version = readExpectedSalesVersion(event.getPayloadJson());
+			if (version != null) {
+				return version;
+			}
+		}
+
+		return purchase.getExpectedSalesVersion();
+	}
+
+	private Long readExpectedSalesVersion(String payloadJson) {
+		if (payloadJson == null || payloadJson.isBlank()) {
+			return null;
+		}
+		try {
+			@SuppressWarnings("unchecked")
+			Map<String, Object> payload = objectMapper.readValue(payloadJson, Map.class);
+			Object value = payload.get("expectedSalesVersion");
+			if (value == null) {
+				return null;
+			}
+			if (value instanceof Number number) {
+				return number.longValue();
+			}
+			return Long.valueOf(String.valueOf(value));
+		} catch (Exception ignore) {
+			return null;
+		}
 	}
 
 	private String toJson(Object obj) {
