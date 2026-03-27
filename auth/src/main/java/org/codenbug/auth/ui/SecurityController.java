@@ -19,6 +19,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,12 +37,14 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "인증 및 로그인 API")
 @Slf4j
+@Validated
 public class SecurityController {
 
   private final AuthService authService;
@@ -70,7 +73,8 @@ public class SecurityController {
       @Parameter(description = "회원가입 정보", required = true)
       @Valid @RequestBody RegisterRequest request) {
     SecurityUserId userId = authService.register(request);
-    return ResponseEntity.ok(new RsData<>("202", "유저 생성 요청이 전송되었습니다.", userId));
+    return ResponseEntity.status(HttpStatus.ACCEPTED)
+        .body(new RsData<>(String.valueOf(HttpStatus.ACCEPTED.value()), "유저 생성 요청이 전송되었습니다.", userId));
   }
 
   @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다.")
@@ -79,7 +83,7 @@ public class SecurityController {
       @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")})
   @PostMapping("/login")
   public ResponseEntity<RsData<String>> login(
-      @Parameter(description = "로그인 정보", required = true) @RequestBody LoginRequest request,
+      @Parameter(description = "로그인 정보", required = true) @Valid @RequestBody LoginRequest request,
       HttpServletResponse resp) {
     long startTime = System.currentTimeMillis();
     log.debug("Login request started for email: {}", request.getEmail());
@@ -96,7 +100,7 @@ public class SecurityController {
       long duration = endTime - startTime;
       log.debug("Login SUCCESS for email: {} - Duration: {}ms", request.getEmail(), duration);
 
-      return ResponseEntity.ok(new RsData<>("200", "login success.",
+      return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "login success.",
           tokenInfo.getAccessToken().getRawValue()));
     } catch (Exception e) {
       long endTime = System.currentTimeMillis();
@@ -135,19 +139,19 @@ public class SecurityController {
 
     blackList.add(req.getHeader("User-Id"), refreshToken);
 
-    return ResponseEntity.ok(new RsData<>("200", "logout success.", null));
+    return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "logout success.", null));
   }
 
   @Operation(summary = "소셜 로그인 요청", description = "소셜 로그인 페이지로의 리다이렉션 URL을 반환합니다.")
   @ApiResponses({@ApiResponse(responseCode = "200", description = "소셜 로그인 URL 반환 성공"),
       @ApiResponse(responseCode = "400", description = "지원하지 않는 소셜 로그인 타입")})
   @GetMapping(value = "/social/{socialLoginType}")
-  public ResponseEntity<String> request(@Parameter(description = "소셜 로그인 타입 (google, kakao)",
+  public ResponseEntity<RsData<String>> request(@Parameter(description = "소셜 로그인 타입 (google, kakao)",
       required = true) @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
 
     String redirectURL = authService.request(socialLoginType);
 
-    return ResponseEntity.ok(redirectURL); // 리다이렉션 URL을 응답으로 반환
+    return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "소셜 로그인 URL 조회 성공", redirectURL));
   }
 
   @Operation(summary = "소셜 로그인 콜백", description = "소셜 로그인 콜백을 처리하고 JWT 토큰을 발급합니다.")
@@ -159,7 +163,7 @@ public class SecurityController {
       @Parameter(description = "소셜 로그인 타입",
           required = true) @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
       @Parameter(description = "소셜 로그인 인증 코드",
-          required = true) @RequestParam(name = "code") String code,
+          required = true) @RequestParam(name = "code") @NotBlank String code,
       @Parameter(description = "리다이렉션 URL", required = false) @RequestParam(name = "redirectUrl",
           required = false) String redirectUrl,
       HttpServletResponse response) {
@@ -182,13 +186,13 @@ public class SecurityController {
 
       response.addCookie(refreshTokenCookie);
 
-      return ResponseEntity.ok(new RsData<>("200-SUCCESS", "소셜 로그인 성공",
+      return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "소셜 로그인 성공",
           accessToken.getRawValue()));
 
     } catch (Exception e) {
       log.error(">> 소셜 로그인 처리 중 오류 발생: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-          .body(new RsData<>("500-INTERNAL_SERVER_ERROR", "소셜 로그인 처리 중 오류가 발생했습니다.", null));
+          .body(new RsData<>(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), "소셜 로그인 처리 중 오류가 발생했습니다.", null));
     }
   }
 
@@ -211,13 +215,13 @@ public class SecurityController {
 
       log.debug("Token refresh successful for user: {}", request.getHeader("User-Id"));
 
-      return ResponseEntity.ok(new RsData<>("200", "토큰 재발급 성공",
+      return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "토큰 재발급 성공",
           tokenInfo.getAccessToken().getRawValue()));
 
     } catch (Exception e) {
       log.error("Token refresh failed: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-          .body(new RsData<>("401", "토큰 재발급 실패: " + e.getMessage(), null));
+          .body(new RsData<>(String.valueOf(HttpStatus.UNAUTHORIZED.value()), "토큰 재발급 실패: " + e.getMessage(), null));
     }
   }
 

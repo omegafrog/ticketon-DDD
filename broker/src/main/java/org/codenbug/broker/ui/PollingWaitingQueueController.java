@@ -29,7 +29,7 @@ public class PollingWaitingQueueController {
 	public ResponseEntity<RsData<Void>> enterWaiting(@PathVariable(name = "id") String eventId) {
 		service.enter(eventId);
 		return new ResponseEntity<>(new RsData<>(
-			HttpStatus.OK.toString(), "대기열 진입 성공.", null
+			String.valueOf(HttpStatus.OK.value()), "대기열 진입 성공.", null
 		), HttpStatus.OK);
 	}
 
@@ -38,7 +38,7 @@ public class PollingWaitingQueueController {
 	@GetMapping("/events/{id}/current")
 	public ResponseEntity<RsData<PollingQueueInfo>> parseWaitingOrder(@PathVariable(name = "id")String eventId){
 		PollingQueueInfo pollingQueueInfo = service.parseOrder(eventId);
-		return new ResponseEntity<>(new RsData<>(HttpStatus.OK.toString(), "대기열 순번 조회 성공", pollingQueueInfo), HttpStatus.OK);
+		return new ResponseEntity<>(new RsData<>(String.valueOf(HttpStatus.OK.value()), "대기열 순번 조회 성공", pollingQueueInfo), HttpStatus.OK);
 	}
 
 	@RoleRequired(Role.USER)
@@ -46,6 +46,6 @@ public class PollingWaitingQueueController {
 	@DeleteMapping("/events/{id}/waiting")
 	public ResponseEntity<RsData<Void>> disconnectWaiting(@PathVariable(name = "id") String eventId) {
 		service.disconnect(eventId);
-		return new ResponseEntity<>(new RsData<>(HttpStatus.OK.toString(), "대기열 탈출 성공", null), HttpStatus.OK);
+		return new ResponseEntity<>(new RsData<>(String.valueOf(HttpStatus.OK.value()), "대기열 탈출 성공", null), HttpStatus.OK);
 	}
 }

@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.codenbug.broker.app.WaitingQueueEntryService;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.common.Role;
+import org.codenbug.common.RsData;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.http.MediaType;
@@ -71,7 +72,8 @@ public class WaitingQueueController {
   @AuthNeeded
   @RoleRequired({Role.USER})
   @PostMapping("/events/{id}/tickets/disconnect")
-  public ResponseEntity<Void> disconnectFromQueue(@PathVariable("id") String eventId) {
-    return waitingQueueEntryService.disconnect(eventId);
+  public ResponseEntity<RsData<Void>> disconnectFromQueue(@PathVariable("id") String eventId) {
+    waitingQueueEntryService.disconnect(eventId);
+    return ResponseEntity.ok(new RsData<>("200", "대기열 연결 해제 성공", null));
   }
 }

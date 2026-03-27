@@ -1,6 +1,7 @@
 package org.codenbug.broker.ui;
 
 import org.apache.tomcat.util.threads.ThreadPoolExecutor;
+import org.codenbug.common.RsData;
 import org.springframework.boot.web.embedded.tomcat.TomcatWebServer;
 import org.springframework.boot.web.server.WebServer;
 import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
@@ -32,7 +33,7 @@ public class MonitoringController {
    * 스레드 풀 상태 모니터링 (JMX 방식)
    */
   @GetMapping("/threadpool")
-  public ResponseEntity<Map<String, Object>> getThreadPoolStatus() {
+  public ResponseEntity<RsData<Map<String, Object>>> getThreadPoolStatus() {
     Map<String, Object> status = new HashMap<>();
 
     try {
@@ -140,14 +141,14 @@ public class MonitoringController {
       e.printStackTrace();
     }
 
-    return ResponseEntity.ok(status);
+    return ResponseEntity.ok(new RsData<>("200", "스레드풀 상태 조회 성공", status));
   }
 
   /**
    * 간단한 스레드 풀 요약 정보 (JMX 방식)
    */
   @GetMapping("/threadpool/summary")
-  public ResponseEntity<Map<String, Object>> getThreadPoolSummary() {
+  public ResponseEntity<RsData<Map<String, Object>>> getThreadPoolSummary() {
     Map<String, Object> summary = new HashMap<>();
 
     try {
@@ -268,6 +269,6 @@ public class MonitoringController {
       summary.put("utilization", 0.0);
     }
 
-    return ResponseEntity.ok(summary);
+    return ResponseEntity.ok(new RsData<>("200", "스레드풀 요약 조회 성공", summary));
   }
 }

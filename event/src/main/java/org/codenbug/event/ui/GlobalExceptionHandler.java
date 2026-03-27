@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
       errors.put(error.getField(), error.getDefaultMessage());
     });
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
-        HttpStatus.BAD_REQUEST.toString(), "파라미터 validation 실패했습니다.", errors));
+        String.valueOf(HttpStatus.BAD_REQUEST.value()), "파라미터 validation 실패했습니다.", errors));
   }
 
   private ResponseEntity<RsData<Map<String, Object>>> handleControllerParameterValidationFailedException(
@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
 
     ex.getFieldErrors().forEach(error -> errors.put(error.getFieldName(), error.getMessage()));
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
-        HttpStatus.BAD_REQUEST.toString(), "파라미터 validation 실패했습니다.", errors));
+        String.valueOf(HttpStatus.BAD_REQUEST.value()), "파라미터 validation 실패했습니다.", errors));
   }
 
   private ResponseEntity<RsData<Map<String, Object>>> handleMethodArgumentNotValidException(
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
       errors.put(error.getField(), error.getDefaultMessage());
     });
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
-        ex.getStatusCode().toString(), "파라미터 validation 실패했습니다.", errors));
+        String.valueOf(ex.getStatusCode().value()), "파라미터 validation 실패했습니다.", errors));
   }
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", "요청 본문 형식이 올바르지 않습니다.");
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
-        HttpStatus.BAD_REQUEST.toString(), "요청 본문 형식이 올바르지 않습니다.", errors));
+        String.valueOf(HttpStatus.BAD_REQUEST.value()), "요청 본문 형식이 올바르지 않습니다.", errors));
   }
 
   @ExceptionHandler(IllegalStateException.class)
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", ex.getMessage());
     return ResponseEntity.badRequest().body(new RsData<Map<String, Object>>(
-        HttpStatus.BAD_REQUEST.toString(), "파라미터 validation 실패했습니다.", errors));
+        String.valueOf(HttpStatus.BAD_REQUEST.value()), "파라미터 validation 실패했습니다.", errors));
   }
 
   @ExceptionHandler(EntityNotFoundException.class)
@@ -83,7 +83,7 @@ public class GlobalExceptionHandler {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", ex.getMessage() == null ? "리소스를 찾을 수 없습니다." : ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RsData<Map<String, Object>>(
-        HttpStatus.NOT_FOUND.toString(), "리소스를 찾을 수 없습니다.", errors));
+        String.valueOf(HttpStatus.NOT_FOUND.value()), "리소스를 찾을 수 없습니다.", errors));
   }
 
   @ExceptionHandler(JpaObjectRetrievalFailureException.class)
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", "리소스를 찾을 수 없습니다.");
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RsData<Map<String, Object>>(
-        HttpStatus.NOT_FOUND.toString(), "리소스를 찾을 수 없습니다.", errors));
+        String.valueOf(HttpStatus.NOT_FOUND.value()), "리소스를 찾을 수 없습니다.", errors));
   }
 
   @ExceptionHandler(Exception.class)
@@ -100,7 +100,7 @@ public class GlobalExceptionHandler {
     Map<String, Object> errors = new HashMap<>();
     errors.put("message", "서버 내부 오류가 발생했습니다.");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new RsData<Map<String, Object>>(
-        HttpStatus.INTERNAL_SERVER_ERROR.toString(), "서버 내부 오류가 발생했습니다.", errors));
+        String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), "서버 내부 오류가 발생했습니다.", errors));
   }
 
 

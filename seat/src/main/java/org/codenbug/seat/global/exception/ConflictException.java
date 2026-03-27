@@ -1,7 +1,9 @@
 package org.codenbug.seat.global.exception;
 
-public class ConflictException extends RuntimeException {
+import org.codenbug.common.exception.DomainException;
+
+public class ConflictException extends DomainException {
 	public ConflictException(String s) {
-		super(s);
+		super("409", s);
 	}
 }

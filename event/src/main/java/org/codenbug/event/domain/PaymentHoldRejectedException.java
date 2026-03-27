@@ -1,7 +1,9 @@
 package org.codenbug.event.domain;
 
-public class PaymentHoldRejectedException extends RuntimeException {
+import org.codenbug.common.exception.DomainException;
+
+public class PaymentHoldRejectedException extends DomainException {
 	public PaymentHoldRejectedException(String message) {
-		super(message);
+		super("409", message);
 	}
 }

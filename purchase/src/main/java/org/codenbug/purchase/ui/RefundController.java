@@ -2,6 +2,7 @@ package org.codenbug.purchase.ui;
 
 import java.util.List;
 
+import org.codenbug.common.RsData;
 import org.codenbug.purchase.app.ManagerRefundService;
 import org.codenbug.purchase.app.RefundQueryService;
 import org.codenbug.purchase.domain.RefundStatus;
@@ -21,7 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 
 /**
  * 환불 관련 요청을 처리하는 REST 컨트롤러.
@@ -31,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/refunds")
 @RequiredArgsConstructor
 @Tag(name = "Refund", description = "환불 관련 API")
+@Validated
 public class RefundController {
 
 	private final RefundQueryService refundQueryService;
@@ -46,12 +51,12 @@ public class RefundController {
 	 */
 	@GetMapping("/my")
 	@Operation(summary = "내 환불 내역 조회", description = "현재 로그인한 사용자의 환불 내역을 페이지 단위로 조회합니다.")
-	public ResponseEntity<Page<RefundQueryService.RefundDto>> getMyRefunds(
-		@RequestParam String userId,
+	public ResponseEntity<RsData<Page<RefundQueryService.RefundDto>>> getMyRefunds(
+		@RequestParam @NotBlank String userId,
 		@PageableDefault(size = 10) Pageable pageable) {
 
 		Page<RefundQueryService.RefundDto> refunds = refundQueryService.getUserRefundHistory(userId, pageable);
-		return ResponseEntity.ok(refunds);
+		return ResponseEntity.ok(new RsData<>("200", "내 환불 내역 조회 성공", refunds));
 	}
 
 	/**
@@ -64,12 +69,12 @@ public class RefundController {
 	 */
 	@GetMapping("/{refundId}")
 	@Operation(summary = "특정 환불 상세 조회", description = "특정 환불의 상세 정보를 조회합니다. 해당 환불이 특정 사용자에게 속하는지 확인합니다.")
-	public ResponseEntity<RefundQueryService.RefundDto> getRefundDetail(
-		@PathVariable String refundId,
-		@RequestParam String userId) {
+	public ResponseEntity<RsData<RefundQueryService.RefundDto>> getRefundDetail(
+		@PathVariable @NotBlank String refundId,
+		@RequestParam @NotBlank String userId) {
 
 		RefundQueryService.RefundDto refund = refundQueryService.getRefundDetail(refundId, userId);
-		return ResponseEntity.ok(refund);
+		return ResponseEntity.ok(new RsData<>("200", "특정 환불 상세 조회 성공", refund));
 	}
 
 	/**
@@ -81,8 +86,8 @@ public class RefundController {
 	 */
 	@PostMapping("/manager/single")
 	@Operation(summary = "매니저 단일 환불 처리", description = "관리자가 단일 구매에 대해 환불을 처리합니다.")
-	public ResponseEntity<ManagerRefundService.ManagerRefundResult> processManagerRefund(
-		@RequestBody ManagerRefundRequest request) {
+	public ResponseEntity<RsData<ManagerRefundService.ManagerRefundResult>> processManagerRefund(
+		@Valid @RequestBody ManagerRefundRequest request) {
 
 		ManagerRefundService.ManagerRefundResult result = managerRefundService.processManagerRefund(
 			request.getPurchaseId(),
@@ -91,7 +96,7 @@ public class RefundController {
 			new UserId(request.getManagerId())
 		);
 
-		return ResponseEntity.ok(result);
+		return ResponseEntity.accepted().body(new RsData<>("202", "매니저 단일 환불 처리 요청 완료", result));
 	}
 
 	/**
@@ -103,8 +108,8 @@ public class RefundController {
 	 */
 	@PostMapping("/manager/batch")
 	@Operation(summary = "매니저 일괄 환불 처리", description = "관리자가 특정 이벤트와 관련된 모든 구매에 대해 일괄 환불을 처리합니다. (예: 이벤트 취소)")
-	public ResponseEntity<List<ManagerRefundService.ManagerRefundResult>> processBatchRefund(
-		@RequestBody BatchRefundRequest request) {
+	public ResponseEntity<RsData<List<ManagerRefundService.ManagerRefundResult>>> processBatchRefund(
+		@Valid @RequestBody BatchRefundRequest request) {
 
 		List<ManagerRefundService.ManagerRefundResult> results = managerRefundService.processBatchRefund(
 			request.getEventId(),
@@ -113,7 +118,7 @@ public class RefundController {
 			new UserId(request.getManagerId())
 		);
 
-		return ResponseEntity.ok(results);
+		return ResponseEntity.accepted().body(new RsData<>("202", "매니저 일괄 환불 처리 요청 완료", results));
 	}
 
 	/**
@@ -125,11 +130,11 @@ public class RefundController {
 	 */
 	@GetMapping("/admin/by-status")
 	@Operation(summary = "환불 상태별 조회 (관리자용)", description = "관리자가 특정 상태의 환불 목록을 조회합니다.")
-	public ResponseEntity<List<RefundQueryService.RefundDto>> getRefundsByStatus(
+	public ResponseEntity<RsData<List<RefundQueryService.RefundDto>>> getRefundsByStatus(
 		@Parameter(description = "조회할 환불 상태", required = true) @RequestParam RefundStatus status) {
 
 		List<RefundQueryService.RefundDto> refunds = refundQueryService.getRefundsByStatus(status);
-		return ResponseEntity.ok(refunds);
+		return ResponseEntity.ok(new RsData<>("200", "환불 상태별 조회 성공", refunds));
 	}
 
 	/**
@@ -141,9 +146,13 @@ public class RefundController {
 	 * managerName: 환불을 처리하는 관리자 이름
 	 */
 	public static class ManagerRefundRequest {
+		@NotBlank
 		private String purchaseId;
+		@NotBlank
 		private String refundReason;
+		@NotBlank
 		private String managerId;
+		@NotBlank
 		private String managerName;
 
 		// Getters and Setters
@@ -189,9 +198,13 @@ public class RefundController {
 	 * managerName: 환불을 처리하는 관리자 이름
 	 */
 	public static class BatchRefundRequest {
+		@NotBlank
 		private String eventId;
+		@NotBlank
 		private String refundReason;
+		@NotBlank
 		private String managerId;
+		@NotBlank
 		private String managerName;
 
 		// Getters and Setters

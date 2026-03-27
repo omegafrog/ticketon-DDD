@@ -14,4 +14,8 @@ public class ControllerParameterValidationFailedException extends BaseException 
     this.fieldErrors = fieldErrors;
   }
 
+	public List<? extends FieldError> getFieldErrors() {
+		return fieldErrors;
+	}
+
 }

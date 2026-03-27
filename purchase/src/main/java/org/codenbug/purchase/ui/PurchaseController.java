@@ -32,14 +32,18 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/payments")
 @Tag(name = "Purchase", description = "결제 및 티켓 구매 API")
+@Validated
 public class PurchaseController {
 	private final PurchaseCancelService purchaseCancelService;
 	private final PurchaseInitCommandService initCommandService;
@@ -59,7 +63,7 @@ public class PurchaseController {
 	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<InitiatePaymentResponse>> initiatePayment(
 		@Parameter(description = "결제 준비 요청 정보", required = true)
-		@RequestBody InitiatePaymentRequest request,
+		@Valid @RequestBody InitiatePaymentRequest request,
 		@Parameter(description = "대기열 진입 인증 토큰", required = true)
 		@RequestHeader("entryAuthToken") String entryAuthToken
 	) {
@@ -67,7 +71,8 @@ public class PurchaseController {
 
 		entryTokenValidator.validate(userId, entryAuthToken, request.getEventId());
 		InitiatePaymentResponse response = initCommandService.initiatePayment(request, userId);
-		return ResponseEntity.ok(new RsData<>("200", "결제 준비 완료", response));
+		return ResponseEntity.status(201)
+			.body(new RsData<>("201", "결제 준비 완료", response));
 	}
 
 	@Operation(summary = "결제 승인", description = "결제를 최종 승인하고 티켓을 발급합니다. Event Sourcing 기반으로 비동기 처리됩니다.")
@@ -82,14 +87,14 @@ public class PurchaseController {
 	@RoleRequired(Role.USER)
 	public ResponseEntity<RsData<ConfirmPaymentAcceptedResponse>> confirmPayment(
 		@Parameter(description = "결제 승인 요청 정보", required = true)
-		@RequestBody ConfirmPaymentRequest request,
+		@Valid @RequestBody ConfirmPaymentRequest request,
 		@Parameter(description = "대기열 진입 인증 토큰", required = true)
 		@RequestHeader("entryAuthToken") String entryAuthToken
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
 		ConfirmPaymentAcceptedResponse response = confirmCommandService.requestConfirm(request, userId);
-		return ResponseEntity.ok(new RsData<>("200", "결제 승인 요청受理", response));
+		return ResponseEntity.accepted().body(new RsData<>("202", "결제 승인 요청受理", response));
 	}
 
 	@Operation(summary = "결제 승인 상태 조회", description = "Event Sourcing 기반 결제 승인 처리 상태를 조회합니다.")
@@ -104,7 +109,7 @@ public class PurchaseController {
 	@RoleRequired(Role.USER)
 	public ResponseEntity<RsData<ConfirmPaymentStatusResponse>> getConfirmStatus(
 		@Parameter(description = "구매 ID", required = true)
-		@PathVariable String purchaseId
+		@PathVariable @NotBlank String purchaseId
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
@@ -121,9 +126,9 @@ public class PurchaseController {
 	@PostMapping("/{paymentKey}/cancel")
 	public ResponseEntity<RsData<CancelPaymentResponse>> cancelPayment(
 		@Parameter(description = "Toss Payments 결제 키", required = true)
-		@PathVariable String paymentKey,
+		@PathVariable @NotBlank String paymentKey,
 		@Parameter(description = "결제 취소 요청 정보", required = true)
-		@RequestBody CancelPaymentRequest request
+		@Valid @RequestBody CancelPaymentRequest request
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 

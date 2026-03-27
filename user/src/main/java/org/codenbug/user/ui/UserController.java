@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/v1/users/")
 @Tag(name = "User", description = "사용자 정보 관리 API")
@@ -60,7 +62,7 @@ public class UserController {
 	@PutMapping("/me")
 	@AuthNeeded
 	@RoleRequired(value={Role.USER})
-	public ResponseEntity<RsData<UserInfo>> updateMe(@RequestBody UpdateUserRequest request) {
+	public ResponseEntity<RsData<UserInfo>> updateMe(@Valid @RequestBody UpdateUserRequest request) {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		UserInfo updatedUserInfo = userQueryService.updateUser(userSecurityToken, new UserId(userSecurityToken.getUserId()), request);
 		return ResponseEntity.ok(new RsData<>("200", "User updated successfully", updatedUserInfo));
