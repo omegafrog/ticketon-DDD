@@ -110,6 +110,7 @@ services:
     volumes:
       - mysql_master_data:/var/lib/mysql
       - ./mysql/master/master.cnf:/etc/my.cnf
+      - ./mysql/init-master.sql:/docker-entrypoint-initdb.d/01-init-master.sql:ro
     ports:
       - "3306:3306"
       - "33060:33060"
@@ -132,6 +133,7 @@ services:
     volumes:
       - ./mysql/replica/replica.cnf:/etc/my.cnf
       - mysql_replica_data:/var/lib/mysql
+      - ./mysql/init-replica.sql:/docker-entrypoint-initdb.d/01-init-replica.sql:ro
     ports:
       - "3307:3306"
       - "33061:33060"
@@ -145,6 +147,94 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
       timeout: 5s
       retries: 10
+
+  mysql-replication-bootstrap:
+    image: mysql:lts
+    container_name: mysql-replication-bootstrap
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MASTER_HOST: mysql-master
+      REPLICA_HOST: mysql-replica
+      REPL_USER: repl_user
+      REPL_PASSWORD: repl_password
+    command:
+      - bash
+      - -ec
+      - |
+        set -euo pipefail
+        wait_for_mysql() {
+          local host="$1"
+          until mysqladmin ping -h"${host}" -uroot -p"${MYSQL_ROOT_PASSWORD}" --silent; do
+            sleep 2
+          done
+        }
+
+        wait_for_mysql "${MASTER_HOST}"
+        wait_for_mysql "${REPLICA_HOST}"
+
+        mysql -h"${MASTER_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "
+          CREATE USER IF NOT EXISTS '${REPL_USER}'@'%' IDENTIFIED BY '${REPL_PASSWORD}';
+          GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '${REPL_USER}'@'%';
+          FLUSH PRIVILEGES;
+        "
+
+        MASTER_STATUS="$(mysql -Nse 'SHOW BINARY LOG STATUS' -h"${MASTER_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}" || true)"
+        if [ -z "${MASTER_STATUS}" ]; then
+          MASTER_STATUS="$(mysql -Nse 'SHOW MASTER STATUS' -h"${MASTER_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}")"
+        fi
+
+        MASTER_LOG_FILE="$(echo "${MASTER_STATUS}" | awk '{print $1}')"
+        MASTER_LOG_POS="$(echo "${MASTER_STATUS}" | awk '{print $2}')"
+
+        read_status_field() {
+          local field="$1"
+          mysql -h"${REPLICA_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW REPLICA STATUS\\G" 2>/dev/null \
+            | awk -F': ' -v key="$field" '$1 ~ key {print $2; exit}'
+        }
+
+        CURRENT_HOST="$(read_status_field 'Source_Host')"
+        CURRENT_IO="$(read_status_field 'Replica_IO_Running')"
+        CURRENT_SQL="$(read_status_field 'Replica_SQL_Running')"
+
+        if [ "${CURRENT_HOST}" = "${MASTER_HOST}" ] && [ "${CURRENT_IO}" = "Yes" ] && [ "${CURRENT_SQL}" = "Yes" ]; then
+          echo "[bootstrap] Replica already healthy"
+          exit 0
+        fi
+
+        mysql -h"${REPLICA_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "
+          STOP REPLICA;
+          RESET REPLICA ALL;
+          CHANGE REPLICATION SOURCE TO
+            SOURCE_HOST='${MASTER_HOST}',
+            SOURCE_USER='${REPL_USER}',
+            SOURCE_PASSWORD='${REPL_PASSWORD}',
+            SOURCE_LOG_FILE='${MASTER_LOG_FILE}',
+            SOURCE_LOG_POS=${MASTER_LOG_POS},
+            SOURCE_CONNECT_RETRY=5,
+            SOURCE_RETRY_COUNT=86400;
+          START REPLICA;
+        "
+
+        for _ in $(seq 1 30); do
+          IO_RUNNING="$(read_status_field 'Replica_IO_Running')"
+          SQL_RUNNING="$(read_status_field 'Replica_SQL_Running')"
+          if [ "${IO_RUNNING}" = "Yes" ] && [ "${SQL_RUNNING}" = "Yes" ]; then
+            echo "[bootstrap] Replication is healthy"
+            exit 0
+          fi
+          sleep 2
+        done
+
+        mysql -h"${REPLICA_HOST}" -uroot -p"${MYSQL_ROOT_PASSWORD}" -e "SHOW REPLICA STATUS\\G" || true
+        exit 1
+    restart: on-failure
+    networks:
+      - common
 
 networks:
   common:

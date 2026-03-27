@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.codenbug.notification.application.service.NotificationApplicationService;
+import org.codenbug.notification.application.service.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class EventNotificationService {
 
-    private final NotificationApplicationService notificationApplicationService;
+    private final NotificationCommandService notificationApplicationService;
 
     /**
      * 새 이벤트 오픈 알림 전송 (관심있는 사용자들에게)
