@@ -2,7 +2,6 @@ package org.codenbug.purchase.app.es;
 
 import static org.codenbug.common.transaction.TransactionExecutor.*;
 
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -20,8 +19,6 @@ import org.codenbug.purchase.infra.client.EventPaymentHoldClient;
 import org.codenbug.purchase.infra.client.EventPaymentHoldCreateResponse;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -65,9 +62,7 @@ public class PurchaseConfirmWorker {
 		this.holdTtlSeconds = holdTtlSeconds;
 	}
 
-	@RabbitListener(queues = PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE)
-	public void handle(Message message) {
-		String messageId = message.getMessageProperties().getMessageId();
+	public void process(String messageId, String payloadJson) {
 		if (messageId == null || messageId.isBlank()) {
 			return;
 		}
@@ -76,8 +71,7 @@ public class PurchaseConfirmWorker {
 			return;
 		}
 
-		String body = new String(message.getBody(), StandardCharsets.UTF_8);
-		String purchaseId = extractPurchaseId(body);
+		String purchaseId = extractPurchaseId(payloadJson);
 		if (purchaseId == null) {
 			return;
 		}
