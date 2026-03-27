@@ -3,7 +3,7 @@ package org.codenbug.purchase.ui;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
-import org.codenbug.purchase.app.PurchaseService;
+import org.codenbug.purchase.app.PurchaseCancelService;
 import org.codenbug.purchase.app.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.es.PurchaseConfirmQueryService;
 import org.codenbug.purchase.app.es.PurchaseInitCommandService;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/api/v1/payments")
 @Tag(name = "Purchase", description = "결제 및 티켓 구매 API")
 public class PurchaseController {
-	private final PurchaseService purchaseService;
+	private final PurchaseCancelService purchaseCancelService;
 	private final PurchaseInitCommandService initCommandService;
 	private final PurchaseConfirmCommandService confirmCommandService;
 	private final PurchaseConfirmQueryService confirmQueryService;
@@ -127,7 +127,7 @@ public class PurchaseController {
 	) {
 		String userId = LoggedInUserContext.get().getUserId();
 
-		CancelPaymentResponse response = purchaseService.cancelPayment(request, paymentKey, userId);
+		CancelPaymentResponse response = purchaseCancelService.cancelPayment(request, paymentKey, userId);
 		return ResponseEntity.ok(new RsData<>("200", "결제 취소 완료", response));
 	}
 }
