@@ -70,4 +70,10 @@ public class PurchaseOutboxMessage {
 		this.publishedAt = now;
 		this.lastError = null;
 	}
+
+	public void markFailedPermanently(LocalDateTime now, String error) {
+		this.publishAttempts++;
+		this.publishedAt = now;
+		this.lastError = error;
+	}
 }

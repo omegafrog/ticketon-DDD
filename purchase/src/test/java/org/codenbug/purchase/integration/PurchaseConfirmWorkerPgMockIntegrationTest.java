@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.awaitility.Awaitility;
@@ -73,7 +74,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = PurchaseTestApplication.class)
 class PurchaseConfirmWorkerPgMockIntegrationTest {
 
@@ -165,6 +166,7 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 
 		registry.add("spring.rabbitmq.listener.simple.auto-startup", () -> "false");
 		registry.add("spring.task.scheduling.enabled", () -> "false");
+		registry.add("purchase.outbox.max-publish-attempts", () -> "3");
 
 		registry.add("services.event.base-url", () -> INTERNAL_BASE_URL);
 		registry.add("services.seat.base-url", () -> INTERNAL_BASE_URL);
@@ -207,21 +209,21 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 
 	@BeforeEach
 	void setUp() {
+		reset(tossPaymentPgApiService);
 		ensureCommandUniqueConstraintRemovedForIntegrationPath();
 
 		when(tossPaymentPgApiService.supports(PaymentProvider.TOSS)).thenReturn(true);
-		ConfirmedPaymentInfo paymentInfo = new ConfirmedPaymentInfo(
-			"payment-key-1",
-			"order-1",
-			"테스트 주문",
-			1000,
-			"DONE",
-			"CARD",
-			"2026-03-26T08:00:00+09:00",
-			new ConfirmedPaymentInfo.Receipt("https://receipt.example.com")
-		);
 		when(tossPaymentPgApiService.confirmPayment(anyString(), anyString(), anyInt(), anyString()))
-			.thenReturn(paymentInfo);
+			.thenAnswer(invocation -> new ConfirmedPaymentInfo(
+				invocation.getArgument(0),
+				invocation.getArgument(1),
+				"테스트 주문",
+				invocation.getArgument(2),
+				"DONE",
+				"CARD",
+				"2026-03-26T08:00:00+09:00",
+				new ConfirmedPaymentInfo.Receipt("https://receipt.example.com")
+			));
 	}
 
 	private void ensureCommandUniqueConstraintRemovedForIntegrationPath() {
@@ -240,45 +242,148 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	@Test
 	void confirmScheduler_processesConfirmToDone_withOnlyPgApiMocked() {
 		String userId = "user-1";
-		seedSeatLock(userId, "event-1", "A-1");
-
-		var initResponse = initCommandService.initiatePayment(
-			new InitiatePaymentRequest("event-1", "order-1", 1000),
-			userId
-		);
-
-		confirmCommandService.requestConfirm(
-			new ConfirmPaymentRequest(initResponse.getPurchaseId(), "payment-key-1", "order-1", 1000, "TOSS"),
-			userId
-		);
+		String purchaseId = requestConfirm(userId, "event-1", "A-1", "order-1", "payment-key-1", 1000);
 
 		confirmScheduler.processPendingConfirms();
 
 		Awaitility.await()
 			.atMost(Duration.ofSeconds(10))
 			.untilAsserted(() -> {
-				PurchaseConfirmStatusProjection projection = projectionRepository.findById(initResponse.getPurchaseId())
+				PurchaseConfirmStatusProjection projection = projectionRepository.findById(purchaseId)
 					.orElseThrow();
 				assertThat(projection.getStatus()).isEqualTo(PurchaseConfirmStatus.DONE);
 				assertThat(projection.getLastEventType()).isEqualTo(PurchaseEventType.PAYMENT_COMPLETED.name());
 			});
 
-		Purchase purchase = purchaseRepository.findById(new PurchaseId(initResponse.getPurchaseId()))
+		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
 			.orElseThrow();
 		assertThat(purchase.isPaymentCompleted()).isTrue();
 
-		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(initResponse.getPurchaseId());
+		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(purchaseId);
 		assertThat(events).extracting(PurchaseStoredEvent::getEventType)
 			.contains(PurchaseEventType.CONFIRM_REQUESTED.name())
 			.contains(PurchaseEventType.PG_CONFIRM_SUCCEEDED.name())
 			.contains(PurchaseEventType.PAYMENT_COMPLETED.name());
 
-		List<PurchaseOutboxMessage> outboxMessages = outboxRepository.findAll();
-		assertThat(outboxMessages).hasSize(1);
-		assertThat(outboxMessages.get(0).getPublishedAt()).isNotNull();
+		PurchaseOutboxMessage outboxMessage = findOutboxByPurchaseId(purchaseId);
+		assertThat(outboxMessage.getPublishedAt()).isNotNull();
 
 		verify(tossPaymentPgApiService, times(1))
-			.confirmPayment(eq("payment-key-1"), eq("order-1"), eq(1000), eq("confirm:" + initResponse.getPurchaseId()));
+			.confirmPayment(eq("payment-key-1"), eq("order-1"), eq(1000), eq("confirm:" + purchaseId));
+	}
+
+	@Test
+	void confirmScheduler_reprocessesWhenStatusIsProcessing_withOnlyPgApiMocked() {
+		String userId = "user-processing";
+		String purchaseId = requestConfirm(userId, "event-1", "A-1", "order-processing", "payment-key-processing", 1000);
+
+		PurchaseConfirmStatusProjection projection = projectionRepository.findById(purchaseId).orElseThrow();
+		projection.update(PurchaseConfirmStatus.PROCESSING, projection.getLastEventSeq(), projection.getLastEventType(),
+			"processing", LocalDateTime.now());
+		projectionRepository.save(projection);
+
+		confirmScheduler.processPendingConfirms();
+
+		Awaitility.await()
+			.atMost(Duration.ofSeconds(10))
+			.untilAsserted(() -> {
+				PurchaseConfirmStatusProjection updated = projectionRepository.findById(purchaseId).orElseThrow();
+				assertThat(updated.getStatus()).isEqualTo(PurchaseConfirmStatus.DONE);
+			});
+
+		verify(tossPaymentPgApiService, times(1))
+			.confirmPayment(eq("payment-key-processing"), eq("order-processing"), eq(1000), eq("confirm:" + purchaseId));
+	}
+
+	@Test
+	void confirmScheduler_skipsRetryForTerminalStatuses_withOnlyPgApiMocked() {
+		List<PurchaseConfirmStatus> terminalStatuses = List.of(
+			PurchaseConfirmStatus.DONE,
+			PurchaseConfirmStatus.FAILED,
+			PurchaseConfirmStatus.REJECTED
+		);
+
+		for (PurchaseConfirmStatus terminalStatus : terminalStatuses) {
+			String userId = "user-terminal-" + terminalStatus.name().toLowerCase();
+			String purchaseId = requestConfirm(
+				userId,
+				"event-1",
+				"A-1",
+				"order-terminal-" + terminalStatus.name().toLowerCase(),
+				"payment-key-terminal-" + terminalStatus.name().toLowerCase(),
+				1000
+			);
+
+			PurchaseConfirmStatusProjection projection = projectionRepository.findById(purchaseId).orElseThrow();
+			projection.update(terminalStatus, projection.getLastEventSeq(), projection.getLastEventType(),
+				"terminal", LocalDateTime.now());
+			projectionRepository.save(projection);
+
+			confirmScheduler.processPendingConfirms();
+
+			PurchaseOutboxMessage outboxMessage = findOutboxByPurchaseId(purchaseId);
+			assertThat(outboxMessage.getPublishedAt()).isNotNull();
+			assertThat(outboxMessage.getLastError()).contains("non-retryable status");
+
+			PurchaseConfirmStatusProjection updated = projectionRepository.findById(purchaseId).orElseThrow();
+			assertThat(updated.getStatus()).isEqualTo(terminalStatus);
+		}
+
+		verify(tossPaymentPgApiService, never()).confirmPayment(anyString(), anyString(), anyInt(), anyString());
+	}
+
+	@Test
+	void confirmScheduler_marksFailedWhenMaxAttemptsExceeded_withOnlyPgApiMocked() {
+		String userId = "user-max-attempts";
+		String purchaseId = requestConfirm(
+			userId,
+			"event-1",
+			"A-1",
+			"order-max-attempts",
+			"payment-key-max-attempts",
+			1000
+		);
+
+		PurchaseOutboxMessage outboxMessage = findOutboxByPurchaseId(purchaseId);
+		outboxMessage.markPublishAttemptFailed("error-1");
+		outboxMessage.markPublishAttemptFailed("error-2");
+		outboxMessage.markPublishAttemptFailed("error-3");
+		outboxRepository.save(outboxMessage);
+
+		confirmScheduler.processPendingConfirms();
+
+		PurchaseConfirmStatusProjection updatedProjection = projectionRepository.findById(purchaseId).orElseThrow();
+		assertThat(updatedProjection.getStatus()).isEqualTo(PurchaseConfirmStatus.FAILED);
+		assertThat(updatedProjection.getMessage()).isEqualTo("max attempts exceeded");
+
+		PurchaseOutboxMessage updatedOutbox = outboxRepository.findById(outboxMessage.getId()).orElseThrow();
+		assertThat(updatedOutbox.getPublishedAt()).isNotNull();
+		assertThat(updatedOutbox.getLastError()).contains("max publish attempts exceeded");
+
+		verify(tossPaymentPgApiService, never()).confirmPayment(anyString(), anyString(), anyInt(), anyString());
+	}
+
+	private String requestConfirm(String userId, String eventId, String seatId, String orderId, String paymentKey, int amount) {
+		seedSeatLock(userId, eventId, seatId);
+
+		var initResponse = initCommandService.initiatePayment(
+			new InitiatePaymentRequest(eventId, orderId, amount),
+			userId
+		);
+
+		confirmCommandService.requestConfirm(
+			new ConfirmPaymentRequest(initResponse.getPurchaseId(), paymentKey, orderId, amount, "TOSS"),
+			userId
+		);
+
+		return initResponse.getPurchaseId();
+	}
+
+	private PurchaseOutboxMessage findOutboxByPurchaseId(String purchaseId) {
+		return outboxRepository.findAll().stream()
+			.filter(message -> message.getPayloadJson() != null && message.getPayloadJson().contains("\"purchaseId\":\"" + purchaseId + "\""))
+			.findFirst()
+			.orElseThrow(() -> new IllegalStateException("outbox message not found for purchaseId=" + purchaseId));
 	}
 
 	private void seedSeatLock(String userId, String eventId, String seatId) {
