@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
 				.collect(Collectors.toList());
 
 		return ResponseEntity.badRequest().body(new RsData<>(
-				HttpStatus.BAD_REQUEST.toString(),
+				String.valueOf(HttpStatus.BAD_REQUEST.value()),
 				"파라미터 validation 실패했습니다.",
 				Map.of("errors", messages)));
 	}

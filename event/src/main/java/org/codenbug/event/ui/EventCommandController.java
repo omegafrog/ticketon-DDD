@@ -10,6 +10,7 @@ import org.codenbug.event.domain.EventId;
 import org.codenbug.event.global.UpdateEventRequest;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.RoleRequired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -60,8 +61,8 @@ public class EventCommandController {
 
 		// register event
 		EventId eventId = registerEventService.registerNewEvent(request);
-		return ResponseEntity.ok(new RsData<>(
-			"200",
+		return ResponseEntity.status(HttpStatus.CREATED).body(new RsData<>(
+			String.valueOf(HttpStatus.CREATED.value()),
 			"이벤트 등록 성공",
 			eventId
 		));

@@ -1,6 +1,6 @@
 package org.codenbug.common.exception;
 
-public abstract class AuthException extends BaseException {
+public abstract class AuthException extends CommonException {
 	public AuthException(String message) {
 		super(message);
 	}

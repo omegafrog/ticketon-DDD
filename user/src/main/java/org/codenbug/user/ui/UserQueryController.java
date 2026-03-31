@@ -30,13 +30,11 @@ public class UserQueryController {
 	}
 
 	@Operation(summary = "내 정보 조회", description = "내 정보를 조회합니다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "내 정보 조회 성공"),
-		@ApiResponse(responseCode = "401", description = "인증 정보 필요")
-	})
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "내 정보 조회 성공"),
+			@ApiResponse(responseCode = "401", description = "인증 정보 필요") })
 	@GetMapping("/me")
 	@AuthNeeded
-	@RoleRequired(value = {Role.USER, Role.MANAGER})
+	@RoleRequired(value = { Role.USER, Role.MANAGER })
 	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
 		UserInfo userinfo = userQueryService.findMe(userSecurityToken, new UserId(userSecurityToken.getUserId()));

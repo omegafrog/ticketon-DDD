@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
         }
 
         return ResponseEntity.badRequest().body(new RsData<>(
-                HttpStatus.BAD_REQUEST.toString(),
+                String.valueOf(HttpStatus.BAD_REQUEST.value()),
                 "파라미터 validation 실패했습니다.",
                 errors));
     }
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
 
         return ResponseEntity.badRequest()
-                .body(new RsData<>(HttpStatus.BAD_REQUEST.toString(),
+                .body(new RsData<Void>(String.valueOf(HttpStatus.BAD_REQUEST.value()),
                         "요청 바디를 확인해주세요.",
                         null));
     }
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new RsData<>(HttpStatus.UNAUTHORIZED.toString(),
+                .body(new RsData<Void>(String.valueOf(HttpStatus.UNAUTHORIZED.value()),
                         "인증에 실패했습니다.",
                         null));
     }
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
 
         return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT)
-                .body(new RsData<>(HttpStatus.REQUEST_TIMEOUT.toString(),
+                .body(new RsData<Void>(String.valueOf(HttpStatus.REQUEST_TIMEOUT.value()),
                         "Request Timeout",
                         null));
     }
@@ -87,7 +87,7 @@ public class GlobalExceptionHandler {
                 e.getMessage());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new RsData<>(HttpStatus.BAD_REQUEST.toString(),
+                .body(new RsData<Void>(String.valueOf(HttpStatus.BAD_REQUEST.value()),
                         "요청이 유효하지 않습니다.",
                         null));
     }
@@ -105,7 +105,7 @@ public class GlobalExceptionHandler {
                 e.getMessage(), e);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new RsData<>(HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+                .body(new RsData<Void>(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()),
                         "Internal Server Error",
                         null));
     }

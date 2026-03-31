@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/internal/events/{eventId}/payment-holds")
 public class EventPaymentHoldInternalController {
@@ -24,7 +26,7 @@ public class EventPaymentHoldInternalController {
 
 	@PostMapping
 	public ResponseEntity<RsData<EventPaymentHoldCreateResponse>> createHold(@PathVariable String eventId,
-		@RequestBody EventPaymentHoldCreateRequest request) {
+		@Valid @RequestBody EventPaymentHoldCreateRequest request) {
 		try {
 			EventPaymentHoldCreateResponse response = holdService.createHold(
 				eventId,
@@ -32,22 +34,23 @@ public class EventPaymentHoldInternalController {
 				request.getTtlSeconds(),
 				request.getPurchaseId()
 			);
-			return ResponseEntity.ok(new RsData<>("200", "payment hold created", response));
+			return ResponseEntity.status(HttpStatus.CREATED)
+				.body(new RsData<>(String.valueOf(HttpStatus.CREATED.value()), "payment hold created", response));
 		} catch (PaymentHoldRejectedException ex) {
 			return ResponseEntity.status(HttpStatus.CONFLICT)
-				.body(new RsData<>(HttpStatus.CONFLICT.toString(), ex.getMessage(), null));
+				.body(new RsData<>(String.valueOf(HttpStatus.CONFLICT.value()), ex.getMessage(), null));
 		}
 	}
 
 	@PostMapping("/{holdToken}/consume")
 	public ResponseEntity<RsData<Void>> consume(@PathVariable String eventId, @PathVariable String holdToken) {
 		holdService.consumeHold(eventId, holdToken);
-		return ResponseEntity.ok(new RsData<>("200", "payment hold consumed", null));
+		return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "payment hold consumed", null));
 	}
 
 	@PostMapping("/{holdToken}/release")
 	public ResponseEntity<RsData<Void>> release(@PathVariable String eventId, @PathVariable String holdToken) {
 		holdService.releaseHold(eventId, holdToken);
-		return ResponseEntity.ok(new RsData<>("200", "payment hold released", null));
+		return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "payment hold released", null));
 	}
 }
