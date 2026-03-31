@@ -16,7 +16,6 @@ import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
 import org.codenbug.purchase.domain.es.PurchaseStoredEvent;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.client.EventPaymentHoldClient;
-import org.codenbug.purchase.infra.client.EventPaymentHoldCreateResponse;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -38,15 +37,15 @@ public class PurchaseConfirmWorker {
 	private final EventPaymentHoldClient holdClient;
 	private final PaymentProviderRouter paymentProviderRouter;
 	private final PurchasePaymentFinalizationService finalizationService;
-	private final int holdTtlSeconds;
+
 
 	public PurchaseConfirmWorker(ObjectMapper objectMapper,
 			@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
 			JpaPurchaseProcessedMessageRepository processedMessageRepository,
 			JpaPurchaseEventStoreRepository eventStoreRepository, PurchaseEventAppendService eventAppendService,
 			EventPaymentHoldClient holdClient, PaymentProviderRouter paymentProviderRouter,
-			PurchasePaymentFinalizationService finalizationService,
-			@Value("${purchase.payment.hold-ttl-seconds:60}") int holdTtlSeconds) {
+			PurchasePaymentFinalizationService finalizationService) {
+
 		this.objectMapper = objectMapper;
 		this.transactionManager = transactionManager;
 		this.processedMessageRepository = processedMessageRepository;
@@ -55,7 +54,7 @@ public class PurchaseConfirmWorker {
 		this.holdClient = holdClient;
 		this.paymentProviderRouter = paymentProviderRouter;
 		this.finalizationService = finalizationService;
-		this.holdTtlSeconds = holdTtlSeconds;
+
 	}
 
 	public void process(String messageId, String payloadJson) {
@@ -93,12 +92,8 @@ public class PurchaseConfirmWorker {
 			return null;
 		});
 
-		EventPaymentHoldCreateResponse holdResponse;
 		try {
-			holdResponse = holdClient.createHold(ctx.eventId, ctx.expectedSalesVersion, holdTtlSeconds, purchaseId);
-			if (holdResponse == null || holdResponse.getHoldToken() == null) {
-				throw new IllegalStateException("hold response is empty");
-			}
+			holdClient.acquireLock(ctx.eventId, ctx.expectedSalesVersion);
 		} catch (HttpClientErrorException ex) {
 			if (EventPaymentHoldClient.isHoldRejected(ex)) {
 				executeInTransaction(transactionManager, () -> {
@@ -113,14 +108,6 @@ public class PurchaseConfirmWorker {
 		}
 
 		executeInTransaction(transactionManager, () -> {
-			eventAppendService.appendAndUpdateProjection(
-					purchaseId, ctx.commandId, PurchaseEventType.HOLD_ACQUIRED, Map.of("holdToken",
-							holdResponse.getHoldToken(), "expiresAt", holdResponse.getExpiresAt().toString()),
-					PurchaseConfirmStatus.PROCESSING, "hold acquired");
-			return null;
-		});
-
-		executeInTransaction(transactionManager, () -> {
 			eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
 					PurchaseEventType.PG_CONFIRM_REQUESTED,
 					Map.of("provider", ctx.provider, "paymentKey", ctx.paymentKey), PurchaseConfirmStatus.PROCESSING,
@@ -132,7 +119,6 @@ public class PurchaseConfirmWorker {
 			PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
 			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount,
 					ctx.commandId);
-
 			executeInTransaction(transactionManager, () -> {
 				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
 						PurchaseEventType.PG_CONFIRM_SUCCEEDED,
@@ -144,12 +130,6 @@ public class PurchaseConfirmWorker {
 						PurchaseConfirmStatus.DONE, "done");
 				return null;
 			});
-
-			try {
-				holdClient.consumeHold(ctx.eventId, holdResponse.getHoldToken());
-			} catch (Exception ignore) {
-				// best-effort
-			}
 		} catch (Exception ex) {
 			executeInTransaction(transactionManager, () -> {
 				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
@@ -157,11 +137,7 @@ public class PurchaseConfirmWorker {
 						PurchaseConfirmStatus.FAILED, "pg confirm failed");
 				return null;
 			});
-			try {
-				holdClient.releaseHold(ctx.eventId, holdResponse.getHoldToken());
-			} catch (Exception ignore) {
-				// best-effort
-			}
+			throw ex;
 		}
 	}
 

@@ -50,6 +50,14 @@ public class EventPaymentHoldClient {
 		String url = "%s/internal/events/%s/payment-holds/%s/release".formatted(eventServiceBaseUrl, eventId, holdToken);
 		restTemplate.postForEntity(url, null, Void.class);
 	}
+	public void acquireLock(String eventId, Long expectedSalesVersion) {
+		String url = "%s/internal/events/%s/payment-holds/lock".formatted(eventServiceBaseUrl, eventId);
+		EventPaymentHoldCreateRequest body = new EventPaymentHoldCreateRequest(expectedSalesVersion, 300, null);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<EventPaymentHoldCreateRequest> entity = new HttpEntity<>(body, headers);
+		restTemplate.exchange(url, HttpMethod.POST, entity, Void.class);
+	}
 
 	public static boolean isHoldRejected(HttpClientErrorException ex) {
 		return ex.getStatusCode().value() == 409;
