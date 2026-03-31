@@ -95,4 +95,22 @@ public class EventPaymentHoldService {
 	public boolean hasActiveHold(String eventId) {
 		return holdRepository.existsActiveHold(eventId, EventPaymentHoldStatus.ACTIVE, LocalDateTime.now());
 	}
+
+	@Transactional
+	public void acquirePaymentLock(String eventId, Long expectedSalesVersion) {
+		Event event = eventRepository.findByIdForReadLock(new EventId(eventId));
+
+		if (event.getMetaData() == null || Boolean.TRUE.equals(event.getMetaData().getDeleted())) {
+			throw new PaymentHoldRejectedException("Event is deleted");
+		}
+		if (event.getEventInformation().getStatus() != EventStatus.OPEN) {
+			throw new PaymentHoldRejectedException("Event is not purchasable");
+		}
+		if (expectedSalesVersion == null) {
+			throw new IllegalArgumentException("expectedSalesVersion is required");
+		}
+		if (!expectedSalesVersion.equals(event.getSalesVersion())) {
+			throw new PaymentHoldRejectedException("Event payment-relevant fields changed");
+		}
+	}
 }

@@ -12,6 +12,7 @@ public interface EventRepository {
 	Event findBySeatLayoutId(SeatLayoutId seatLayoutId);
 	int markDeleted(EventId id);
 	boolean isVersionAndStatusValid(EventId id, Long version, EventStatus status);
+	Event findByIdForReadLock(EventId id);
 
 	Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable);
 	Page<Event> getManagerEventList(ManagerId managerId, Pageable pageable);
