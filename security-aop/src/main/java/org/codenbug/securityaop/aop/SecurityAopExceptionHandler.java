@@ -21,7 +21,7 @@ public class SecurityAopExceptionHandler {
 	public ResponseEntity<RsData<Void>> handleInvalidToken(Exception e) {
 		log.error("INVALID TOKEN: {}", e.getMessage());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(new RsData<>(HttpStatus.UNAUTHORIZED.toString(),
+				.body(new RsData<>(String.valueOf(HttpStatus.UNAUTHORIZED.value()),
 						"인증 토큰이 유효하지 않습니다.",
 						null));
 	}
@@ -30,7 +30,7 @@ public class SecurityAopExceptionHandler {
 	public ResponseEntity<RsData<Void>> handleAccessDenied(AccessDeniedException e) {
 		log.error("ACCESS DENIED: {}", e.getMessage());
 		return ResponseEntity.status(HttpStatus.FORBIDDEN)
-				.body(new RsData<>(HttpStatus.FORBIDDEN.toString(),
+				.body(new RsData<>(String.valueOf(HttpStatus.FORBIDDEN.value()),
 						"접근 권한이 없습니다.",
 						null));
 	}

@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -70,7 +72,7 @@ public class SeatController {
 	@AuthNeeded
 	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<SeatSelectResponse>> selectSeat(
-			@PathVariable("event-id") String eventId, @RequestBody SeatSelectRequest seatSelectRequest,
+			@PathVariable("event-id") String eventId, @Valid @RequestBody SeatSelectRequest seatSelectRequest,
 			@RequestHeader("entryAuthToken") String entryAuthToken) {
 		entryTokenValidator.validate(LoggedInUserContext.get().getUserId(), entryAuthToken, eventId);
 
@@ -92,7 +94,7 @@ public class SeatController {
 			@ApiResponse(responseCode = "401", description = "인증 정보 필요")})
 	@DeleteMapping("/{event-id}/seats")
 	public ResponseEntity<RsData<Void>> cancelSeat(@PathVariable("event-id") String eventId,
-			@RequestBody SeatCancelRequest seatCancelRequest,
+			@Valid @RequestBody SeatCancelRequest seatCancelRequest,
 			@RequestHeader("entryAuthToken") String entryAuthToken) {
 		String userId = LoggedInUserContext.get().getUserId();
 

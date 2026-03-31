@@ -28,20 +28,20 @@ public class GlobalExceptionHandler {
   public ResponseEntity<RsData<Void>> handleAllExceptions(Exception e) {
     log.error("Unhandled exception", e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new RsData<>(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e.getMessage(), null));
+        .body(new RsData<>(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), e.getMessage(), null));
   }
 
   @ExceptionHandler(RuntimeException.class)
   public ResponseEntity<RsData<Void>> handleRuntimeExceptions(RuntimeException e) {
     log.error("Unhandled runtime exception", e);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(new RsData<>(HttpStatus.INTERNAL_SERVER_ERROR.toString(), e.getMessage(), null));
+        .body(new RsData<>(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), e.getMessage(), null));
   }
 
   @ExceptionHandler(IllegalStateException.class)
   public ResponseEntity<RsData<Void>> handleIllegalStateException(IllegalStateException e) {
     return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new RsData<>(HttpStatus.CONFLICT.toString(), e.getMessage(), null));
+        .body(new RsData<>(String.valueOf(HttpStatus.CONFLICT.value()), e.getMessage(), null));
   }
 
   // @ExceptionHandler(AccessDeniedException.class)

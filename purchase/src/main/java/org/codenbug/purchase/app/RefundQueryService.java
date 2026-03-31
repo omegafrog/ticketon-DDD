@@ -24,8 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Transactional(readOnly = true)
 public class RefundQueryService {
 
-    private final RefundRepository refundRepository;
-    private final PurchaseService purchaseService;
+	private final RefundRepository refundRepository;
 
     /**
      * 사용자별 환불 이력 조회

@@ -1,6 +1,6 @@
 package org.codenbug.notification.service;
 
-import org.codenbug.notification.application.service.NotificationApplicationService;
+import org.codenbug.notification.application.service.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotificationClientService {
 
-    private final NotificationApplicationService notificationApplicationService;
+    private final NotificationCommandService notificationApplicationService;
 
     /**
      * 티켓 구매 완료 알림 전송

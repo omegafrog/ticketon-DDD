@@ -4,6 +4,7 @@
 - [aggregate.md](aggregate.md)
 - [all_api_endpoints.md](all_api_endpoints.md)
 - [api_endpoints_rsdata_audit.md](api_endpoints_rsdata_audit.md)
+- [exception_statuscode_response_list.md](exception_statuscode_response_list.md)
 - [api_load_assessment.md](api_load_assessment.md)
 - [api_query_analysis.md](api_query_analysis.md)
 - [jpa-delete-and-insert.md](jpa-delete-and-insert.md)

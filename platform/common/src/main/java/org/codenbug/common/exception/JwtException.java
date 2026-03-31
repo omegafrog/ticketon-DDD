@@ -1,6 +1,6 @@
 package org.codenbug.common.exception;
 
-public abstract class JwtException extends BaseException {
+public abstract class JwtException extends CommonException {
 	public JwtException(String message) {
 		super(message);
 	}
