@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -17,7 +19,7 @@ public class UserValidationController {
 	private final UserCommandService userCommandService;
 
 	@PostMapping("/validate")
-	public ResponseEntity<RsData<Void>> validateRegister(@RequestBody RegisterValidationRequest request) {
+	public ResponseEntity<RsData<Void>> validateRegister(@Valid @RequestBody RegisterValidationRequest request) {
 		userCommandService.validateRegisterInputs(request);
 		return ResponseEntity.ok(new RsData<>("200", "사용자 등록 정보 검증 성공", null));
 	}

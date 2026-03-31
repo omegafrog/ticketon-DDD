@@ -23,4 +23,13 @@ public class BaseException extends RuntimeException {
 		this.message = message;
 	}
 
+	public String getCode() {
+		return code;
+	}
+
+	@Override
+	public String getMessage() {
+		return message != null ? message : super.getMessage();
+	}
+
 }

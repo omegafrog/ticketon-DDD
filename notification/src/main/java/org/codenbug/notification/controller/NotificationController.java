@@ -58,7 +58,7 @@ public class NotificationController {
         // 최적화된 Projection 조회로 N+1 문제 해결
         Page<NotificationListProjection> notifications =
                 notificationViewRepository.findUserNotificationList(userId, pageable);
-        return new RsData<>("200-SUCCESS", "알림 목록 조회 성공", notifications);
+        return new RsData<>("200", "알림 목록 조회 성공", notifications);
     }
 
     /**
@@ -70,7 +70,7 @@ public class NotificationController {
 
         NotificationDto notification =
                 notificationApplicationService.getNotificationById(id, userId);
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "알림 조회 성공", notification));
+        return ResponseEntity.ok(new RsData<>("200", "알림 조회 성공", notification));
     }
 
     /**
@@ -86,7 +86,8 @@ public class NotificationController {
                 requestDto.getUserId(), requestDto.getType(), requestDto.getTitle(),
                 requestDto.getContent(), requestDto.getTargetUrl());
 
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "알림 생성 성공", createdNotification));
+        return ResponseEntity.status(201)
+                .body(new RsData<>("201", "알림 생성 성공", createdNotification));
     }
 
     /**
@@ -102,7 +103,7 @@ public class NotificationController {
         // 최적화된 Projection 조회로 N+1 문제 해결
         Page<NotificationListProjection> unreadPage =
                 notificationViewRepository.findUserUnreadNotificationList(userId, pageable);
-        return new RsData<>("200-SUCCESS", "미읽은 알림 조회 성공", unreadPage);
+        return new RsData<>("200", "미읽은 알림 조회 성공", unreadPage);
     }
 
     /**
@@ -129,7 +130,7 @@ public class NotificationController {
         String userId = LoggedInUserContext.get().getUserId();
 
         notificationApplicationService.deleteNotification(id, userId);
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "알림 삭제 성공", null));
+        return ResponseEntity.ok(new RsData<>("200", "알림 삭제 성공", null));
     }
 
     /**
@@ -139,7 +140,7 @@ public class NotificationController {
     @AuthNeeded
     @RoleRequired({Role.ADMIN})
     public ResponseEntity<RsData<Void>> batchDeleteNotifications(
-            @RequestBody NotificationDeleteRequestDto request) {
+            @Valid @RequestBody NotificationDeleteRequestDto request) {
         String userId = LoggedInUserContext.get().getUserId();
 
         notificationApplicationService.deleteNotifications(request.getNotificationIds(), userId);
@@ -156,7 +157,7 @@ public class NotificationController {
         String userId = LoggedInUserContext.get().getUserId();
 
         notificationApplicationService.deleteAllNotifications(userId);
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "모든 알림 삭제 성공", null));
+        return ResponseEntity.ok(new RsData<>("200", "모든 알림 삭제 성공", null));
     }
 
     /**
@@ -170,7 +171,7 @@ public class NotificationController {
 
         // 최적화된 COUNT 쿼리 사용
         long count = notificationViewRepository.countUnreadNotifications(userId);
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "미읽은 알림 개수 조회 성공", count));
+        return ResponseEntity.ok(new RsData<>("200", "미읽은 알림 개수 조회 성공", count));
     }
 
     /**
@@ -186,6 +187,6 @@ public class NotificationController {
         NotificationDto notification =
                 notificationApplicationService.createNotification(userId, type, title, content);
 
-        return ResponseEntity.ok(new RsData<>("200-SUCCESS", "테스트 알림 생성 성공", notification));
+        return ResponseEntity.ok(new RsData<>("200", "테스트 알림 생성 성공", notification));
     }
 }
