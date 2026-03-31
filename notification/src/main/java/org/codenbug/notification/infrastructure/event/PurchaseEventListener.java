@@ -1,6 +1,6 @@
 package org.codenbug.notification.infrastructure.event;
 
-import org.codenbug.notification.application.service.NotificationApplicationService;
+import org.codenbug.notification.application.service.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PurchaseEventListener {
 
-    private final NotificationApplicationService notificationApplicationService;
+    private final NotificationCommandService notificationApplicationService;
     private final ObjectMapper objectMapper;
 
     /**

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.codenbug.auth.domain.Provider;
 import org.codenbug.auth.domain.SecurityUser;
+import org.codenbug.auth.domain.SecurityUserRepository;
 import org.codenbug.auth.domain.SocialId;
 import org.codenbug.auth.domain.SocialInfo;
 import org.codenbug.auth.infra.JpaSecurityUserRepository;
@@ -60,9 +61,8 @@ class AuthNoNPlusOneTest {
 
         long totalStatements = statistics.getPrepareStatementCount();
 
-        assertThat(totalStatements)
-            .as("Expected no extra queries because SecurityUser has no relations")
-            .isEqualTo(statementsAfterFindAll);
+        assertThat(totalStatements).as("Expected no extra queries because SecurityUser has no relations")
+                .isEqualTo(statementsAfterFindAll);
     }
 
     private Statistics getStatistics() {

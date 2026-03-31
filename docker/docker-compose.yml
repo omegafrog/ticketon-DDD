@@ -110,6 +110,7 @@ services:
     volumes:
       - mysql_master_data:/var/lib/mysql
       - ./mysql/master/master.cnf:/etc/my.cnf
+      - ../ops/mysql/init-master.sql:/docker-entrypoint-initdb.d/01-init-master.sql:ro
     ports:
       - "3306:3306"
       - "33060:33060"
@@ -132,6 +133,7 @@ services:
     volumes:
       - ./mysql/replica/replica.cnf:/etc/my.cnf
       - mysql_replica_data:/var/lib/mysql
+      - ../ops/mysql/init-replica.sql:/docker-entrypoint-initdb.d/01-init-replica.sql:ro
     ports:
       - "3307:3306"
       - "33061:33060"
@@ -145,6 +147,27 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
       timeout: 5s
       retries: 10
+
+  mysql-replication-bootstrap:
+    image: mysql:lts
+    container_name: mysql-replication-bootstrap
+    depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-replica:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MASTER_HOST: mysql-master
+      REPLICA_HOST: mysql-replica
+      REPL_USER: repl_user
+      REPL_PASSWORD: repl_password
+    volumes:
+      - ../ops/mysql/bootstrap-replication.sh:/scripts/bootstrap-replication.sh:ro
+    command: ["bash", "/scripts/bootstrap-replication.sh"]
+    restart: "no"
+    networks:
+      - common
 
 networks:
   common:
