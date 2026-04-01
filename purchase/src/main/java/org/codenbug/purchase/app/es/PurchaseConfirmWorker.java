@@ -19,7 +19,6 @@ import org.codenbug.purchase.infra.client.EventPaymentHoldClient;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -38,14 +37,12 @@ public class PurchaseConfirmWorker {
 	private final PaymentProviderRouter paymentProviderRouter;
 	private final PurchasePaymentFinalizationService finalizationService;
 
-
 	public PurchaseConfirmWorker(ObjectMapper objectMapper,
 			@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
 			JpaPurchaseProcessedMessageRepository processedMessageRepository,
 			JpaPurchaseEventStoreRepository eventStoreRepository, PurchaseEventAppendService eventAppendService,
 			EventPaymentHoldClient holdClient, PaymentProviderRouter paymentProviderRouter,
 			PurchasePaymentFinalizationService finalizationService) {
-
 		this.objectMapper = objectMapper;
 		this.transactionManager = transactionManager;
 		this.processedMessageRepository = processedMessageRepository;
@@ -54,7 +51,6 @@ public class PurchaseConfirmWorker {
 		this.holdClient = holdClient;
 		this.paymentProviderRouter = paymentProviderRouter;
 		this.finalizationService = finalizationService;
-
 	}
 
 	public void process(String messageId, String payloadJson) {
@@ -119,6 +115,7 @@ public class PurchaseConfirmWorker {
 			PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
 			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount,
 					ctx.commandId);
+
 			executeInTransaction(transactionManager, () -> {
 				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
 						PurchaseEventType.PG_CONFIRM_SUCCEEDED,

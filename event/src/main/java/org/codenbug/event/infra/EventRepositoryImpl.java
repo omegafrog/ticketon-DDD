@@ -45,6 +45,12 @@ public class EventRepositoryImpl implements EventRepository {
 	}
 
 	@Override
+	public Event findByIdForReadLock(EventId id) {
+		return jpaEventRepository.findByIdForReadLock(id)
+			.orElseThrow(() -> new EntityNotFoundException("Cannot find event"));
+	}
+
+	@Override
 	public Event findBySeatLayoutId(SeatLayoutId seatLayoutId) {
 		return jpaEventRepository.findBySeatLayoutId(seatLayoutId);
 	}
@@ -58,21 +64,16 @@ public class EventRepositoryImpl implements EventRepository {
 	public boolean isVersionAndStatusValid(EventId id, Long version, EventStatus status) {
 		return jpaEventRepository.countMatchingVersionAndStatus(id, version, status) > 0;
 	}
+
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {
-
-		// 1. 기본 조건 - isNotDeleted는 항상 필수
 		Specification<Event> spec = EventSpecification.isNotDeleted();
-
-		// 2. 키워드와 필터 조건을 OR로 연결
 		Specification<Event> optionalConditions = null;
-		
-		// 키워드 조건 추가
+
 		if (StringUtils.hasText(keyword)) {
 			optionalConditions = EventSpecification.titleContains(keyword);
 		}
-		
-		// 필터 조건 추가 (키워드와 OR 연결)
+
 		if (filter != null) {
 			Specification<Event> filterSpec = EventSpecification.fromFilter(filter);
 			if (filterSpec != null) {
@@ -83,25 +84,19 @@ public class EventRepositoryImpl implements EventRepository {
 				}
 			}
 		}
-		
-		// 3. 선택적 조건이 있으면 기본 조건과 AND로 연결
+
 		if (optionalConditions != null) {
 			spec = spec.and(optionalConditions);
 		}
 
-		// 4. 조합된 Specification으로 데이터를 조회합니다.
-		Page<Event> eventPage = jpaEventRepository.findAll(spec, pageable);
-
-		// 5. Page<Event>를 반환합니다.
-		return eventPage;
+		return jpaEventRepository.findAll(spec, pageable);
 	}
-
 
 	@Override
 	public Page<Event> getManagerEventList(ManagerId managerId, Pageable pageable) {
 		Specification<Event> spec = EventSpecification.isNotDeleted()
 			.and(EventSpecification.hasManagerId(managerId));
-		
+
 		return jpaEventRepository.findAll(spec, pageable);
 	}
 

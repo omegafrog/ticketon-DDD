@@ -21,6 +21,9 @@ public interface JpaEventRepository extends JpaRepository<Event, EventId>, JpaSp
 	@Lock(LockModeType.PESSIMISTIC_READ)
 	@Query("select e from Event e where e.eventId = :id")
 	java.util.Optional<Event> findByIdForUpdate(@Param("id") EventId id);
+	@Lock(LockModeType.PESSIMISTIC_READ)
+	@Query("select e from Event e where e.eventId = :id")
+	java.util.Optional<Event> findByIdForReadLock(@Param("id") EventId id);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("update Event e set e.metaData.deleted = true, e.metaData.modifiedAt = :modifiedAt where e.eventId = :id")

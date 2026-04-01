@@ -53,4 +53,16 @@ public class EventPaymentHoldInternalController {
 		holdService.releaseHold(eventId, holdToken);
 		return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "payment hold released", null));
 	}
+
+	@PostMapping("/lock")
+	public ResponseEntity<RsData<Void>> acquireLock(@PathVariable String eventId,
+		@Valid @RequestBody EventPaymentHoldCreateRequest request) {
+		try {
+			holdService.acquirePaymentLock(eventId, request.getExpectedSalesVersion());
+			return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "payment lock acquired", null));
+		} catch (PaymentHoldRejectedException ex) {
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(new RsData<>(String.valueOf(HttpStatus.CONFLICT.value()), ex.getMessage(), null));
+		}
+	}
 }
