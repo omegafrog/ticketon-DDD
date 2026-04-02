@@ -10,19 +10,20 @@ import java.util.Map;
 import org.codenbug.purchase.app.PGApiService;
 import org.codenbug.purchase.app.PaymentProvider;
 import org.codenbug.purchase.app.PaymentProviderRouter;
+import org.codenbug.purchase.domain.EventSummary;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
 import org.codenbug.purchase.domain.es.PurchaseEventType;
 import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
 import org.codenbug.purchase.domain.es.PurchaseStoredEvent;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
-import org.codenbug.purchase.infra.client.EventPaymentHoldClient;
+import org.codenbug.purchase.infra.client.EventServiceClient;
 import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -33,7 +34,7 @@ public class PurchaseConfirmWorker {
 	private final JpaPurchaseProcessedMessageRepository processedMessageRepository;
 	private final JpaPurchaseEventStoreRepository eventStoreRepository;
 	private final PurchaseEventAppendService eventAppendService;
-	private final EventPaymentHoldClient holdClient;
+	private final EventServiceClient eventServiceClient;
 	private final PaymentProviderRouter paymentProviderRouter;
 	private final PurchasePaymentFinalizationService finalizationService;
 
@@ -41,14 +42,14 @@ public class PurchaseConfirmWorker {
 			@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
 			JpaPurchaseProcessedMessageRepository processedMessageRepository,
 			JpaPurchaseEventStoreRepository eventStoreRepository, PurchaseEventAppendService eventAppendService,
-			EventPaymentHoldClient holdClient, PaymentProviderRouter paymentProviderRouter,
+			EventServiceClient eventServiceClient, PaymentProviderRouter paymentProviderRouter,
 			PurchasePaymentFinalizationService finalizationService) {
 		this.objectMapper = objectMapper;
 		this.transactionManager = transactionManager;
 		this.processedMessageRepository = processedMessageRepository;
 		this.eventStoreRepository = eventStoreRepository;
 		this.eventAppendService = eventAppendService;
-		this.holdClient = holdClient;
+		this.eventServiceClient = null;
 		this.paymentProviderRouter = paymentProviderRouter;
 		this.finalizationService = finalizationService;
 	}
@@ -89,18 +90,12 @@ public class PurchaseConfirmWorker {
 		});
 
 		try {
-			holdClient.acquireLock(ctx.eventId, ctx.expectedSalesVersion);
-		} catch (HttpClientErrorException ex) {
-			if (EventPaymentHoldClient.isHoldRejected(ex)) {
-				executeInTransaction(transactionManager, () -> {
-					eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-							PurchaseEventType.HOLD_REJECTED, Map.of("eventId", ctx.eventId),
-							PurchaseConfirmStatus.REJECTED, "event changed");
-					return null;
-				});
-				return;
+			EventSummary eventSummary = eventServiceClient.getEventSummary(ctx.eventId);
+			if (!ctx.expectedSalesVersion.equals(eventSummary.getVersion())) {
+				throw new ConcurrencyFailureException("결제 도중 상품 내용이 변경되었습니다.");
 			}
-			throw ex;
+		} catch (ConcurrencyFailureException ex) {
+			throw new RuntimeException(ex.getMessage(), ex.getCause());
 		}
 
 		executeInTransaction(transactionManager, () -> {

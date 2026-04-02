@@ -38,7 +38,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	private final QSeatLayoutStats seatStats = QSeatLayoutStats.seatLayoutStats;
 
 	public EventViewRepositoryImpl(@Qualifier("readOnlyQueryFactory") JPAQueryFactory readOnlyQueryFactory,
-		RedisViewCountService redisViewCountService) {
+			RedisViewCountService redisViewCountService) {
 		this.readOnlyQueryFactory = readOnlyQueryFactory;
 		this.redisViewCountService = redisViewCountService;
 	}
@@ -49,33 +49,19 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
 		// 메인 쿼리: DB 데이터 조회 (머터리얼라이즈 뷰 활용)
-		JPAQuery<EventListProjection> query = readOnlyQueryFactory
-			.select(Projections.constructor(EventListProjection.class,
-				event.eventId.eventId,
-				event.eventInformation.title,
-				event.eventInformation.thumbnailUrl,
-				event.eventInformation.eventStart,
-				event.eventInformation.eventEnd,
-				event.eventInformation.bookingStart,
-				event.eventInformation.bookingEnd,
-				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
-				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
-				event.eventInformation.viewCount, // DB viewCount
-				event.eventInformation.status.stringValue(),
-				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName,
-				seatStats.seatCount.coalesce(0).longValue() // 🔥 최적화: 서브쿼리 → 머터리얼라이즈 뷰 조인
-			))
-			.from(event)
-			.join(seatLayout).on(
-				seatLayout.id.eq(event.seatLayoutId.value)
-			)
-			.leftJoin(seatStats).on(
-				seatStats.layoutId.eq(event.seatLayoutId.value)
-			)
-			.where(whereClause)
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize());
+		JPAQuery<EventListProjection> query = readOnlyQueryFactory.select(
+				Projections.constructor(EventListProjection.class, event.eventId.eventId, event.eventInformation.title,
+						event.eventInformation.thumbnailUrl, event.eventInformation.eventStart,
+						event.eventInformation.eventEnd, event.eventInformation.bookingStart,
+						event.eventInformation.bookingEnd, seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+						seatStats.maxPrice.coalesce(event.eventInformation.maxPrice), event.eventInformation.viewCount, // DB
+																														// viewCount
+						event.eventInformation.status.stringValue(), event.eventInformation.categoryId.value,
+						seatLayout.location.locationName, seatStats.seatCount.coalesce(0).longValue() // 🔥 최적화: 서브쿼리 →
+																										// 머터리얼라이즈 뷰 조인
+				)).from(event).join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).leftJoin(seatStats)
+				.on(seatStats.layoutId.eq(event.seatLayoutId.value)).where(whereClause).offset(pageable.getOffset())
+				.limit(pageable.getPageSize());
 
 		// 정렬 조건 추가
 		if (pageable.getSort().isSorted()) {
@@ -101,23 +87,15 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		List<EventListProjection> dbResults = query.fetch();
 
 		// Redis에서 실시간 viewCount 조회 및 적용 (리스트용 - 캐싱하지 않음)
-		List<EventListProjection> results = dbResults.stream()
-			.map(dbResult -> {
-				Integer redisViewCount = redisViewCountService.getViewCountForList(
-					dbResult.getEventId(),
-					dbResult.getDbViewCount()
-				);
-				dbResult.setRedisViewCount(redisViewCount);
-				return dbResult;
-			})
-			.toList();
+		List<EventListProjection> results = dbResults.stream().map(dbResult -> {
+			Integer redisViewCount = redisViewCountService.getViewCountForList(dbResult.getEventId(),
+					dbResult.getDbViewCount());
+			dbResult.setRedisViewCount(redisViewCount);
+			return dbResult;
+		}).toList();
 
 		// COUNT 쿼리
-		Long total = readOnlyQueryFactory
-			.select(event.count())
-			.from(event)
-			.where(whereClause)
-			.fetchOne();
+		Long total = readOnlyQueryFactory.select(event.count()).from(event).where(whereClause).fetchOne();
 
 		return new PageImpl<>(results, pageable, total != null ? total : 0);
 	}
@@ -125,57 +103,39 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	@Override
 	public Page<EventListProjection> findManagerEventList(String managerId, Pageable pageable) {
 		JPAQuery<EventListProjection> query = readOnlyQueryFactory
-			.select(Projections.constructor(EventListProjection.class,
-				event.eventId.eventId,
-				event.eventInformation.title,
-				event.eventInformation.thumbnailUrl,
-				event.eventInformation.eventStart,
-				event.eventInformation.eventEnd,
-				event.eventInformation.bookingStart,
-				event.eventInformation.bookingEnd,
-				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
-				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
-				event.eventInformation.viewCount, // DB viewCount
-				event.eventInformation.status.stringValue(),
-				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName
-			))
-			.from(event)
-			.join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
-			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
-			.where(event.managerId.managerId.eq(managerId)
-				.and(event.metaData.deleted.isFalse()))
-			.offset(pageable.getOffset())
-			.limit(pageable.getPageSize())
-			.orderBy(event.metaData.createdAt.desc());
+				.select(Projections.constructor(EventListProjection.class, event.eventId.eventId,
+						event.eventInformation.title, event.eventInformation.thumbnailUrl,
+						event.eventInformation.eventStart, event.eventInformation.eventEnd,
+						event.eventInformation.bookingStart, event.eventInformation.bookingEnd,
+						seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+						seatStats.maxPrice.coalesce(event.eventInformation.maxPrice), event.eventInformation.viewCount, // DB
+																														// viewCount
+						event.eventInformation.status.stringValue(), event.eventInformation.categoryId.value,
+						seatLayout.location.locationName))
+				.from(event).join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+				.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
+				.where(event.managerId.managerId.eq(managerId).and(event.metaData.deleted.isFalse()))
+				.offset(pageable.getOffset()).limit(pageable.getPageSize()).orderBy(event.metaData.createdAt.desc());
 
 		List<EventListProjection> dbResults = query.fetch();
 
 		// Redis에서 실시간 viewCount 조회 및 적용 (리스트용 - 캐싱하지 않음)
-		List<EventListProjection> results = dbResults.stream()
-			.map(dbResult -> {
-				Integer redisViewCount = redisViewCountService.getViewCountForList(
-					dbResult.getEventId(),
-					dbResult.getDbViewCount()
-				);
-				dbResult.setRedisViewCount(redisViewCount);
-				return dbResult;
-			})
-			.toList();
+		List<EventListProjection> results = dbResults.stream().map(dbResult -> {
+			Integer redisViewCount = redisViewCountService.getViewCountForList(dbResult.getEventId(),
+					dbResult.getDbViewCount());
+			dbResult.setRedisViewCount(redisViewCount);
+			return dbResult;
+		}).toList();
 
-		Long total = readOnlyQueryFactory
-			.select(event.count())
-			.from(event)
-			.where(event.managerId.managerId.eq(managerId)
-				.and(event.metaData.deleted.isFalse()))
-			.fetchOne();
+		Long total = readOnlyQueryFactory.select(event.count()).from(event)
+				.where(event.managerId.managerId.eq(managerId).and(event.metaData.deleted.isFalse())).fetchOne();
 
 		return new PageImpl<>(results, pageable, total != null ? total : 0);
 	}
 
 	@Override
-	public Page<EventListProjection> findEventListWithCursor(String keyword, EventListFilter filter,
-		String lastEventId, int size) {
+	public Page<EventListProjection> findEventListWithCursor(String keyword, EventListFilter filter, String lastEventId,
+			int size) {
 		BooleanBuilder whereClause = buildWhereClause(keyword, filter);
 
 		// 커서 조건 추가
@@ -184,28 +144,19 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		}
 
 		List<EventListProjection> dbResults = readOnlyQueryFactory
-			.select(Projections.constructor(EventListProjection.class,
-				event.eventId.eventId,
-				event.eventInformation.title,
-				event.eventInformation.thumbnailUrl,
-				event.eventInformation.eventStart,
-				event.eventInformation.eventEnd,
-				event.eventInformation.bookingStart,
-				event.eventInformation.bookingEnd,
-				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
-				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
-				event.eventInformation.viewCount, // DB viewCount
-				event.eventInformation.status.stringValue(),
-				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName
-			))
-			.from(event)
-			.join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
-			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
-			.where(whereClause)
-			.orderBy(event.eventId.eventId.asc())
-			.limit(size + 1) // 다음 페이지 존재 여부 확인용 +1
-			.fetch();
+				.select(Projections.constructor(EventListProjection.class, event.eventId.eventId,
+						event.eventInformation.title, event.eventInformation.thumbnailUrl,
+						event.eventInformation.eventStart, event.eventInformation.eventEnd,
+						event.eventInformation.bookingStart, event.eventInformation.bookingEnd,
+						seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+						seatStats.maxPrice.coalesce(event.eventInformation.maxPrice), event.eventInformation.viewCount, // DB
+																														// viewCount
+						event.eventInformation.status.stringValue(), event.eventInformation.categoryId.value,
+						seatLayout.location.locationName))
+				.from(event).join(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+				.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value)).where(whereClause)
+				.orderBy(event.eventId.eventId.asc()).limit(size + 1) // 다음 페이지 존재 여부 확인용 +1
+				.fetch();
 
 		boolean hasNext = dbResults.size() > size;
 		if (hasNext) {
@@ -213,16 +164,12 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		}
 
 		// Redis에서 실시간 viewCount 조회 및 적용 (리스트용 - 캐싱하지 않음)
-		List<EventListProjection> results = dbResults.stream()
-			.map(dbResult -> {
-				Integer redisViewCount = redisViewCountService.getViewCountForList(
-					dbResult.getEventId(),
-					dbResult.getDbViewCount()
-				);
-				dbResult.setRedisViewCount(redisViewCount);
-				return dbResult;
-			})
-			.toList();
+		List<EventListProjection> results = dbResults.stream().map(dbResult -> {
+			Integer redisViewCount = redisViewCountService.getViewCountForList(dbResult.getEventId(),
+					dbResult.getDbViewCount());
+			dbResult.setRedisViewCount(redisViewCount);
+			return dbResult;
+		}).toList();
 
 		return new PageImpl<>(results, Pageable.ofSize(size), results.size());
 	}
@@ -248,18 +195,15 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 			// 지역 필터 (RegionLocation enum) - 서브쿼리 접근법
 			if (filter.getRegionLocationList() != null && !filter.getRegionLocationList().isEmpty()) {
 				QSeatLayout subSeatLayout = new QSeatLayout("subSeatLayout");
-				whereClause.and(event.seatLayoutId.value.in(
-					readOnlyQueryFactory.select(subSeatLayout.id)
-						.from(subSeatLayout)
-						.where(subSeatLayout.regionLocation.in(filter.getRegionLocationList()))
-				));
+				whereClause.and(event.seatLayoutId.value.in(readOnlyQueryFactory.select(subSeatLayout.id)
+						.from(subSeatLayout).where(subSeatLayout.regionLocation.in(filter.getRegionLocationList()))));
 			}
 
 			// 카테고리 필터 (리스트)
 			if (filter.getEventCategoryList() != null && !filter.getEventCategoryList().isEmpty()) {
 				whereClause.and(event.eventInformation.categoryId.value.in(filter.getEventCategoryList()));
 			}
-			
+
 			// 카테고리 필터 (단일)
 			if (filter.getCategoryId() != null) {
 				whereClause.and(event.eventInformation.categoryId.value.eq(filter.getCategoryId()));
@@ -272,8 +216,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 
 			// 날짜 범위 필터
 			if (filter.getStartDate() != null && filter.getEndDate() != null) {
-				whereClause.and(event.eventInformation.eventStart.between(
-					filter.getStartDate(), filter.getEndDate()));
+				whereClause.and(event.eventInformation.eventStart.between(filter.getStartDate(), filter.getEndDate()));
 			}
 
 			// 가격 범위 필터
@@ -294,44 +237,27 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 	public EventListProjection findEventById(String eventId) {
 		QSeat seat = QSeat.seat;
 		EventListProjection dbResult = readOnlyQueryFactory
-			.select(Projections.constructor(EventListProjection.class,
-				event.eventId.eventId,
-				event.eventInformation.title,
-				event.eventInformation.thumbnailUrl,
-				event.eventInformation.eventStart,
-				event.eventInformation.eventEnd,
-				event.eventInformation.bookingStart,
-				event.eventInformation.bookingEnd,
-				seatStats.minPrice.coalesce(event.eventInformation.minPrice),
-				seatStats.maxPrice.coalesce(event.eventInformation.maxPrice),
-				event.eventInformation.viewCount, // DB viewCount
-				event.eventInformation.status.stringValue(),
-				event.eventInformation.categoryId.value,
-				seatLayout.location.locationName,
-				seatStats.seatCount.longValue(),
-				new CaseBuilder()
-					.when(seat.available.isTrue())
-					.then(1)
-					.otherwise(0)
-					.sum().longValue()
-			))
-			.from(event)
-			.leftJoin(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
-			.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value))
-			.leftJoin(seat).on(seatLayout.eq(seat.seatLayout)).fetchJoin()
-			.where(event.eventId.eventId.eq(eventId)
-				.and(event.metaData.deleted.isFalse()))
-			.fetchOne();
+				.select(Projections.constructor(EventListProjection.class, event.eventId.eventId,
+						event.eventInformation.title, event.eventInformation.thumbnailUrl,
+						event.eventInformation.eventStart, event.eventInformation.eventEnd,
+						event.eventInformation.bookingStart, event.eventInformation.bookingEnd,
+						seatStats.minPrice.coalesce(event.eventInformation.minPrice),
+						seatStats.maxPrice.coalesce(event.eventInformation.maxPrice), event.eventInformation.viewCount, // DB
+																														// viewCount
+						event.eventInformation.status.stringValue(), event.eventInformation.categoryId.value,
+						seatLayout.location.locationName, seatStats.seatCount.longValue(),
+						new CaseBuilder().when(seat.available.isTrue()).then(1).otherwise(0).sum().longValue()))
+				.from(event).leftJoin(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
+				.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value)).leftJoin(seat)
+				.on(seatLayout.eq(seat.seatLayout)).fetchJoin()
+				.where(event.eventId.eventId.eq(eventId).and(event.metaData.deleted.isFalse())).fetchOne();
 
-		if(dbResult.getEventId() == null){
+		if (dbResult.getEventId() == null) {
 			throw new EntityNotFoundException("Event not found");
 		}
 
 		// Redis에서 실시간 viewCount 조회 및 적용
-		Integer redisViewCount = redisViewCountService.getViewCount(
-			dbResult.getEventId(),
-			dbResult.getDbViewCount()
-		);
+		Integer redisViewCount = redisViewCountService.getViewCount(dbResult.getEventId(), dbResult.getDbViewCount());
 		dbResult.setRedisViewCount(redisViewCount);
 
 		return dbResult;
@@ -343,4 +269,5 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 		// Redis에서 조회수 증가 (DB 업데이트 대신)
 		redisViewCountService.incrementViewCount(eventId);
 	}
+
 }
