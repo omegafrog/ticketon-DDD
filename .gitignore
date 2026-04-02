@@ -57,3 +57,5 @@ out/
 /.sisyphus/
 .serena
 .opencode/
+.gradle-codex/
+.codex

@@ -6,7 +6,7 @@ Cross-service message/event contracts (DTOs) used for messaging and integration.
 | Task | Location | Notes |
 |------|----------|------|
 | Message types | `platform/message/src/main/java/org/codenbug/message/` | Keep backwards compatible |
-| Kafka notes | `docs/platform/message/kafka.md` | Operational notes |
+| RabbitMQ notes | `docs/platform/message/rabbitmq.md` | Operational notes |
 
 ## Naming / Organization
 | Guideline | Notes |

@@ -22,7 +22,7 @@ public UserId register(RegisterRequest request) {
 User와 SecurityUser가 서로 모듈이 다르고, 실행되는 물리 서버도 다르다.
 그런데 User에서 SecurityUser를 참조하면 spring security dependency를 사용하지 않아도 user 모듈에 추가되는 상황.
 
-그래서 kafka 도입 후 이벤트를 이용해 user를 추가 -> 이벤트 발행 -> securityUser 추가
+그래서 RabbitMQ 도입 후 이벤트를 이용해 user를 추가 -> 이벤트 발행 -> securityUser 추가
 의 방식으로 진행
 ## 문제
 user를 추가하고, securityUser를 추가할 때, email 중복 등의 이유로 securityUser의 추가가 실패한 경우,

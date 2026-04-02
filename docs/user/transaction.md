@@ -2,9 +2,9 @@
 
 ### 왜 동기적으로 알 수 없는가? (비동기 통신의 본질)
 
-1.  **`UserRegisterService`의 책임**: 이 서비스의 책임은 **"사용자 등록 요청을 접수하고, User 엔티티를 생성한 뒤, '사용자가 등록되었다'는 사실을 다른 시스템에 알리는 것"**까지입니다. `kafkaTemplate.send()`를 호출하는 순간 `UserRegisterService`의 트랜잭션과 책임은 성공적으로 끝난 것입니다.
-2.  **분리와 비동기**: Kafka를 중간에 둔다는 것은 `user`와 `auth` 서비스를 의도적으로 분리(decoupling)하여 서로의 상태에 영향을 받지 않도록 설계한 것입니다. 만약 `auth`가 잠시 장애가 나더라도 `user`는 계속해서 사용자 등록을 받을 수 있어야 합니다. 이것이 비동기 통신의 가장 큰 장점(탄력성, Resilience)입니다.
-3.  **동기 호출의 단점**: 만약 `UserRegisterService`가 Kafka 대신 REST API 등으로 `AuthService`를 직접 호출(동기 호출)했다면, `AuthService`가 실패했을 때 즉시 알 수 있었을 겁니다. 하지만 이는 `auth`가 다운되면 `user`의 회원가입까지 실패하는 **강한 결합(tight coupling)**을 만들어 시스템 전체의 안정성을 해칩니다.
+1.  **`UserRegisterService`의 책임**: 이 서비스의 책임은 **"사용자 등록 요청을 접수하고, User 엔티티를 생성한 뒤, '사용자가 등록되었다'는 사실을 다른 시스템에 알리는 것"**까지입니다. `rabbitTemplate.convertAndSend()`를 호출하는 순간 `UserRegisterService`의 트랜잭션과 책임은 성공적으로 끝난 것입니다.
+2.  **분리와 비동기**: RabbitMQ를 중간에 둔다는 것은 `user`와 `auth` 서비스를 의도적으로 분리(decoupling)하여 서로의 상태에 영향을 받지 않도록 설계한 것입니다. 만약 `auth`가 잠시 장애가 나더라도 `user`는 계속해서 사용자 등록을 받을 수 있어야 합니다. 이것이 비동기 통신의 가장 큰 장점(탄력성, Resilience)입니다.
+3.  **동기 호출의 단점**: 만약 `UserRegisterService`가 RabbitMQ 대신 REST API 등으로 `AuthService`를 직접 호출(동기 호출)했다면, `AuthService`가 실패했을 때 즉시 알 수 있었을 겁니다. 하지만 이는 `auth`가 다운되면 `user`의 회원가입까지 실패하는 **강한 결합(tight coupling)**을 만들어 시스템 전체의 안정성을 해칩니다.
 
 따라서 "동기적으로 실패를 알 수 없다"는 것은 문제가 아니라, **사가 패턴을 사용하는 비동기 아키텍처의 자연스러운 특징**입니다.
 
@@ -60,7 +60,7 @@ import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.domain.UserRepository;
 import org.codenbug.user.ui.RegisterRequest;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,12 +68,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserRegisterService {
 
 	private final UserRepository userRepository;
-	private final KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate;
+	private final RabbitTemplate rabbitTemplate;
 
 	public UserRegisterService(UserRepository userRepository,
-		KafkaTemplate<String, UserRegisteredEvent> kafkaTemplate) {
+		RabbitTemplate rabbitTemplate) {
 		this.userRepository = userRepository;
-		this.kafkaTemplate = kafkaTemplate;
+		this.rabbitTemplate = rabbitTemplate;
 	}
 
 	@Transactional("transactionManager")
@@ -84,7 +84,7 @@ public class UserRegisterService {
 				request.getAge()));
 		UserRegisteredEvent event = new UserRegisteredEvent(userId.getValue(), request.getEmail(),
 			request.getPassword(), "USER");
-		kafkaTemplate.send("user-registered", event);
+		rabbitTemplate.convertAndSend("user-registered", event);
 		return userId;
 	}
 
@@ -111,7 +111,7 @@ package org.codenbug.user.consumer;
 
 import org.codenbug.message.UserRegisteredFailedEvent;
 import org.codenbug.user.app.UserCommandService;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +123,7 @@ public class SecurityUserRegisteredFailedConsumer {
 
     private final UserRegisterService userRegisterService;
 
-    @KafkaListener(topics = "user-registered-failed", groupId = "user-registration-failure-group")
+    @RabbitListener(queues = "user-registered-failed")
     public void consume(UserRegisteredFailedEvent event) {
         log.warn("SecurityUser 생성이 실패하여 보상 트랜잭션을 시작합니다. UserId: {}", event.getUserId());
         // User를 삭제하거나, 상태를 FAILED로 업데이트합니다.

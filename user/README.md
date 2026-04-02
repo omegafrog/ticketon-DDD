@@ -96,7 +96,7 @@ GET    /api/v1/users/me          # Get current user profile
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.kafka:spring-kafka'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
     
     implementation project(':common')      # Shared utilities
     implementation project(':message')     # Domain events
@@ -113,12 +113,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-  kafka:
-    consumer:
-      group-id: user-service
-      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:29092}
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:root}
+    password: ${RABBITMQ_PASSWORD:root}
 ```
 
 ## 🔗 Integration Points
@@ -127,7 +126,7 @@ spring:
 
 **Inbound Events (Consumed):**
 ```java
-@KafkaListener(topics = "security-user-registered")
+@RabbitListener(queues = "security-user-registered")
 SecurityUserRegisteredEvent {
     String securityUserId;
     String name;
@@ -137,7 +136,7 @@ SecurityUserRegisteredEvent {
     String location;
 }
 
-@KafkaListener(topics = "sns-user-registered")
+@RabbitListener(queues = "sns-user-registered")
 SnsUserRegisteredEvent {
     String securityUserId;
     String name;
@@ -161,7 +160,7 @@ UserRegisteredFailedEvent {
 ### Service Dependencies
 - **Security AOP**: Authentication context and user session management
 - **Common Module**: UUID generation utilities and shared types
-- **Message Module**: Event definitions and Kafka integration
+- **Message Module**: Event definitions and RabbitMQ integration
 
 ## 💼 Business Rules and Validations
 
@@ -179,14 +178,14 @@ UserRegisteredFailedEvent {
 
 ### Error Handling Rules
 1. **Compensation Transactions**: Failed registrations trigger cleanup events
-2. **Event Retry**: Kafka consumer retries on transient failures
+2. **Event Retry**: RabbitMQ consumer retries on transient failures
 3. **Orphan Prevention**: SecurityUser creation failures are handled gracefully
 
 ## 🎮 Usage Examples
 
 ### Event-Driven User Creation
 ```java
-@KafkaListener(topics = "security-user-registered")
+@RabbitListener(queues = "security-user-registered")
 @Transactional
 public void consume(SecurityUserRegisteredEvent event) {
     try {
@@ -196,11 +195,11 @@ public void consume(SecurityUserRegisteredEvent event) {
                 event.getSex(), event.getPhoneNum(), event.getLocation()));
         
         // Notify Auth service of successful creation
-        kafkaTemplate.send("user-registered",
+        rabbitTemplate.convertAndSend("user-registered",
             new UserRegisteredEvent(securityUserId.getValue(), userId.getValue()));
     } catch (Exception e) {
         // Trigger compensation transaction
-        kafkaTemplate.send("user-registered-failed", 
+        rabbitTemplate.convertAndSend("user-registered-failed", 
             new UserRegisteredFailedEvent(event.getSecurityUserId()));
     }
 }
@@ -259,7 +258,7 @@ The User service is designed as a library module:
 ```
 
 ### Event Processing Guarantees
-- **At-least-once delivery**: Kafka ensures message delivery
+- **At-least-once delivery**: RabbitMQ ensures message delivery
 - **Transactional integrity**: Database operations are transactional
 - **Compensating actions**: Failed registrations trigger cleanup events
 - **Idempotent operations**: Event processing handles duplicates gracefully
@@ -296,7 +295,7 @@ The User service is designed as a library module:
 ### Scalability
 - Event-driven architecture supports horizontal scaling
 - Database read/write separation potential
-- Kafka partitioning for load distribution
+- RabbitMQ consumer groups for load distribution
 - Stateless service design
 
 ### Error Recovery

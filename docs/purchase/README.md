@@ -183,3 +183,4 @@ UC3 ..> UC13 : <<include>>
 - [purchaseMultiThread.md](purchaseMultiThread.md)
 - [payment-flow.md](payment-flow.md)
 - [payment-event-version-check.md](payment-event-version-check.md)
+- [purchase-confirm-worker-version-mismatch-plan.md](purchase-confirm-worker-version-mismatch-plan.md)

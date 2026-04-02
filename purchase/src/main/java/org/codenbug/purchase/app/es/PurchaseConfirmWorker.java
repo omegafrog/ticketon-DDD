@@ -49,7 +49,7 @@ public class PurchaseConfirmWorker {
 		this.processedMessageRepository = processedMessageRepository;
 		this.eventStoreRepository = eventStoreRepository;
 		this.eventAppendService = eventAppendService;
-		this.eventServiceClient = null;
+		this.eventServiceClient = eventServiceClient;
 		this.paymentProviderRouter = paymentProviderRouter;
 		this.finalizationService = finalizationService;
 	}
