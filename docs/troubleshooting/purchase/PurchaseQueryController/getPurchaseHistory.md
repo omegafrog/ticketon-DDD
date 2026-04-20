@@ -1,0 +1,29 @@
+# GET /api/v1/purchases/history Troubleshooting
+
+## Current State
+
+- confirm/retry/finalization이 서로 다른 계층에서 수행된다.
+- worker가 PG 호출 전에 version guard를 먼저 통과해야 한다.
+
+## Verification
+
+- terminal states에서 재시도가 멈추는지 본다.
+- hold/lock/holder 변화가 외부 I/O와 분리되어 있는지 확인한다.
+
+## Quantitative Notes
+
+- terminal states: `3`
+- worker-triggered PG calls should be `0` on stale version
+
+## Recent History
+
+- [controller] `a49d73c` (2025-09-10): refactor: 서비스 계층에서 독립된 redislock 모듈로 import 변경
+- [controller] `23eec6e` (2025-08-21): feat: Purchase 도메인 QueryDSL 최적화 및 N+1 문제 해결
+
+
+
+## Related Docs
+
+- [Use Case](../../usecase/purchase/PurchaseQueryController/getPurchaseHistory.md)
+- [Flow](../../flow/purchase/PurchaseQueryController/getPurchaseHistory.md)
+- [Trouble](../../trouble/purchase/PurchaseQueryController/getPurchaseHistory.md)

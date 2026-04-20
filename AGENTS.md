@@ -24,7 +24,7 @@ Note: `AGENTS.md` files are currently gitignored (see `.gitignore`). These instr
 ├── redislock/           # Redis-based locking utilities
 ├── platform/            # Shared platform modules (common/message/gateway/eureka)
 ├── docker/              # Local infra (MySQL master/replica, Redis, RabbitMQ)
-├── docs/                # Module docs + troubleshooting
+├── docs/                # Workflow docs: usecase, flow, trouble, troubleshooting
 ├── k6/                  # Load test script(s)
 └── .github/workflows/   # CI/CD workflows (build/push images, deploy)
 ```
@@ -37,6 +37,8 @@ Note: `AGENTS.md` files are currently gitignored (see `.gitignore`). These instr
 | Service entry points | `*/src/main/java/**/**Application.java` | Gateway/Eureka/App/Auth/Broker/Dispatcher have mains |
 | Local infra setup | `docker/docker-compose.yml` | MySQL master+replica, Redis (3), RabbitMQ |
 | Operational runbooks | `docs/troubleshooting/` | Queue/dispatch gotchas |
+| Workflow start | `docs/README.md` | usecase -> flow -> trouble -> troubleshooting |
+| Endpoint docs | `docs/{usecase,flow,trouble,troubleshooting}/<module>/<controller>/<method>.md` | One controller method per file |
 | Load testing | `k6/sse-throughput-test.js` | Talks to gateway/broker + Redis |
 
 ## Conventions (Repo-Specific)
