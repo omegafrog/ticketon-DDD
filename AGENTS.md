@@ -55,6 +55,10 @@ Note: `AGENTS.md` files are currently gitignored (see `.gitignore`). These instr
 
 ## Commands
 ```bash
+# Java 21 JDK (SDKMAN)
+export JAVA_HOME=/home/jiwoo/.sdkman/candidates/java/current
+export PATH="$JAVA_HOME/bin:$PATH"
+
 # Build / test
 ./gradlew build
 ./gradlew test
