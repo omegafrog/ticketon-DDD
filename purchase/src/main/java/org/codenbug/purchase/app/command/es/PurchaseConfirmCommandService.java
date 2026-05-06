@@ -5,7 +5,6 @@ import org.codenbug.purchase.domain.port.es.PurchaseConfirmStatusProjectionStore
 import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
@@ -101,10 +100,9 @@ public class PurchaseConfirmCommandService {
     projection.update(PurchaseConfirmStatus.PENDING, "accepted", now);
     statusProjectionRepository.save(projection);
 
-    String messageId = UUID.randomUUID().toString();
-    PurchaseOutboxMessage saved = outboxRepository
-        .save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
-            payloadJson, now));
+    String messageId = PurchaseOutboxMessage.messageIdFor(eventType, purchaseId);
+    outboxRepository.save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
+        payloadJson, now));
 
     return payloadJson;
   }
