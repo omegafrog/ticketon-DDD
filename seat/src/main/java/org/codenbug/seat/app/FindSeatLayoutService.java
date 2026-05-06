@@ -4,16 +4,14 @@ import org.codenbug.seat.domain.SeatLayout;
 import org.codenbug.seat.domain.SeatLayoutRepository;
 import org.codenbug.seat.global.SeatDto;
 import org.codenbug.seat.global.SeatLayoutResponse;
-import org.codenbug.seat.infra.EventServiceClient;
-import org.codenbug.seat.infra.dto.EventSummaryResponse;
 import org.springframework.stereotype.Service;
 
 
 @Service
 public class FindSeatLayoutService {
 	private final SeatLayoutRepository repository;
-	private final EventServiceClient eventServiceClient;
-	public FindSeatLayoutService(SeatLayoutRepository repository, EventServiceClient eventServiceClient) {
+	private final EventSeatLayoutPort eventServiceClient;
+	public FindSeatLayoutService(SeatLayoutRepository repository, EventSeatLayoutPort eventServiceClient) {
 		this.repository = repository;
 		this.eventServiceClient = eventServiceClient;
 	}
@@ -32,8 +30,8 @@ public class FindSeatLayoutService {
 	}
 
 	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
-		EventSummaryResponse event = eventServiceClient.getEventSummary(eventId);
-		SeatLayout seatLayout = repository.findSeatLayout(event.getSeatLayoutId());
+		EventSeatLayoutSummary event = eventServiceClient.getEventSummary(eventId);
+		SeatLayout seatLayout = repository.findSeatLayout(event.seatLayoutId());
 		return new SeatLayoutResponse(
 			seatLayout.getId(),
 			seatLayout.getLayout(),

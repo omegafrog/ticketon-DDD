@@ -29,7 +29,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validate_throwsWhenTokenMissing() {
+    void 검증_토큰_누락_시_예외() {
         String userId = "u1";
         String token = "t1";
 
@@ -39,7 +39,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validate_throwsWhenTokenMismatch() {
+    void 검증_토큰_불일치_시_예외() {
         String userId = "u1";
         String token = "t1";
 
@@ -49,7 +49,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validate_stripsQuotesFromStoredToken() {
+    void 검증_저장된_토큰_따옴표_제거() {
         String userId = "u1";
         String token = "t1";
 
@@ -59,7 +59,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validateWithEvent_throwsWhenEventIdBlank() {
+    void 이벤트_검증_이벤트_ID_빈값_시_예외() {
         String userId = "u1";
         String token = "t1";
 
@@ -69,7 +69,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validateWithEvent_throwsWhenEventBindingMissing() {
+    void 이벤트_검증_이벤트_바인딩_없음_시_예외() {
         String userId = "u1";
         String token = "t1";
         String eventId = "e1";
@@ -81,7 +81,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validateWithEvent_throwsWhenEventMismatch() {
+    void 이벤트_검증_이벤트_불일치_시_예외() {
         String userId = "u1";
         String token = "t1";
         String eventId = "e1";
@@ -93,7 +93,7 @@ class EntryTokenValidatorTest {
     }
 
     @Test
-    void validateWithEvent_acceptsWhenTokenAndEventMatch() {
+    void 이벤트_검증_토큰_이벤트_일치_허용() {
         String userId = "u1";
         String token = "t1";
         String eventId = "e1";

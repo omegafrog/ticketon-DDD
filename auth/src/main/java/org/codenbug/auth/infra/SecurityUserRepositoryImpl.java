@@ -1,5 +1,6 @@
 package org.codenbug.auth.infra;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.codenbug.auth.domain.SecurityUser;
@@ -27,6 +28,11 @@ public class SecurityUserRepositoryImpl implements SecurityUserRepository {
 	@Override
 	public Optional<SecurityUser> findSecurityUserByEmail(String email) {
 		return jpaRepository.findByEmail(email);
+	}
+
+	@Override
+	public List<SecurityUser> findAllSecurityUsers() {
+		return jpaRepository.findAll();
 	}
 
 	@Override

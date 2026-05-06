@@ -105,7 +105,7 @@ public class EntryPromoter {
       List<String> keys = scanWaitingQueueKeys();
       if (keys.isEmpty())
         return;
-
+      log.info("len of keys:{}", keys.size());
       // 2) Redis에 임시 작업 목록 생성
       String taskListId = UUID.randomUUID().toString();
       String taskListKey = PROMOTION_TASK_LIST_KEY + ":" + taskListId;

@@ -21,10 +21,13 @@ public class SeatTransactionService {
 
 	@Transactional
 	public void reserveSeat(Seat seat, String userId, String eventId, String seatId) {
-		String lockKey = SEAT_LOCK_KEY_PREFIX + userId + ":" + eventId + ":" + seatId;
+		String lockKey = SEAT_LOCK_KEY_PREFIX + eventId + ":" + seatId;
 		String lockValue = UUID.randomUUID().toString();
 		log.info("lock key: {}, lock value = {}", lockKey, lockValue);
 
+		if (!seat.isAvailable()) {
+			throw new IllegalStateException("[reserveSeat] 이미 선택된 좌석이 있습니다.");
+		}
 		boolean lockSuccess = redisLockService.tryLock(lockKey, lockValue, Duration.ofMinutes(5));
 		log.info("lock success: {}", lockSuccess);
 		if (!lockSuccess) {

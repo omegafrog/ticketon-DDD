@@ -4,21 +4,20 @@ import static org.codenbug.common.transaction.TransactionExecutor.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.codenbug.purchase.app.PGApiService;
 import org.codenbug.purchase.app.PaymentProvider;
 import org.codenbug.purchase.app.PaymentProviderRouter;
+import org.codenbug.purchase.app.PurchaseRepository;
+import org.codenbug.purchase.domain.EventInfoProvider;
 import org.codenbug.purchase.domain.EventSummary;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
-import org.codenbug.purchase.domain.es.PurchaseEventType;
 import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
-import org.codenbug.purchase.domain.es.PurchaseStoredEvent;
-import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
-import org.codenbug.purchase.infra.client.EventServiceClient;
-import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
-import org.codenbug.purchase.infra.es.JpaPurchaseProcessedMessageRepository;
+import org.codenbug.purchase.domain.PaymentConfirmationInfo;
+import org.codenbug.purchase.domain.PaymentStatus;
+import org.codenbug.purchase.domain.Purchase;
+import org.codenbug.purchase.domain.PurchaseId;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -29,193 +28,250 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class PurchaseConfirmWorker {
-	private final ObjectMapper objectMapper;
-	private final PlatformTransactionManager transactionManager;
-	private final JpaPurchaseProcessedMessageRepository processedMessageRepository;
-	private final JpaPurchaseEventStoreRepository eventStoreRepository;
-	private final PurchaseEventAppendService eventAppendService;
-	private final EventServiceClient eventServiceClient;
-	private final PaymentProviderRouter paymentProviderRouter;
-	private final PurchasePaymentFinalizationService finalizationService;
+  private final ObjectMapper objectMapper;
+  private final PlatformTransactionManager transactionManager;
+  private final PurchaseProcessedMessageStore processedMessageRepository;
+  private final PurchaseConfirmStatusProjectionSerivce eventAppendService;
+  private final EventInfoProvider eventServiceClient;
+  private final PaymentProviderRouter paymentProviderRouter;
+  private final PurchaseRepository purchaseRepository;
+  private final PurchasePaymentFinalizationService finalizationService;
 
-	public PurchaseConfirmWorker(ObjectMapper objectMapper,
-			@Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
-			JpaPurchaseProcessedMessageRepository processedMessageRepository,
-			JpaPurchaseEventStoreRepository eventStoreRepository, PurchaseEventAppendService eventAppendService,
-			EventServiceClient eventServiceClient, PaymentProviderRouter paymentProviderRouter,
-			PurchasePaymentFinalizationService finalizationService) {
-		this.objectMapper = objectMapper;
-		this.transactionManager = transactionManager;
-		this.processedMessageRepository = processedMessageRepository;
-		this.eventStoreRepository = eventStoreRepository;
-		this.eventAppendService = eventAppendService;
-		this.eventServiceClient = eventServiceClient;
-		this.paymentProviderRouter = paymentProviderRouter;
-		this.finalizationService = finalizationService;
-	}
+  public PurchaseConfirmWorker(ObjectMapper objectMapper,
+      @Qualifier("primaryTransactionManager") PlatformTransactionManager transactionManager,
+      PurchaseProcessedMessageStore processedMessageRepository,
+      PurchaseConfirmStatusProjectionSerivce eventAppendService,
+      EventInfoProvider eventServiceClient, PaymentProviderRouter paymentProviderRouter,
+      PurchasePaymentFinalizationService finalizationService, PurchaseRepository purchaseRepository) {
+    this.objectMapper = objectMapper;
+    this.transactionManager = transactionManager;
+    this.processedMessageRepository = processedMessageRepository;
+    this.eventAppendService = eventAppendService;
+    this.eventServiceClient = eventServiceClient;
+    this.paymentProviderRouter = paymentProviderRouter;
+    this.finalizationService = finalizationService;
+    this.purchaseRepository = purchaseRepository;
+  }
 
-	public void process(String messageId, String payloadJson) {
-		if (messageId == null || messageId.isBlank()) {
-			return;
-		}
+  public void process(String messageId, String payloadJson) {
 
-		if (!tryMarkProcessed(messageId)) {
-			return;
-		}
+    if (isBlank(messageId)) {
+      return;
+    }
 
-		String purchaseId = extractPurchaseId(payloadJson);
-		if (purchaseId == null) {
-			return;
-		}
+    if (!tryMarkProcessed(messageId)) {
+      return;
+    }
 
-		ConfirmContext ctx = loadConfirmContext(purchaseId);
-		if (ctx == null) {
-			executeInTransaction(transactionManager, () -> {
-				eventAppendService.appendAndUpdateProjection(purchaseId, "confirm:" + purchaseId,
-						PurchaseEventType.PG_CONFIRM_FAILED, Map.of("reason", "missing_confirm_requested"),
-						PurchaseConfirmStatus.FAILED, "missing confirm request");
-				return null;
-			});
-			return;
-		}
-		if (ctx.terminal) {
-			return;
-		}
+    Purchase purchase = purchaseRepository.findById(extractPurchaseId(payloadJson))
+        .orElseThrow(() -> new RuntimeException("결제를 찾을 수 없습니다."));
 
-		executeInTransaction(transactionManager, () -> {
-			eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-					PurchaseEventType.PROCESSING_STARTED, Map.of("purchaseId", purchaseId),
-					PurchaseConfirmStatus.PROCESSING, "processing");
-			return null;
-		});
+    PurchaseId purchaseId = purchase.getPurchaseId();
+    if (isBlank(purchaseId.getValue())) {
+      return;
+    }
 
-		try {
-			EventSummary eventSummary = eventServiceClient.getEventSummary(ctx.eventId);
-			if (!ctx.expectedSalesVersion.equals(eventSummary.getVersion())) {
-				throw new ConcurrencyFailureException("결제 도중 상품 내용이 변경되었습니다.");
-			}
-		} catch (ConcurrencyFailureException ex) {
-			throw new RuntimeException(ex.getMessage(), ex.getCause());
-		}
+    ConfirmContext ctx = loadConfirmContext(purchase, payloadJson);
+    if (ctx == null) {
+      recordMissingConfirmRequest(purchaseId);
+      return;
+    }
+    if (shouldStopBeforePgCall(ctx)) {
+      return;
+    }
 
-		executeInTransaction(transactionManager, () -> {
-			eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-					PurchaseEventType.PG_CONFIRM_REQUESTED,
-					Map.of("provider", ctx.provider, "paymentKey", ctx.paymentKey), PurchaseConfirmStatus.PROCESSING,
-					"pg confirm requested");
-			return null;
-		});
+    markProcessingStarted(ctx);
 
-		try {
-			PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
-			ConfirmedPaymentInfo paymentInfo = pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount,
-					ctx.commandId);
+    try {
+      Long actualSalesVersion = loadActualSalesVersion(ctx);
+      if (!ctx.expectedSalesVersion.equals(actualSalesVersion)) {
+        recordEventChanged(ctx, actualSalesVersion);
+        return;
+      }
+      markPgConfirmRequested(ctx);
+      PaymentConfirmationInfo paymentInfo = confirmWithPg(ctx);
+      finalizeConfirmedPayment(ctx, purchase, payloadJson, paymentInfo);
+    } catch (ConcurrencyFailureException ex) {
+      throw new RuntimeException(ex.getMessage(), ex.getCause());
+    } catch (Exception ex) {
+      recordPgConfirmFailure(ctx, ex);
+      throw ex;
+    }
+  }
 
-			executeInTransaction(transactionManager, () -> {
-				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-						PurchaseEventType.PG_CONFIRM_SUCCEEDED,
-						Map.of("paymentKey", paymentInfo.getPaymentKey(), "status", paymentInfo.getStatus()),
-						PurchaseConfirmStatus.PROCESSING, "pg confirm succeeded");
-				ConfirmPaymentInfoAndResponse ignored = finalizeInTransaction(purchaseId, ctx, paymentInfo);
-				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-						PurchaseEventType.PAYMENT_COMPLETED, Map.of("purchaseId", purchaseId),
-						PurchaseConfirmStatus.DONE, "done");
-				return null;
-			});
-		} catch (Exception ex) {
-			executeInTransaction(transactionManager, () -> {
-				eventAppendService.appendAndUpdateProjection(purchaseId, ctx.commandId,
-						PurchaseEventType.PG_CONFIRM_FAILED, Map.of("error", ex.getClass().getSimpleName()),
-						PurchaseConfirmStatus.FAILED, "pg confirm failed");
-				return null;
-			});
-			throw ex;
-		}
-	}
+  private boolean isBlank(String value) {
+    return value == null || value.isBlank();
+  }
 
-	private boolean tryMarkProcessed(String messageId) {
-		try {
-			processedMessageRepository.save(new PurchaseProcessedMessage(messageId, LocalDateTime.now()));
-			return true;
-		} catch (DataIntegrityViolationException e) {
-			return false;
-		}
-	}
+  private boolean tryMarkProcessed(String messageId) {
+    try {
+      processedMessageRepository.save(new PurchaseProcessedMessage(messageId, LocalDateTime.now()));
+      return true;
+    } catch (DataIntegrityViolationException e) {
+      return false;
+    }
+  }
 
-	private String extractPurchaseId(String body) {
-		try {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> map = objectMapper.readValue(body, Map.class);
-			Object val = map.get("purchaseId");
-			return val == null ? null : val.toString();
-		} catch (Exception e) {
-			return null;
-		}
-	}
+  private PurchaseId extractPurchaseId(String body) {
+    try {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> map = objectMapper.readValue(body, Map.class);
+      Object val = map.get("purchaseId");
+      return val == null ? null : (PurchaseId) val;
+    } catch (Exception e) {
+      return null;
+    }
+  }
 
-	private ConfirmContext loadConfirmContext(String purchaseId) {
-		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(purchaseId);
-		if (events.isEmpty()) {
-			return null;
-		}
+  private void recordMissingConfirmRequest(PurchaseId purchaseId) {
+    executeInTransaction(transactionManager, () -> {
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of("reason", "missing_confirm_requested"),
+          PurchaseConfirmStatus.FAILED, "missing confirm request");
+      return null;
+    });
+  }
 
-		boolean terminal = false;
-		Map<String, Object> confirmPayload = null;
-		for (PurchaseStoredEvent ev : events) {
-			if (PurchaseEventType.PAYMENT_COMPLETED.name().equals(ev.getEventType())) {
-				terminal = true;
-			}
-			if (PurchaseEventType.CONFIRM_REQUESTED.name().equals(ev.getEventType())) {
-				confirmPayload = parseJson(ev.getPayloadJson());
-			}
-		}
-		if (confirmPayload == null) {
-			return null;
-		}
+  private boolean shouldStopBeforePgCall(ConfirmContext ctx) {
+    return ctx.terminal;
+  }
 
-		ConfirmContext ctx = new ConfirmContext();
-		ctx.purchaseId = purchaseId;
-		ctx.commandId = "confirm:" + purchaseId;
-		ctx.userId = String.valueOf(confirmPayload.get("userId"));
-		ctx.eventId = String.valueOf(confirmPayload.get("eventId"));
-		ctx.expectedSalesVersion = Long.valueOf(String.valueOf(confirmPayload.get("expectedSalesVersion")));
-		ctx.paymentKey = String.valueOf(confirmPayload.get("paymentKey"));
-		ctx.orderId = String.valueOf(confirmPayload.get("orderId"));
-		ctx.amount = Integer.valueOf(String.valueOf(confirmPayload.get("amount")));
-		ctx.provider = String.valueOf(confirmPayload.getOrDefault("provider", "TOSS"));
-		ctx.terminal = terminal;
-		return ctx;
-	}
+  private void markProcessingStarted(ConfirmContext ctx) {
+    executeInTransaction(transactionManager, () -> {
+      eventAppendService.upadteProjectionStatus(
+          new PurchaseId(ctx.purchaseId),
+          Map.of("purchaseId", ctx.purchaseId),
+          PurchaseConfirmStatus.PROCESSING, "processing");
+      return null;
+    });
+  }
 
-	private Map<String, Object> parseJson(String json) {
-		try {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> map = objectMapper.readValue(json, Map.class);
-			return map;
-		} catch (Exception e) {
-			return new HashMap<>();
-		}
-	}
+  private Long loadActualSalesVersion(ConfirmContext ctx) {
+    EventSummary eventSummary = eventServiceClient.getEventSummary(ctx.eventId);
+    return eventSummary.getSalesVersion();
+  }
 
-	private ConfirmPaymentInfoAndResponse finalizeInTransaction(String purchaseId, ConfirmContext ctx,
-			ConfirmedPaymentInfo paymentInfo) {
-		finalizationService.finalizePayment(purchaseId, paymentInfo, ctx.userId);
-		return new ConfirmPaymentInfoAndResponse();
-	}
+  private void recordEventChanged(ConfirmContext ctx, Long actualSalesVersion) {
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      eventAppendService.upadteProjectionStatus(purchaseId,
 
-	private static class ConfirmPaymentInfoAndResponse {
-	}
+          Map.of("purchaseId", purchaseId, "eventId", ctx.eventId,
+              "expectedSalesVersion", ctx.expectedSalesVersion,
+              "actualSalesVersion", actualSalesVersion),
+          PurchaseConfirmStatus.REJECTED, "event changed; payment returned to pending");
+      return null;
+    });
+  }
 
-	private static class ConfirmContext {
-		String purchaseId;
-		String commandId;
-		String userId;
-		String eventId;
-		Long expectedSalesVersion;
-		String paymentKey;
-		String orderId;
-		Integer amount;
-		String provider;
-		boolean terminal;
-	}
+  private void markPgConfirmRequested(ConfirmContext ctx) {
+
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of("provider", ctx.provider, "paymentKey", ctx.paymentKey),
+          PurchaseConfirmStatus.PROCESSING, "pg confirm requested");
+      return null;
+    });
+  }
+
+  private PaymentConfirmationInfo confirmWithPg(ConfirmContext ctx) {
+    PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
+    return pgApiService.confirmPayment(ctx.paymentKey, ctx.orderId, ctx.amount, ctx.confirmCommandId);
+  }
+
+  private void finalizeConfirmedPayment(ConfirmContext ctx, Purchase purchase, String payloadJson,
+      PaymentConfirmationInfo paymentInfo) {
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      if (loadConfirmContext(purchase, payloadJson).terminal) {
+        return null;
+      }
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of("paymentKey", paymentInfo.getPaymentKey(), "status", paymentInfo.getStatus()),
+          PurchaseConfirmStatus.PROCESSING, "pg confirm succeeded");
+      finalizationService.finalizePayment(purchaseId, paymentInfo, ctx.userId);
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of("purchaseId", ctx.purchaseId),
+          PurchaseConfirmStatus.DONE, "done");
+      return null;
+    });
+  }
+
+  private void recordPgConfirmFailure(ConfirmContext ctx, Exception ex) {
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of("error", ex.getClass().getSimpleName()),
+          PurchaseConfirmStatus.FAILED, "pg confirm failed");
+      return null;
+    });
+  }
+
+  private ConfirmContext loadConfirmContext(Purchase purchase, String payloadJson) {
+
+    boolean terminal = false;
+    if (isTerminalEvent(purchase)) {
+      terminal = true;
+    }
+
+    Map<String, Object> confirmPayload = parseJson(payloadJson);
+    if (confirmPayload == null) {
+      return null;
+    }
+
+    PurchaseId purchaseId = purchase.getPurchaseId();
+
+    ConfirmContext ctx = new ConfirmContext();
+    ctx.purchaseId = purchaseId.toString();
+    ctx.confirmCommandId =
+
+        confirmCommandId(purchaseId);
+    ctx.userId = String.valueOf(confirmPayload.get("userId"));
+    ctx.eventId = String.valueOf(confirmPayload.get("eventId"));
+    ctx.expectedSalesVersion = Long.valueOf(String.valueOf(confirmPayload.get("expectedSalesVersion")));
+    ctx.paymentKey = String.valueOf(confirmPayload.get("paymentKey"));
+    ctx.orderId = String.valueOf(confirmPayload.get("orderId"));
+    ctx.amount = Integer.valueOf(String.valueOf(confirmPayload.get("amount")));
+    ctx.provider = String.valueOf(confirmPayload.getOrDefault("provider", "TOSS"));
+    ctx.terminal = terminal;
+    return ctx;
+  }
+
+  private boolean isTerminalEvent(Purchase purchase) {
+    return purchase.getPaymentStatus() == PaymentStatus.DONE
+        || purchase.getPaymentStatus() == PaymentStatus.CANCELED;
+  }
+
+  private Map<String, Object> parseJson(String json) {
+    try {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> map = objectMapper.readValue(json, Map.class);
+      return map;
+    } catch (Exception e) {
+      return new HashMap<>();
+    }
+  }
+
+  private String confirmCommandId(PurchaseId purchaseId) {
+    return "confirm:" + purchaseId;
+  }
+
+  private String stageCommandId(PurchaseId purchaseId, PaymentOutboxEventType eventType) {
+    return confirmCommandId(purchaseId) + ":" + eventType.name();
+  }
+
+  private static class ConfirmContext {
+    String purchaseId;
+    String confirmCommandId;
+    String userId;
+    String eventId;
+    Long expectedSalesVersion;
+    PaymentOutboxEventType eventType;
+    String paymentKey;
+    String orderId;
+    Integer amount;
+    String provider;
+    boolean terminal;
+  }
 }

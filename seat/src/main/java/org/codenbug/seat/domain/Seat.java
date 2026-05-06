@@ -48,10 +48,17 @@ public class Seat {
 	}
 
 	public void reserve() {
+		if (!available) {
+			throw new IllegalStateException("Seat is not available.");
+		}
 		this.available=false;
 	}
 
 	public void cancelReserve() {
 		this.available=true;
+	}
+
+	public void confirmSold() {
+		this.available = false;
 	}
 }

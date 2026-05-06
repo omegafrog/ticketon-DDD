@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
-import org.codenbug.user.domain.GenerateUserIdService;
 import org.codenbug.user.domain.SecurityUserId;
 import org.codenbug.user.domain.Sex;
 import org.codenbug.user.domain.User;
@@ -38,11 +37,8 @@ class UserNoNPlusOneTest {
 
     @Test
     void findAll_thenAccessFields_doesNotTriggerExtraQueries() {
-        GenerateUserIdService idService = new GenerateUserIdService();
-
         for (int i = 0; i < 3; i++) {
             User user = new User(
-                idService,
                 "User" + i,
                 Sex.MALE,
                 "010-0000-000" + i,

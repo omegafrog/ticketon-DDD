@@ -73,7 +73,8 @@ custom:
     domain: localhost
 service:
   user:
-    base-url: http://user
+    # base-url: http://user
+    base-url: http://app
 
 eureka:
   client:

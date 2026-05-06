@@ -33,6 +33,16 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 payment:
   toss:
     api-url: https://api.tosspayments.com/v1/payments

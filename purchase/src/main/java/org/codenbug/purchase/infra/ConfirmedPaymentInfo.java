@@ -2,6 +2,8 @@ package org.codenbug.purchase.infra;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.codenbug.purchase.domain.PaymentConfirmationInfo;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,5 +32,10 @@ public class ConfirmedPaymentInfo {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class Receipt {
 		private String url;
+	}
+
+	public PaymentConfirmationInfo toDomain() {
+		return new PaymentConfirmationInfo(paymentKey, orderId, orderName, totalAmount, status, method, approvedAt,
+			receipt == null ? null : receipt.getUrl());
 	}
 }

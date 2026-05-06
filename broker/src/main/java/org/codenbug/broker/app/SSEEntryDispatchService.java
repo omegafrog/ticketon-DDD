@@ -1,14 +1,13 @@
 package org.codenbug.broker.app;
 
-import static org.codenbug.broker.infra.RedisConfig.*;
 import static org.codenbug.broker.service.SseEmitterService.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
+import org.codenbug.broker.service.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Profile("mode-sse")
 public class SSEEntryDispatchService implements EntryDispatcherService {
+  private static final String ENTRY_QUEUE_SLOTS_KEY_NAME = "ENTRY_QUEUE_SLOTS";
+  private static final String ENTRY_TOKEN_STORAGE_KEY_NAME = "ENTRY_TOKEN";
 
   public enum DispatchResult {
     ACK,

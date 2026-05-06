@@ -67,7 +67,7 @@ public class EventRepositoryImpl implements EventRepository {
 
 	@Override
 	public Page<Event> getEventList(String keyword, EventListFilter filter, Pageable pageable) {
-		Specification<Event> spec = EventSpecification.isNotDeleted();
+		Specification<Event> spec = EventSpecification.isNotDeleted().and(EventSpecification.isOpen());
 		Specification<Event> optionalConditions = null;
 
 		if (StringUtils.hasText(keyword)) {

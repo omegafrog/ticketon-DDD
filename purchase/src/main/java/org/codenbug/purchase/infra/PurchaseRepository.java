@@ -1,6 +1,7 @@
 package org.codenbug.purchase.infra;
 
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.codenbug.purchase.domain.PaymentStatus;
@@ -14,22 +15,30 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PurchaseRepository extends JpaRepository<Purchase, PurchaseId> {
-	List<Purchase> findByUserIdAndPaymentStatusInOrderByCreatedAtDesc(String userId,
-		List<PaymentStatus> statuses);
+  List<Purchase> findByUserIdAndPaymentStatusInOrderByCreatedAtDesc(String userId,
+      List<PaymentStatus> statuses);
 
-	Page<Purchase> findByUserIdAndPaymentStatusInOrderByCreatedAtDesc(UserId userId, List<PaymentStatus> statuses, Pageable pageable);
+  Page<Purchase> findByUserIdAndPaymentStatusInOrderByCreatedAtDesc(UserId userId, List<PaymentStatus> statuses,
+      Pageable pageable);
 
-	Optional<Purchase> findByPid(String pid);
+  Optional<Purchase> findByPid(String pid);
 
-	@Query("""
-    SELECT DISTINCT p FROM Purchase p
-    JOIN p.tickets t
-    WHERE p.eventId = :eventId
-""")
-	List<Purchase> findAllByEventId(@Param("eventId") String eventId);
+  boolean existsByUserIdAndPaymentStatus(UserId userId, PaymentStatus paymentStatus);
 
+  long countByPaymentStatus(PaymentStatus paymentStatus);
 
-	// 환불 관련 메서드 추가
-	List<Purchase> findByEventIdAndPaymentStatus(String eventId, PaymentStatus paymentStatus);
+  List<Purchase> findByPaymentStatusAndPaymentDeadlineAtBefore(PaymentStatus paymentStatus, LocalDateTime deadline);
+
+  @Query("""
+          SELECT DISTINCT p FROM Purchase p
+          JOIN p.tickets t
+          WHERE p.eventId = :eventId
+      """)
+  List<Purchase> findAllByEventId(@Param("eventId") String eventId);
+
+  // 환불 관련 메서드 추가
+  List<Purchase> findByEventIdAndPaymentStatus(String eventId, PaymentStatus paymentStatus);
+
+  boolean existsByOrderId(String orderId);
 
 }

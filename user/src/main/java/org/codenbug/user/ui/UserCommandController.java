@@ -11,6 +11,7 @@ import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.codenbug.user.app.AuthenticatedUser;
 import org.codenbug.user.app.UserProfileCommandService;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
@@ -41,9 +42,10 @@ public class UserCommandController {
 	@RoleRequired(value = {Role.USER})
 	public ResponseEntity<RsData<UserInfo>> updateMe(@Valid @RequestBody UpdateUserRequest request) {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
+		AuthenticatedUser authenticatedUser = AuthenticatedUser.from(userSecurityToken);
 		UserInfo updatedUserInfo = userProfileCommandService.updateUser(
-			userSecurityToken,
-			new UserId(userSecurityToken.getUserId()),
+			authenticatedUser,
+			authenticatedUser.asUserId(),
 			request
 		);
 		return ResponseEntity.ok(new RsData<>("200", "User updated successfully", updatedUserInfo));

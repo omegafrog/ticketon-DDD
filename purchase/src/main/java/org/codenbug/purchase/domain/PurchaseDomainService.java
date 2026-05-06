@@ -5,16 +5,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.redislock.RedisLockService;
-import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
 /**
  * Purchase 애그리게이트 관련 도메인 로직을 처리하는 도메인 서비스
  */
-@Component
 @RequiredArgsConstructor
 public class PurchaseDomainService {
 	private final PaymentValidationService paymentValidationService;
@@ -26,7 +23,7 @@ public class PurchaseDomainService {
 	 */
 	public PurchaseConfirmationResult confirmPurchase(
 		Purchase purchase, 
-		ConfirmedPaymentInfo paymentInfo,
+		PaymentConfirmationInfo paymentInfo,
 		String userId
 	) {
 		// 1. 좌석 정보 조회 및 검증

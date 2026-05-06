@@ -33,227 +33,229 @@ import reactor.core.publisher.Mono;
 @Component
 @Slf4j
 public class AuthorizationFilter extends AbstractGatewayFilterFactory<AuthorizationFilter.Config> {
-	@Value("${custom.jwt.secret}")
-	private String jwtSecret;
+  @Value("${custom.jwt.secret}")
+  private String jwtSecret;
 
-	@Value("${gateway.auth.check-refresh-blacklist-on-each-request:false}")
-	private boolean checkRefreshBlacklistOnEachRequest;
+  @Value("${gateway.auth.check-refresh-blacklist-on-each-request:false}")
+  private boolean checkRefreshBlacklistOnEachRequest;
 
-	private final WhitelistProperties whitelistProperties;
+  private final WhitelistProperties whitelistProperties;
 
-	private final RedisRefreshTokenBlackList refreshTokenStorage;
-	private final ObjectMapper objectMapper;
+  private final RedisRefreshTokenBlackList refreshTokenStorage;
+  private final ObjectMapper objectMapper;
 
-	public AuthorizationFilter(WhitelistProperties whitelistProperties, RedisRefreshTokenBlackList refreshTokenStorage, ObjectMapper objectMapper) {
-		super(Config.class);
-		this.whitelistProperties = whitelistProperties;
-		this.refreshTokenStorage = refreshTokenStorage;
-		this.objectMapper = objectMapper;
-	}
+  public AuthorizationFilter(WhitelistProperties whitelistProperties, RedisRefreshTokenBlackList refreshTokenStorage,
+      ObjectMapper objectMapper) {
+    super(Config.class);
+    this.whitelistProperties = whitelistProperties;
+    this.refreshTokenStorage = refreshTokenStorage;
+    this.objectMapper = objectMapper;
+  }
 
-	/**
-	 * Get authorization token from request and set custom headers.
-	 * Headers are {@code User-Id}, {@code Email}, {@code Role}.
-	 * If the access token is expired and the refresh token is valid, refresh access token.
-	 * @param config include Configuration information like bypass url
-	 *
-	 */
-	@Override
-	public GatewayFilter apply(Config config) {
-		return (exchange, chain) -> {
-			ServerHttpRequest request = exchange.getRequest();
-			ServerHttpResponse response = exchange.getResponse();
+  /**
+   * Get authorization token from request and set custom headers.
+   * Headers are {@code User-Id}, {@code Email}, {@code Role}.
+   * If the access token is expired and the refresh token is valid, refresh access
+   * token.
+   * 
+   * @param config include Configuration information like bypass url
+   *
+   */
+  @Override
+  public GatewayFilter apply(Config config) {
+    return (exchange, chain) -> {
+      ServerHttpRequest request = exchange.getRequest();
+      ServerHttpResponse response = exchange.getResponse();
 
-			if (checkWhiteList(config, exchange, chain, request)) {
-				log.debug("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
-				return chain.filter(exchange);
-			}
-			
-			log.debug("=== PROCESSING REQUEST: {} ===", request.getURI().getPath());
+      if (checkWhiteList(config, exchange, chain, request)) {
+        log.debug("=== WHITELIST BYPASS: {} ===", request.getURI().getPath());
+        return chain.filter(exchange);
+      }
 
-			// check token validation
-			try {
-				AccessToken parsedAccessToken = getAccessToken(request);
-				validateAccessToken(parsedAccessToken);
-				parsedAccessToken.decode(jwtSecret);
+      log.debug("=== PROCESSING REQUEST: {} ===", request.getURI().getPath());
 
-				if (!checkRefreshBlacklistOnEachRequest) {
-					return forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken);
-				}
+      // check token validation
+      try {
+        AccessToken parsedAccessToken = getAccessToken(request);
+        validateAccessToken(parsedAccessToken);
+        parsedAccessToken.decode(jwtSecret);
 
-				RefreshToken parsedRefreshToken = getRefreshToken(request);
-				validateRefreshToken(parsedRefreshToken);
+        if (!checkRefreshBlacklistOnEachRequest) {
+          return forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken);
+        }
 
-				return refreshTokenStorage.checkBlackList(parsedRefreshToken)
-					.then(Mono.defer(
-						() -> forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken)))
-					.onErrorResume(JwtException.class, e -> errorResponse(e, response))
-					.onErrorResume(RuntimeException.class, e -> sendUnauthorizedError(e, response));
-			} catch (ExpiredJwtException e) {
-				// refresh token
-				log.debug("access token is expired");
+        RefreshToken parsedRefreshToken = getRefreshToken(request);
+        validateRefreshToken(parsedRefreshToken);
 
-				try {
-					RefreshToken refreshToken = getRefreshToken(request);
-					validateRefreshToken(refreshToken);
+        return refreshTokenStorage.checkBlackList(parsedRefreshToken)
+            .then(Mono.defer(
+                () -> forwardAuthorizedRequest(exchange, chain, request, parsedAccessToken)))
+            .onErrorResume(JwtException.class, e -> errorResponse(e, response))
+            .onErrorResume(RuntimeException.class, e -> sendUnauthorizedError(e, response));
+      } catch (ExpiredJwtException e) {
+        // refresh token
+        log.debug("access token is expired");
 
-					return refreshTokenStorage.checkBlackList(refreshToken)
-						.then(Mono.defer(() -> {
-							TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
-							AccessToken refreshedAccessToken = tokenInfo.getAccessToken();
-							RefreshToken refreshedRefreshToken = tokenInfo.getRefreshToken();
-							refreshedAccessToken.decode(jwtSecret);
-							return forwardAuthorizedRequestWithRefreshCookie(exchange, chain, request,
-								refreshedAccessToken, refreshedRefreshToken);
-						}))
-						.onErrorResume(JwtException.class, jwtException -> errorResponse(jwtException, response))
-						.onErrorResume(RuntimeException.class,
-							runtimeException -> sendUnauthorizedError(runtimeException, response));
-				} catch (io.jsonwebtoken.JwtException refreshException) {
-					return sendUnauthorizedError(
-						new RuntimeException("인증 토큰이 유효하지 않습니다.", refreshException), response);
-				} catch (JwtException jwtException) {
-					return errorResponse(jwtException, response);
-				}
+        try {
+          RefreshToken refreshToken = getRefreshToken(request);
+          validateRefreshToken(refreshToken);
 
-			} catch (JwtException  e) {
-				return errorResponse(e, response);
-			} catch (io.jsonwebtoken.JwtException e) {
-				return sendUnauthorizedError(new RuntimeException("인증 토큰이 유효하지 않습니다.", e),
-					response);
-			} catch (RuntimeException e){
-				return sendUnauthorizedError(e, response);
-			}
-		};
-	}
+          return refreshTokenStorage.checkBlackList(refreshToken)
+              .then(Mono.defer(() -> {
+                TokenInfo tokenInfo = refreshAccessToken(refreshToken, e.getCause());
+                AccessToken refreshedAccessToken = tokenInfo.getAccessToken();
+                RefreshToken refreshedRefreshToken = tokenInfo.getRefreshToken();
+                refreshedAccessToken.decode(jwtSecret);
+                return forwardAuthorizedRequestWithRefreshCookie(exchange, chain, request,
+                    refreshedAccessToken, refreshedRefreshToken);
+              }))
+              .onErrorResume(JwtException.class, jwtException -> errorResponse(jwtException, response))
+              .onErrorResume(RuntimeException.class,
+                  runtimeException -> sendUnauthorizedError(runtimeException, response));
+        } catch (io.jsonwebtoken.JwtException refreshException) {
+          return sendUnauthorizedError(
+              new RuntimeException("인증 토큰이 유효하지 않습니다.", refreshException), response);
+        } catch (JwtException jwtException) {
+          return errorResponse(jwtException, response);
+        }
 
-	private Mono<Void> forwardAuthorizedRequest(ServerWebExchange exchange, GatewayFilterChain chain,
-		ServerHttpRequest request, AccessToken accessToken) {
-		ServerHttpRequest mutatedRequest = applyAuthorizationHeaders(accessToken, request);
-		return chain.filter(exchange.mutate().request(mutatedRequest).build());
-	}
+      } catch (JwtException e) {
+        return errorResponse(e, response);
+      } catch (io.jsonwebtoken.JwtException e) {
+        return sendUnauthorizedError(new RuntimeException("인증 토큰이 유효하지 않습니다.", e),
+            response);
+      } catch (RuntimeException e) {
+        return sendUnauthorizedError(e, response);
+      }
+    };
+  }
 
-	private Mono<Void> forwardAuthorizedRequestWithRefreshCookie(ServerWebExchange exchange,
-		GatewayFilterChain chain, ServerHttpRequest request, AccessToken accessToken,
-		RefreshToken refreshToken) {
-		ServerHttpRequest mutatedRequest = applyAuthorizationHeadersWithRefreshCookie(accessToken, request,
-			refreshToken);
-		return chain.filter(exchange.mutate().request(mutatedRequest).build());
-	}
+  private Mono<Void> forwardAuthorizedRequest(ServerWebExchange exchange, GatewayFilterChain chain,
+      ServerHttpRequest request, AccessToken accessToken) {
+    ServerHttpRequest mutatedRequest = applyAuthorizationHeaders(accessToken, request);
+    return chain.filter(exchange.mutate().request(mutatedRequest).build());
+  }
 
-	private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request) {
-		return request.mutate()
-			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
-			.header("User-Id", accessToken.getUserId())
-			.header("Role", accessToken.getRole())
-			.header("Email", accessToken.getEmail())
-			.build();
-	}
+  private Mono<Void> forwardAuthorizedRequestWithRefreshCookie(ServerWebExchange exchange,
+      GatewayFilterChain chain, ServerHttpRequest request, AccessToken accessToken,
+      RefreshToken refreshToken) {
+    ServerHttpRequest mutatedRequest = applyAuthorizationHeadersWithRefreshCookie(accessToken, request,
+        refreshToken);
+    return chain.filter(exchange.mutate().request(mutatedRequest).build());
+  }
 
-	private ServerHttpRequest applyAuthorizationHeadersWithRefreshCookie(AccessToken accessToken,
-		ServerHttpRequest request, RefreshToken refreshToken) {
-		ServerHttpRequest mutatedRequest = request.mutate()
-			.header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
-			.header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
-				60 * 60 * 24 * 7, "/", false, false, "lat"))
-			.header("User-Id", accessToken.getUserId())
-			.header("Role", accessToken.getRole())
-			.header("Email", accessToken.getEmail())
-			.build();
-		return mutatedRequest;
-	}
+  private ServerHttpRequest applyAuthorizationHeaders(AccessToken accessToken, ServerHttpRequest request) {
+    return request.mutate()
+        .header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
+        .header("User-Id", accessToken.getUserId())
+        .header("Role", accessToken.getRole())
+        .header("Email", accessToken.getEmail())
+        .build();
+  }
 
-	private Mono<Void> sendUnauthorizedError(RuntimeException e, ServerHttpResponse response) {
-		response.setStatusCode(HttpStatus.UNAUTHORIZED);
-		response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
-		try {
-			return response.writeWith(Mono.just(response.bufferFactory().wrap(
-				objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
-		} catch (JsonProcessingException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+  private ServerHttpRequest applyAuthorizationHeadersWithRefreshCookie(AccessToken accessToken,
+      ServerHttpRequest request, RefreshToken refreshToken) {
+    ServerHttpRequest mutatedRequest = request.mutate()
+        .header("Authorization", accessToken.getType() + " " + accessToken.getRawValue())
+        .header(HttpHeaders.SET_COOKIE, setCookieHeader("refreshToken", refreshToken.getValue(),
+            60 * 60 * 24 * 7, "/", false, false, "lat"))
+        .header("User-Id", accessToken.getUserId())
+        .header("Role", accessToken.getRole())
+        .header("Email", accessToken.getEmail())
+        .build();
+    return mutatedRequest;
+  }
 
-	private void validateAccessToken(AccessToken accessToken) {
-		Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
-	}
+  private Mono<Void> sendUnauthorizedError(RuntimeException e, ServerHttpResponse response) {
+    response.setStatusCode(HttpStatus.UNAUTHORIZED);
+    response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+    log.info(e.getMessage());
+    try {
+      return response.writeWith(Mono.just(response.bufferFactory().wrap(
+          objectMapper.writeValueAsBytes(new RsData<Void>("401", "사용자 오류", null)))));
+    } catch (JsonProcessingException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 
-	private void validateRefreshToken(RefreshToken refreshToken) {
-		Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
-	}
+  private void validateAccessToken(AccessToken accessToken) {
+    Util.validate(accessToken.getRawValue(), Util.Key.convertSecretKey(jwtSecret));
+  }
 
-	private Mono<Void> errorResponse(JwtException e, ServerHttpResponse response) {
-		log.debug("access token is invalid or logged out");
-		try {
-			return unAuthorizedResponse(response, e);
-		} catch (JsonProcessingException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
+  private void validateRefreshToken(RefreshToken refreshToken) {
+    Util.validate(refreshToken.getValue(), Util.Key.convertSecretKey(jwtSecret));
+  }
 
-	@Getter
-	static class Config {
-		//설정값이 필요하면 추가
-		public static List<String> passPatterns = List.of(
-			);
-	}
+  private Mono<Void> errorResponse(JwtException e, ServerHttpResponse response) {
+    log.debug("access token is invalid or logged out");
+    try {
+      return unAuthorizedResponse(response, e);
+    } catch (JsonProcessingException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
 
-	private Mono<Void> unAuthorizedResponse(ServerHttpResponse response, JwtException e) throws
-		JsonProcessingException {
-		response.setStatusCode(HttpStatus.UNAUTHORIZED);
-		response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
-		return response.writeWith(Mono.just(response.bufferFactory().wrap(
-			objectMapper.writeValueAsBytes(new RsData<Void>("401", e.getMessage(), null)))));
+  @Getter
+  static class Config {
+    // 설정값이 필요하면 추가
+    public static List<String> passPatterns = List.of();
+  }
 
-	}
+  private Mono<Void> unAuthorizedResponse(ServerHttpResponse response, JwtException e) throws JsonProcessingException {
+    response.setStatusCode(HttpStatus.UNAUTHORIZED);
+    response.getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+    log.info(e.getMessage());
+    return response.writeWith(Mono.just(response.bufferFactory().wrap(
+        objectMapper.writeValueAsBytes(new RsData<Void>("401", "사용자 오류", null)))));
 
-	private TokenInfo refreshAccessToken(RefreshToken refreshToken, Throwable expiredJwtException) {
-		TokenInfo refreshedTokens = Util.refresh(refreshToken, Util.Key.convertSecretKey(jwtSecret),
-			expiredJwtException);
+  }
 
-		return refreshedTokens;
-	}
+  private TokenInfo refreshAccessToken(RefreshToken refreshToken, Throwable expiredJwtException) {
+    TokenInfo refreshedTokens = Util.refresh(refreshToken, Util.Key.convertSecretKey(jwtSecret),
+        expiredJwtException);
 
-	private RefreshToken getRefreshToken(ServerHttpRequest request) {
-		String authCookie = getRefreshTokenCookie(request).getValue();
-		RefreshToken refreshToken = Util.parseRefreshToken(authCookie);
-		return refreshToken;
-	}
+    return refreshedTokens;
+  }
 
-	private static AccessToken getAccessToken(ServerHttpRequest request) {
-		String authHeader = request.getHeaders().getFirst("Authorization");
-		AccessToken accessToken = Util.parseAccessToken(authHeader);
-		return accessToken;
-	}
+  private RefreshToken getRefreshToken(ServerHttpRequest request) {
+    String authCookie = getRefreshTokenCookie(request).getValue();
+    RefreshToken refreshToken = Util.parseRefreshToken(authCookie);
+    return refreshToken;
+  }
 
-	private boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
-		ServerHttpRequest request) {
-		if (whitelistProperties.getUrls().stream()
-			.anyMatch(pattern -> new AntPathMatcher().match(pattern.getUrl(), request.getURI().getPath()) &&
-				(pattern.getMethod().equals(request.getMethod().name()) || pattern.getMethod().equals("*"))) ) {
-			log.debug("pass authorization filter");
-			return true;
-		}
-		return false;
-	}
+  private static AccessToken getAccessToken(ServerHttpRequest request) {
+    String authHeader = request.getHeaders().getFirst("Authorization");
+    AccessToken accessToken = Util.parseAccessToken(authHeader);
+    return accessToken;
+  }
 
-	private String setCookieHeader(String name, String value, int maxAge, String path, boolean secure, boolean httpOnly,
-		String sameSite) {
-		String formatted = "%s=%s; Path=%s; Max-Age=%s; SameSite=%s".formatted(
-			name, value, path, maxAge, sameSite
-		);
-		if (secure) {
-			formatted += "; Secure";
-		}
-		if (httpOnly)
-			formatted += "; HttpOnly";
-		return formatted;
-	}
+  private boolean checkWhiteList(Config config, ServerWebExchange exchange, GatewayFilterChain chain,
+      ServerHttpRequest request) {
+    if (whitelistProperties.getUrls().stream()
+        .anyMatch(pattern -> new AntPathMatcher().match(pattern.getUrl(), request.getURI().getPath()) &&
+            (pattern.getMethod().equals(request.getMethod().name()) || pattern.getMethod().equals("*")))) {
+      log.debug("pass authorization filter");
+      return true;
+    }
+    return false;
+  }
 
-	private HttpCookie getRefreshTokenCookie(ServerHttpRequest request) {
-		if (request.getCookies().getFirst("refreshToken") == null) {
-			throw new RuntimeException("refreshToken is null.");
-		}
-		return request.getCookies().getFirst("refreshToken");
-	}
+  private String setCookieHeader(String name, String value, int maxAge, String path, boolean secure, boolean httpOnly,
+      String sameSite) {
+    String formatted = "%s=%s; Path=%s; Max-Age=%s; SameSite=%s".formatted(
+        name, value, path, maxAge, sameSite);
+    if (secure) {
+      formatted += "; Secure";
+    }
+    if (httpOnly)
+      formatted += "; HttpOnly";
+    return formatted;
+  }
+
+  private HttpCookie getRefreshTokenCookie(ServerHttpRequest request) {
+    if (request.getCookies().getFirst("refreshToken") == null) {
+      throw new RuntimeException("refreshToken is null.");
+    }
+    return request.getCookies().getFirst("refreshToken");
+  }
 }

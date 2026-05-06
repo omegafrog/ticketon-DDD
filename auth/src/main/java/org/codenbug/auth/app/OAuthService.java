@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import org.codenbug.auth.domain.SecurityUser;
 import org.codenbug.auth.domain.SecurityUserRepository;
-import org.codenbug.auth.domain.SocialInfo;
 import org.codenbug.auth.domain.SocialProvider;
 import org.codenbug.message.SnsUserRegisteredEvent;
 import org.codenbug.auth.global.SocialLoginType;
@@ -77,9 +76,12 @@ public class OAuthService {
     TokenInfo tokenInfo = null;
     // 이미 존재하는 사용자라면 토큰 생성
     if (existingUser.isPresent()) {
+      SecurityUser user = existingUser.get();
+      user.linkSocialAccount(parsed.getSocialId(), parsed.getProvider());
+      repository.save(user);
       tokenInfo = Util.generateTokens(
-          Map.of("userId", existingUser.get().getUserId().toString(), "role",
-              existingUser.get().getRole(), "email", existingUser.get().getEmail()),
+          Map.of("userId", user.tokenSubject(), "role",
+              Role.valueOf(user.getRole()), "email", user.getEmail()),
           Util.Key.convertSecretKey(jwtSecret));
       return new SocialLoginResponse(tokenInfo);
     }
@@ -88,9 +90,8 @@ public class OAuthService {
     log.debug(">> 신규 사용자 등록 이벤트 발행: socialId={}, provider={}", parsed.getSocialId(),
         parsed.getProvider());
 
-    SecurityUser newUser =
-        new SecurityUser(new SocialInfo(parsed.getSocialId(), parsed.getProvider(), true),
-            parsed.getEmail(), null, Role.USER.name());
+    SecurityUser newUser = SecurityUser.createSocialUserAccount(parsed.getSocialId(),
+        parsed.getProvider(), parsed.getEmail());
     repository.save(newUser);
     publisher.publishEvent(new SnsUserRegisteredEvent(newUser.getSecurityUserId().toString(),
         parsed.getName(), parsed.getAge(), parsed.getSex()));
@@ -157,17 +158,15 @@ public class OAuthService {
         // 에러 정보가 있는지 확인
         if (jsonNode.has("error")) {
           String error = jsonNode.get("error").asText();
-          String errorDescription =
-              jsonNode.has("error_description") ? jsonNode.get("error_description").asText()
-                  : "설명 없음";
+          String errorDescription = jsonNode.has("error_description") ? jsonNode.get("error_description").asText()
+              : "설명 없음";
           String errorCode = jsonNode.has("error_code") ? jsonNode.get("error_code").asText() : "";
 
           log.error(">> OAuth 에러 - error: {}, description: {}, code: {}", error, errorDescription,
               errorCode);
 
           // 사용자에게 도움이 되는 구체적인 에러 메시지 생성
-          String userFriendlyMessage =
-              createUserFriendlyErrorMessage(error, errorDescription, errorCode);
+          String userFriendlyMessage = createUserFriendlyErrorMessage(error, errorDescription, errorCode);
           throw new RuntimeException(userFriendlyMessage);
         }
 
@@ -223,5 +222,3 @@ public class OAuthService {
   }
 
 }
-
-

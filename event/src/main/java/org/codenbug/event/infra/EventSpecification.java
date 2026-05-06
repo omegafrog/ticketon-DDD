@@ -21,6 +21,11 @@ public class EventSpecification {
 		return (root, query, builder) -> builder.isFalse(root.get("metaData").get("deleted"));
 	}
 
+	public static Specification<Event> isOpen() {
+		return (root, query, builder) ->
+			builder.equal(root.get("eventInformation").get("status"), EventStatus.OPEN);
+	}
+
 	/**
 	 * 키워드(제목) 포함 조건
 	 */
@@ -78,8 +83,7 @@ public class EventSpecification {
 
 	private static Specification<Event> statusIn(List<EventStatus> statuses) {
 		if (statuses == null || statuses.isEmpty()) return null;
-		return (root, query, builder) -> root.get("status").in(statuses
-			.stream().map(status->status.name()).toList());
+		return (root, query, builder) -> root.get("eventInformation").get("status").in(statuses);
 	}
 
 	private static Specification<Event> dateBetween(LocalDateTime start, LocalDateTime end) {

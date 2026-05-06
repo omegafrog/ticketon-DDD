@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>토스 결제 콜백</title>
+</head>
+<body>
+  <h1>토스 결제 콜백 페이지</h1>
+
+  <h2>콜백 파라미터</h2>
+  <pre id="callbackParams"></pre>
+
+  <h2>서버 승인 요청 Body</h2>
+  <pre id="confirmBody"></pre>
+
+  <button id="confirm-button">내 서버 /payments/confirm 호출</button>
+
+  <h2>서버 응답</h2>
+  <pre id="serverResult"></pre>
+
+  <script>
+    function getParam(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    const paymentKey = getParam("paymentKey");
+    const orderId = getParam("orderId");
+    const amount = Number(getParam("amount"));
+    const code = getParam("code");
+    const message = getParam("message");
+    const mode = getParam("mode");
+
+    // successUrl에 purchaseId를 붙였다면 여기서 추출됨
+    let purchaseId = getParam("purchaseId");
+
+    const callbackParams = {
+      mode,
+      paymentKey,
+      orderId,
+      amount,
+      code,
+      message,
+      purchaseId
+    };
+
+    document.getElementById("callbackParams").innerText =
+      JSON.stringify(callbackParams, null, 2);
+
+    // 실패 콜백이면 code/message가 들어온다.
+    if (code || mode === "fail") {
+      alert(`결제 실패\ncode: ${code}\nmessage: ${message}`);
+    }
+
+    // 성공 콜백인데 purchaseId가 URL에 없으면 수동 입력
+    if (!code && paymentKey && orderId && amount && !purchaseId) {
+      purchaseId = prompt("purchaseId를 입력하세요", "");
+    }
+
+    const confirmBody = {
+      purchaseId: purchaseId,
+      paymentKey: paymentKey,
+      orderId: orderId,
+      amount: amount,
+      provider: "TOSS"
+    };
+
+    document.getElementById("confirmBody").innerText =
+      JSON.stringify(confirmBody, null, 2);
+
+    document.getElementById("confirm-button").addEventListener("click", async () => {
+      if (code || mode === "fail") {
+        alert("실패 콜백이므로 confirm을 호출하지 않습니다.");
+        return;
+      }
+
+      if (!paymentKey || !orderId || !amount || !purchaseId) {
+        alert("confirm 요청에 필요한 값이 부족합니다.");
+        return;
+      }
+
+      const backendBaseUrl = prompt(
+        "백엔드 주소를 입력하세요",
+        "http://localhost:9000"
+      );
+
+      const accessToken = prompt(
+        "Authorization Bearer 토큰을 입력하세요",
+        ""
+      );
+
+      const entryAuthToken = prompt(
+        "entryAuthToken을 입력하세요",
+        ""
+      );
+
+      const response = await fetch(`${backendBaseUrl}/payments/confirm`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+          "entryAuthToken": entryAuthToken
+        },
+        body: JSON.stringify(confirmBody)
+      });
+
+      const resultText = await response.text();
+
+      let result;
+      try {
+        result = JSON.parse(resultText);
+      } catch (e) {
+        result = resultText;
+      }
+
+      document.getElementById("serverResult").innerText =
+        typeof result === "string"
+          ? result
+          : JSON.stringify(result, null, 2);
+    });
+  </script>
+</body>
+</html>

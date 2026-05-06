@@ -29,6 +29,15 @@ public class RabbitMqConfig {
   @Value("${spring.rabbitmq.password}")
   private String password;
 
+  @Bean("user-created")
+  public Queue userCreatedQueue() {
+    return new Queue("user-created");
+  }
+
+  @Bean("user-created-failed")
+  public Queue userCreatedFailedQueue() {
+    return new Queue("user-created-failed");
+  }
 
   @Bean("sns-user-created")
   public Queue snsUsercreatedQueue() {
@@ -55,6 +64,18 @@ public class RabbitMqConfig {
   public Binding snsUserQueueBinding(@Qualifier("sns-user-created") Queue queue,
       DirectExchange directExchange) {
     return BindingBuilder.bind(queue).to(directExchange).with("sns-user.created");
+  }
+
+  @Bean
+  public Binding userCreatedQueueBinding(@Qualifier("user-created") Queue queue,
+      DirectExchange exchange) {
+    return BindingBuilder.bind(queue).to(exchange).with("user.created");
+  }
+
+  @Bean
+  public Binding userCreatedFailedQueueBinding(@Qualifier("user-created-failed") Queue queue,
+      DirectExchange exchange) {
+    return BindingBuilder.bind(queue).to(exchange).with("user.created-failed");
   }
 
   @Bean

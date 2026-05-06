@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.codenbug.common.exception.AccessDeniedException;
-import org.codenbug.securityaop.aop.LoggedInUserContext;
-import org.codenbug.user.domain.GenerateUserIdService;
+import org.codenbug.common.Role;
 import org.codenbug.user.domain.Sex;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
@@ -24,15 +22,12 @@ import common.ValidationErrors;
 public class UserCommandService {
 
   private final UserRepository userRepository;
-  private final GenerateUserIdService idService;
 
   private final Pattern pattern = Pattern.compile("^01([0|1|6|7|8|9])-\\d{3,4}-\\d{4}$");
 
 
-  public UserCommandService(UserRepository userRepository, ApplicationEventPublisher publisher,
-      GenerateUserIdService idService) {
+  public UserCommandService(UserRepository userRepository, ApplicationEventPublisher publisher) {
     this.userRepository = userRepository;
-    this.idService = idService;
   }
 
   @Transactional
@@ -46,7 +41,7 @@ public class UserCommandService {
     }
 
     return userRepository.save(
-        new User(idService, request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(),
+        new User(request.getName(), Sex.valueOf(request.getSex()), request.getPhoneNum(),
             request.getLocation(), request.getAge(), request.getSecurityUserId()));
   }
 
@@ -84,12 +79,11 @@ public class UserCommandService {
   }
 
   @Transactional
-  public void update(UpdateRequest request) {
+  public void update(AuthenticatedUser authenticatedUser, UpdateRequest request) {
 
     User user = userRepository.findUser(request.userId());
-    if (!LoggedInUserContext.get().getUserId().equals(user.getUserId().getValue())) {
-      throw new AccessDeniedException("Cannot update other user's information.");
-    }
+    authenticatedUser.verifySelf(user.getUserId());
+    authenticatedUser.requireRole(Role.USER);
 
     user.update(request.name(), request.age(), request.location(), request.phoneNum());
   }

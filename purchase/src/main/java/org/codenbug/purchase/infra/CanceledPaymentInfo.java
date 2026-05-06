@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.codenbug.purchase.domain.PaymentCancellationInfo;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,5 +39,14 @@ public class CanceledPaymentInfo {
 		private Integer cancelAmount;
 		private String canceledAt;
 		private String cancelReason;
+	}
+
+	public PaymentCancellationInfo toDomain() {
+		List<PaymentCancellationInfo.CancelDetail> domainCancels = cancels == null ? List.of() : cancels.stream()
+			.map(cancel -> new PaymentCancellationInfo.CancelDetail(cancel.getCancelAmount(), cancel.getCanceledAt(),
+				cancel.getCancelReason()))
+			.toList();
+		return new PaymentCancellationInfo(paymentKey, orderId, status, method, totalAmount,
+			receipt == null ? null : receipt.getUrl(), domainCancels);
 	}
 }

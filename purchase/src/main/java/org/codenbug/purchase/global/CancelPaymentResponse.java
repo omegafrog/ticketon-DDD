@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import org.codenbug.purchase.infra.CanceledPaymentInfo;
+import org.codenbug.purchase.domain.PaymentCancellationInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,14 +24,14 @@ public class CancelPaymentResponse {
 	private String receiptUrl;
 	private List<CancelDetail> cancels;
 
-	public static CancelPaymentResponse of(CanceledPaymentInfo canceledPaymentInfo){
+	public static CancelPaymentResponse of(PaymentCancellationInfo canceledPaymentInfo){
 		return CancelPaymentResponse.builder()
 			.paymentKey(canceledPaymentInfo.getPaymentKey())
 			.orderId(canceledPaymentInfo.getOrderId())
 			.status(canceledPaymentInfo.getStatus())
 			.method(canceledPaymentInfo.getMethod())
 			.totalAmount(canceledPaymentInfo.getTotalAmount())
-			.receiptUrl(canceledPaymentInfo.getReceipt() != null ? canceledPaymentInfo.getReceipt().getUrl() : null)
+			.receiptUrl(canceledPaymentInfo.getReceiptUrl())
 			.cancels(canceledPaymentInfo.getCancels().stream()
 				.map(c -> CancelPaymentResponse.CancelDetail.builder()
 					.cancelAmount(c.getCancelAmount())

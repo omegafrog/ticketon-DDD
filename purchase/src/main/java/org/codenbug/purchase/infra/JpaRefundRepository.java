@@ -42,4 +42,6 @@ public interface JpaRefundRepository extends JpaRepository<Refund, RefundId> {
     @Query("SELECT COUNT(r) FROM Refund r WHERE r.purchase.userId = :userId AND r.status = :status")
     long countByUserIdAndStatus(@Param("userId") UserId userId,
             @Param("status") RefundStatus status);
+
+    long countByStatus(RefundStatus status);
 }

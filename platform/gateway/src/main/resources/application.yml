@@ -81,6 +81,10 @@ spring:
               uri: lb://auth # event 모듈이 실행될 주소
               predicates:
                 - Path=/api/v1/auth/**
+            - id: auth-admin-backoffice
+              uri: lb://auth
+              predicates:
+                - Path=/admin/**
             - id: broker-service
               uri: lb://broker
               predicates:
@@ -159,6 +163,10 @@ filter:
         url: "/api/v1/auth/register"
       - method: POST
         url: "/api/v1/auth/login"
+      - method: GET
+        url: "/admin/login"
+      - method: POST
+        url: "/admin/login"
       - method: "*"
         url: "/api/v1/auth/social/**"
       - method: POST

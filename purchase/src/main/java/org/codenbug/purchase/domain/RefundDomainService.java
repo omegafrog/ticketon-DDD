@@ -2,9 +2,6 @@ package org.codenbug.purchase.domain;
 
 import java.util.List;
 
-import org.codenbug.purchase.infra.CanceledPaymentInfo;
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -13,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
  * 복잡한 환불 비즈니스 로직을 처리
  */
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class RefundDomainService {
 
@@ -31,11 +27,7 @@ public class RefundDomainService {
         Refund refund = Refund.createUserRefund(purchase, refundAmount, reason, userId);
         
         // 3. 구매 엔티티 상태 업데이트
-        if (isFullRefund(purchase, refundAmount)) {
-            purchase.markAsRefunded();
-        } else {
-            purchase.markAsPartialRefunded();
-        }
+        purchase.markAsRefunded();
         
         // 4. 티켓 처리 (좌석 해제)
         List<String> seatIds = purchase.getTickets().stream()
@@ -49,7 +41,7 @@ public class RefundDomainService {
         return RefundResult.builder()
             .refund(refund)
             .seatIds(seatIds)
-            .isFullRefund(isFullRefund(purchase, refundAmount))
+            .isFullRefund(true)
             .build();
     }
 
@@ -67,11 +59,7 @@ public class RefundDomainService {
         Refund refund = Refund.createManagerRefund(purchase, refundAmount, reason, managerId);
         
         // 3. 구매 엔티티 상태 업데이트
-        if (isFullRefund(purchase, refundAmount)) {
-            purchase.markAsRefunded();
-        } else {
-            purchase.markAsPartialRefunded();
-        }
+        purchase.markAsRefunded();
         
         // 4. 티켓 처리
         List<String> seatIds = purchase.getTickets().stream()
@@ -85,7 +73,7 @@ public class RefundDomainService {
         return RefundResult.builder()
             .refund(refund)
             .seatIds(seatIds)
-            .isFullRefund(isFullRefund(purchase, refundAmount))
+            .isFullRefund(true)
             .build();
     }
 
@@ -128,16 +116,14 @@ public class RefundDomainService {
     /**
      * 외부 결제 시스템 환불 완료 처리
      */
-    public void completeRefundWithPaymentInfo(Refund refund, CanceledPaymentInfo paymentInfo) {
+    public void completeRefundWithPaymentInfo(Refund refund, PaymentCancellationInfo paymentInfo) {
         log.info("외부 결제 시스템 환불 완료 처리: refundId={}", refund.getRefundId().getValue());
+        if (refund.getStatus() == RefundStatus.REQUESTED) {
+            refund.startProcessing();
+        }
         
         if (paymentInfo.getCancels() != null && !paymentInfo.getCancels().isEmpty()) {
-            CanceledPaymentInfo.CancelDetail cancelDetail = paymentInfo.getCancels().get(0);
-            
-            String receiptUrl = paymentInfo.getReceipt() != null ? 
-                paymentInfo.getReceipt().getUrl() : null;
-            
-            refund.completeRefund(paymentInfo.getPaymentKey(), receiptUrl);
+            refund.completeRefund(paymentInfo.getPaymentKey(), paymentInfo.getReceiptUrl());
         } else {
             refund.failRefund("결제 취소 정보가 없습니다.");
         }

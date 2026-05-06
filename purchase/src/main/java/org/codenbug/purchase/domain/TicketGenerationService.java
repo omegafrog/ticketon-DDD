@@ -2,14 +2,11 @@ package org.codenbug.purchase.domain;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import lombok.RequiredArgsConstructor;
 
 /**
  * 티켓 생성을 담당하는 도메인 서비스
  */
-@Component
 @RequiredArgsConstructor
 public class TicketGenerationService {
 

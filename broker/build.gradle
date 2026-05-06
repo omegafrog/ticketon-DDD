@@ -35,3 +35,17 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.named("bootRun") {
+    jvmArgs = [
+        "-javaagent:${rootProject.projectDir}/../utils/opentelemetry/opentelemetry-javaagent.jar",
+
+        "-Dotel.service.name=ticketon-broker",
+        "-Dotel.exporter.otlp.endpoint=http://localhost:4318",
+        "-Dotel.exporter.otlp.protocol=http/protobuf",
+
+        "-Dotel.traces.exporter=otlp",
+        "-Dotel.metrics.exporter=none",
+        "-Dotel.logs.exporter=none"
+    ]
+}

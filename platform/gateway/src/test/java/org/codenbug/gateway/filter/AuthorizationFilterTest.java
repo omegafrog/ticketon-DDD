@@ -42,17 +42,55 @@ class AuthorizationFilterTest {
     private GatewayFilterChain chain;
 
     private AuthorizationFilter authorizationFilter;
+    private WhitelistProperties whitelistProperties;
 
     @BeforeEach
     void setUp() {
-        WhitelistProperties whitelistProperties = new WhitelistProperties();
+        whitelistProperties = new WhitelistProperties();
         authorizationFilter = new AuthorizationFilter(whitelistProperties, refreshTokenStorage,
             new ObjectMapper());
         ReflectionTestUtils.setField(authorizationFilter, "jwtSecret", JWT_SECRET);
     }
 
     @Test
-    void filter_skipsBlacklistCheckByDefaultAndContinuesChain() {
+    void 화이트리스트_퍼블릭_엔드포인트_토큰_없이_허용() {
+        whitelistProperties.getUrls()
+            .add(new WhitelistProperties.Urls("GET", "/api/v1/events/{id}"));
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+            org.springframework.mock.http.server.reactive.MockServerHttpRequest
+                .get("/api/v1/events/event-1")
+                .build());
+        GatewayFilter gatewayFilter = authorizationFilter.apply(new AuthorizationFilter.Config());
+
+        when(chain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
+
+        StepVerifier.create(gatewayFilter.filter(exchange, chain))
+            .verifyComplete();
+
+        verify(refreshTokenStorage, never()).checkBlackList(any());
+        verify(chain).filter(exchange);
+    }
+
+    @Test
+    void 보호_엔드포인트_인증_요구() {
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+            org.springframework.mock.http.server.reactive.MockServerHttpRequest
+                .post("/api/v1/purchases")
+                .build());
+        GatewayFilter gatewayFilter = authorizationFilter.apply(new AuthorizationFilter.Config());
+
+        StepVerifier.create(gatewayFilter.filter(exchange, chain))
+            .verifyComplete();
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        StepVerifier.create(exchange.getResponse().getBodyAsString())
+            .expectNextMatches(body -> body.contains("사용자 오류") && !body.contains("refreshToken is null"))
+            .verifyComplete();
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
+    void 기본_블랙리스트_체크_건너뛰고_체인_계속() {
         TokenInfo tokenInfo = generateTokenInfo();
         MockServerWebExchange exchange = exchangeForPolling(tokenInfo);
         GatewayFilter gatewayFilter = authorizationFilter.apply(new AuthorizationFilter.Config());
@@ -67,7 +105,7 @@ class AuthorizationFilterTest {
     }
 
     @Test
-    void filter_returnsUnauthorizedWhenRefreshTokenIsBlacklisted() {
+    void 리프레시_토큰_블랙리스트_인증_실패() {
         TokenInfo tokenInfo = generateTokenInfo();
         MockServerWebExchange exchange = exchangeForPolling(tokenInfo);
         ReflectionTestUtils.setField(authorizationFilter,
@@ -81,6 +119,10 @@ class AuthorizationFilterTest {
             .verifyComplete();
 
         assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        StepVerifier.create(exchange.getResponse().getBodyAsString())
+            .expectNextMatches(body -> body.contains("사용자 오류")
+                && !body.contains("Refresh token is blacklisted"))
+            .verifyComplete();
         verify(refreshTokenStorage).checkBlackList(any());
         verify(chain, never()).filter(any(ServerWebExchange.class));
     }

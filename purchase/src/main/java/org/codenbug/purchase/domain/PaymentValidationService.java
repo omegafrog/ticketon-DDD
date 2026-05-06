@@ -2,14 +2,11 @@ package org.codenbug.purchase.domain;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
 import lombok.RequiredArgsConstructor;
 
 /**
  * 결제 검증을 담당하는 도메인 서비스
  */
-@Component
 @RequiredArgsConstructor
 public class PaymentValidationService {
 	private final EventInfoProvider eventInfoProvider;

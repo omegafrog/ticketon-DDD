@@ -13,7 +13,30 @@ services:
       RABBITMQ_ERLANG_COOKIE: "RabbitMQ-My-Cookies" #Ealang Cookie 설정 (클러스터 구축시 필요)
       RABBITMQ_DEFAULT_USER: "root" #admin password
       RABBITMQ_DEFAULT_PASS: "root" #admin password
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+    container_name: jaeger
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "5778:5778"
+      - "9411:9411"   # Zipkin 호환, 필요 없으면 빼도 됨
+    restart: unless-stopped
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.151.0
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+      - ./jaeger-ui.config.json:/etc/jaeger/jaeger-ui.config.json:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - jaeger
+    restart: unless-stopped
 
   # kafka-1:
   #   image: apache/kafka:latest

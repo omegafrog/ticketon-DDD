@@ -1,5 +1,7 @@
 package org.codenbug.notification.config;
 
+import org.codenbug.notification.domain.service.NotificationDomainService;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -15,5 +17,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan(basePackages = {"org.codenbug.notification"})
 @EnableAspectJAutoProxy
 public class NotificationConfig {
-    // Bean 설정이 필요한 경우 여기에 추가
+
+    @Bean
+    public NotificationDomainService notificationDomainService() {
+        return new NotificationDomainService();
+    }
 }

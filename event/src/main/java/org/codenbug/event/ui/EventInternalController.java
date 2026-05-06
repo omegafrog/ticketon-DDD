@@ -39,7 +39,8 @@ public class EventInternalController {
 			status,
 			event.getVersion(),
 			event.getSalesVersion(),
-			event.getEventInformation().getTitle()
+			event.getEventInformation().getTitle(),
+			event.getManagerId().getManagerId()
 		);
 		return ResponseEntity.ok(new RsData<>("200", "이벤트 요약 조회 성공", response));
 	}

@@ -16,8 +16,6 @@ import org.codenbug.seat.global.SeatCancelRequest;
 import org.codenbug.seat.global.SeatSelectRequest;
 import org.codenbug.seat.global.SeatSelectResponse;
 import org.codenbug.seat.global.exception.ConflictException;
-import org.codenbug.seat.infra.EventServiceClient;
-import org.codenbug.seat.infra.dto.EventSummaryResponse;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -28,13 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateSeatLayoutService {
 	private final SeatLayoutRepository seatLayoutRepository;
-	private final EventServiceClient eventServiceClient;
+	private final EventSeatLayoutPort eventServiceClient;
 	private final SeatTransactionService seatTransactionService;
 	private final RedisLockService redisLockService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	public UpdateSeatLayoutService(SeatLayoutRepository seatLayoutRepository,
-			EventServiceClient eventServiceClient,
+			EventSeatLayoutPort eventServiceClient,
 			SeatTransactionService seatTransactionService, RedisLockService redisLockService,
 			ApplicationEventPublisher eventPublisher) {
 		this.seatLayoutRepository = seatLayoutRepository;
@@ -86,19 +84,25 @@ public class UpdateSeatLayoutService {
 			throw new IllegalArgumentException("로그인된 사용자가 없습니다.");
 		}
 
-		EventSummaryResponse event = eventServiceClient.getEventSummary(eventId);
+		EventSeatLayoutSummary event = eventServiceClient.getEventSummary(eventId);
 
-		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
+		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.seatLayoutId());
 		Set<Seat> seats = seatLayout.getSeats();
 		List<Seat> selectedSeats = seats.stream().filter(seat -> seatSelectRequest.getSeatList()
 				.stream().anyMatch(seatId -> seatId.equals(seat.getSeatId().getValue()))).toList();
 
 		List<String> reservedSeatIds;
 
-		if (event.isSeatSelectable()) {
+		if (event.seatSelectable()) {
 			// 지정석 예매 처리
 			if (selectedSeats != null && selectedSeats.size() > 4) {
 				throw new IllegalArgumentException("최대 4개의 좌석만 선택할 수 있습니다.");
+			}
+			if (selectedSeats.size() != seatSelectRequest.getSeatList().size()) {
+				throw new IllegalArgumentException("[selectSeats] 존재하지 않는 좌석이 포함되어 있습니다.");
+			}
+			if (selectedSeats.size() != seatSelectRequest.getTicketCount()) {
+				throw new IllegalArgumentException("[selectSeats] 좌석 수량과 티켓 수량이 일치해야 합니다.");
 			}
 			reservedSeatIds =
 					selectSeats(selectedSeats, userId, eventId, true, seatSelectRequest.getTicketCount());
@@ -107,8 +111,9 @@ public class UpdateSeatLayoutService {
 			if (selectedSeats != null && !selectedSeats.isEmpty()) {
 				throw new IllegalArgumentException("[selectSeats] 미지정석 예매 시 좌석 목록은 제공되지 않아야 합니다.");
 			}
+			List<Seat> availableSeats = seats.stream().filter(Seat::isAvailable).toList();
 			reservedSeatIds =
-					selectSeats(null, userId, eventId, false, seatSelectRequest.getTicketCount());
+					selectSeats(availableSeats, userId, eventId, false, seatSelectRequest.getTicketCount());
 		}
 
 		SeatSelectResponse seatSelectResponse = new SeatSelectResponse();
@@ -143,7 +148,7 @@ public class UpdateSeatLayoutService {
 			}
 		} else {
 			// 미지정석 예매 처리
-			List<Seat> availableSeats = selectedSeats.stream().limit(ticketCount).toList();
+			List<Seat> availableSeats = selectedSeats.stream().filter(Seat::isAvailable).limit(ticketCount).toList();
 
 			if (availableSeats.size() < ticketCount) {
 				throw new ConflictException("[selectSeats] 예매 가능한 좌석 수가 부족합니다.");
@@ -182,11 +187,11 @@ public class UpdateSeatLayoutService {
 		if (userId == null) {
 			throw new IllegalArgumentException("[cancelSeat] 로그인된 사용자가 없습니다.");
 		}
-		EventSummaryResponse event = eventServiceClient.getEventSummary(eventId);
-		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId());
+		EventSeatLayoutSummary event = eventServiceClient.getEventSummary(eventId);
+		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.seatLayoutId());
 
 		for (String seatId : seatCancelRequest.getSeatList()) {
-			String lockKey = SEAT_LOCK_KEY_PREFIX + userId + ":" + eventId + ":" + seatId;
+			String lockKey = SEAT_LOCK_KEY_PREFIX + eventId + ":" + seatId;
 
 			String lockValue = redisLockService.getLockValue(lockKey);
 
@@ -194,9 +199,6 @@ public class UpdateSeatLayoutService {
 			Seat selectedSeat = seatLayout.getSeats().stream()
 					.filter(seat -> seat.getSeatId().getValue().equals(seatId)).findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("[cancelSeat] 존재하지 않는 좌석입니다."));
-			if (!unlockSuccess) {
-				throw new IllegalArgumentException("[cancelSeat] 좌석 락을 해제할 수 없습니다.");
-			}
 			selectedSeat.cancelReserve();
 		}
 	}

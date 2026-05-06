@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>토스 결제 테스트</title>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+</head>
+<body>
+  <h1>토스 결제 테스트 페이지</h1>
+
+  <p><b>clientKey:</b> <span id="clientKeyText"></span></p>
+  <p><b>secretKey:</b> <span id="secretKeyText"></span></p>
+  <p><b>purchaseId:</b> <span id="purchaseIdText"></span></p>
+  <p><b>orderId:</b> <span id="orderIdText"></span></p>
+  <p><b>amount:</b> <span id="amountText"></span></p>
+  <p><b>customerKey:</b> <span id="customerKeyText"></span></p>
+
+  <button id="payment-button">결제창 띄우기</button>
+
+  <script>
+    let clientKey;
+    let secretKey;
+    let purchaseId;
+    let orderId;
+    let amount;
+    let customerKey;
+
+    function requirePrompt(message, defaultValue) {
+      const value = prompt(message, defaultValue);
+
+      if (value === null || value.trim() === "") {
+        alert("값이 필요합니다: " + message);
+        throw new Error("Required value missing: " + message);
+      }
+
+      return value.trim();
+    }
+
+    function maskSecret(value) {
+      if (!value || value.length < 12) {
+        return "****";
+      }
+
+      return value.slice(0, 8) + "****" + value.slice(-4);
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      clientKey = requirePrompt("토스 clientKey를 입력하세요", "test_ck_");
+      secretKey = requirePrompt("토스 secretKey를 입력하세요. 프론트에서는 실제로 사용하지 않습니다.", "test_sk_");
+
+      purchaseId = requirePrompt("purchaseId를 입력하세요. /payments/init 응답의 purchaseId입니다.", "");
+      orderId = requirePrompt("orderId를 입력하세요", "ORDER-" + Date.now());
+      amount = Number(requirePrompt("amount를 입력하세요", "50000"));
+      customerKey = requirePrompt("customerKey를 입력하세요", "customer-" + Date.now());
+
+      document.getElementById("clientKeyText").innerText = clientKey;
+      document.getElementById("secretKeyText").innerText = maskSecret(secretKey);
+      document.getElementById("purchaseIdText").innerText = purchaseId;
+      document.getElementById("orderIdText").innerText = orderId;
+      document.getElementById("amountText").innerText = amount;
+      document.getElementById("customerKeyText").innerText = customerKey;
+
+      const tossPayments = TossPayments(clientKey);
+
+      const payment = tossPayments.payment({
+        customerKey: customerKey
+      });
+
+      document.getElementById("payment-button").addEventListener("click", async () => {
+        const origin = window.location.origin;
+
+        const successUrl =
+          `${origin}/toss-callback.html?purchaseId=${encodeURIComponent(purchaseId)}`;
+
+        const failUrl =
+          `${origin}/toss-callback.html?mode=fail&purchaseId=${encodeURIComponent(purchaseId)}`;
+
+        await payment.requestPayment({
+          method: "CARD",
+          amount: {
+            currency: "KRW",
+            value: amount
+          },
+          orderId: orderId,
+          orderName: "테스트 티켓 결제",
+          successUrl: successUrl,
+          failUrl: failUrl,
+          customerEmail: "test@example.com",
+          customerName: "테스트유저"
+        });
+      });
+    });
+  </script>
+</body>
+</html>

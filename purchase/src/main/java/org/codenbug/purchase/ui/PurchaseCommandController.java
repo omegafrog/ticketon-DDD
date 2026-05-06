@@ -3,6 +3,7 @@ package org.codenbug.purchase.ui;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.common.redis.EntryTokenValidator;
+import org.codenbug.purchase.app.PendingReservationService;
 import org.codenbug.purchase.app.PurchaseCancelService;
 import org.codenbug.purchase.app.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.es.PurchaseInitCommandService;
@@ -42,66 +43,73 @@ import lombok.extern.slf4j.Slf4j;
 @Validated
 public class PurchaseCommandController {
 
-	private final PurchaseCancelService purchaseCancelService;
-	private final PurchaseInitCommandService initCommandService;
-	private final PurchaseConfirmCommandService confirmCommandService;
-	private final EntryTokenValidator entryTokenValidator;
+  private final PurchaseCancelService purchaseCancelService;
+  private final PurchaseInitCommandService initCommandService;
+  private final PurchaseConfirmCommandService confirmCommandService;
+  private final EntryTokenValidator entryTokenValidator;
+  private final PendingReservationService pendingReservationService;
 
-	@Operation(summary = "결제 준비", description = "티켓 구매를 위한 결제 준비 과정을 시작합니다. 대기열 인증 토큰이 필요합니다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "결제 준비 성공"),
-		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-		@ApiResponse(responseCode = "403", description = "권한 부족 또는 잘못된 대기열 토큰"),
-		@ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
-	})
-	@PostMapping("/init")
-	@AuthNeeded
-	@RoleRequired({Role.USER})
-	public ResponseEntity<RsData<InitiatePaymentResponse>> initiatePayment(
-			@Parameter(description = "결제 준비 요청 정보", required = true)
-			@Valid @RequestBody InitiatePaymentRequest request,
-			@Parameter(description = "대기열 진입 인증 토큰", required = true)
-			@RequestHeader("entryAuthToken") String entryAuthToken) {
-		String userId = LoggedInUserContext.get().getUserId();
-		entryTokenValidator.validate(userId, entryAuthToken, request.getEventId());
-		InitiatePaymentResponse response = initCommandService.initiatePayment(request, userId);
-		return ResponseEntity.status(201).body(new RsData<>("201", "결제 준비 완료", response));
-	}
+  // TODO: orderId도 리턴에 추가하도록 수정
+  @Operation(summary = "결제 준비", description = "티켓 구매를 위한 결제 준비 과정을 시작합니다. 대기열 인증 토큰이 필요합니다.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "결제 준비 성공"),
+      @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+      @ApiResponse(responseCode = "403", description = "권한 부족 또는 잘못된 대기열 토큰"),
+      @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
+  })
+  @PostMapping("/init")
+  @AuthNeeded
+  @RoleRequired({ Role.USER })
+  public ResponseEntity<RsData<InitiatePaymentResponse>> initiatePayment(
+      @Parameter(description = "결제 준비 요청 정보", required = true) @Valid @RequestBody InitiatePaymentRequest request,
+      @Parameter(description = "대기열 진입 인증 토큰", required = true) @RequestHeader("entryAuthToken") String entryAuthToken) {
+    String userId = LoggedInUserContext.get().getUserId();
+    entryTokenValidator.validate(userId, entryAuthToken, request.getEventId());
+    InitiatePaymentResponse response = initCommandService.initiatePayment(request, userId);
+    return ResponseEntity.status(201).body(new RsData<>("201", "결제 준비 완료", response));
+  }
 
-	@Operation(summary = "결제 승인", description = "결제를 최종 승인하고 티켓을 발급합니다. Event Sourcing 기반으로 비동기 처리됩니다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "결제 승인 요청受理"),
-		@ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
-		@ApiResponse(responseCode = "403", description = "권한 부족 또는 잘못된 대기열 토큰"),
-		@ApiResponse(responseCode = "400", description = "결제 승인 실패")
-	})
-	@PostMapping("/confirm")
-	@AuthNeeded
-	@RoleRequired(Role.USER)
-	public ResponseEntity<RsData<ConfirmPaymentAcceptedResponse>> confirmPayment(
-			@Parameter(description = "결제 승인 요청 정보", required = true)
-			@Valid @RequestBody ConfirmPaymentRequest request,
-			@Parameter(description = "대기열 진입 인증 토큰", required = true)
-			@RequestHeader("entryAuthToken") String entryAuthToken) {
-		String userId = LoggedInUserContext.get().getUserId();
-		ConfirmPaymentAcceptedResponse response = confirmCommandService.requestConfirm(request, userId);
-		return ResponseEntity.accepted().body(new RsData<>("202", "결제 승인 요청受理", response));
-	}
+  @Operation(summary = "결제 승인", description = "결제를 최종 승인하고 티켓을 발급합니다. Event Sourcing 기반으로 비동기 처리됩니다.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "결제 승인 요청필요"),
+      @ApiResponse(responseCode = "401", description = "인증되지 않은 사용자"),
+      @ApiResponse(responseCode = "403", description = "권한 부족 또는 잘못된 대기열 토큰"),
+      @ApiResponse(responseCode = "400", description = "결제 승인 실패")
+  })
+  @PostMapping("/confirm")
+  @AuthNeeded
+  @RoleRequired(Role.USER)
+  public ResponseEntity<RsData<ConfirmPaymentAcceptedResponse>> confirmPayment(
+      @Parameter(description = "결제 승인 요청 정보", required = true) @Valid @RequestBody ConfirmPaymentRequest request,
+      @Parameter(description = "대기열 진입 인증 토큰", required = true) @RequestHeader("entryAuthToken") String entryAuthToken) {
+    String userId = LoggedInUserContext.get().getUserId();
+    ConfirmPaymentAcceptedResponse response = confirmCommandService.requestConfirm(request, userId);
+    return ResponseEntity.accepted().body(new RsData<>("202", "결제 승인 요청완료", response));
+  }
 
-	@Operation(summary = "결제 취소", description = "결제를 취소하고 티켓을 환불 처리합니다.")
-	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "결제 취소 성공"),
-		@ApiResponse(responseCode = "400", description = "잘못된 결제 키 또는 취소 불가능한 상태"),
-		@ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음")
-	})
-	@PostMapping("/{paymentKey}/cancel")
-	public ResponseEntity<RsData<CancelPaymentResponse>> cancelPayment(
-			@Parameter(description = "Toss Payments 결제 키", required = true)
-			@PathVariable @NotBlank String paymentKey,
-			@Parameter(description = "결제 취소 요청 정보", required = true)
-			@Valid @RequestBody CancelPaymentRequest request) {
-		String userId = LoggedInUserContext.get().getUserId();
-		CancelPaymentResponse response = purchaseCancelService.cancelPayment(request, paymentKey, userId);
-		return ResponseEntity.ok(new RsData<>("200", "결제 취소 완료", response));
-	}
+  @Operation(summary = "결제 취소", description = "결제를 취소하고 티켓을 환불 처리합니다.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "결제 취소 성공"),
+      @ApiResponse(responseCode = "400", description = "잘못된 결제 키 또는 취소 불가능한 상태"),
+      @ApiResponse(responseCode = "404", description = "결제 정보를 찾을 수 없음")
+  })
+  @PostMapping("/{paymentKey}/cancel")
+  public ResponseEntity<RsData<CancelPaymentResponse>> cancelPayment(
+      @Parameter(description = "Toss Payments 결제 키", required = true) @PathVariable @NotBlank String paymentKey,
+      @Parameter(description = "결제 취소 요청 정보", required = true) @Valid @RequestBody CancelPaymentRequest request) {
+    String userId = LoggedInUserContext.get().getUserId();
+    CancelPaymentResponse response = purchaseCancelService.cancelPayment(request, paymentKey, userId);
+    return ResponseEntity.ok(new RsData<>("200", "결제 취소 완료", response));
+  }
+
+  @Operation(summary = "결제 대기 예매 포기", description = "결제 완료 전 예매를 포기하고 좌석과 입장 토큰을 해제합니다.")
+  @PostMapping("/{purchaseId}/cancel-pending")
+  @AuthNeeded
+  @RoleRequired(Role.USER)
+  public ResponseEntity<RsData<Void>> cancelPendingReservation(
+      @PathVariable @NotBlank String purchaseId) {
+    String userId = LoggedInUserContext.get().getUserId();
+    pendingReservationService.cancelPendingReservation(purchaseId, userId);
+    return ResponseEntity.ok(new RsData<>("200", "결제 대기 예매 취소 완료", null));
+  }
 }

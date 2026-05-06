@@ -1,7 +1,6 @@
 package org.codenbug.broker.app;
 
 import org.codenbug.broker.config.InstanceConfig;
-import org.codenbug.broker.infra.WaitingQueueRedisRepository;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.http.ResponseEntity;
@@ -17,29 +16,29 @@ import lombok.extern.slf4j.Slf4j;
 public class WaitingQueueEntryService {
 
   private final SseEmitterService sseEmitterService;
-	private final WaitingQueueRedisRepository waitingQueueRepository;
-	private final EventClient eventClient;
-	private final org.codenbug.broker.infra.EventStatusInitializer eventStatusInitializer;
-	private final InstanceConfig instanceConfig;
+  private final WaitingQueueStore waitingQueueRepository;
+  private final EventClient eventClient;
+  private final EventStatusInitializationPort eventStatusInitializer;
+  private final InstanceConfig instanceConfig;
 
-	public WaitingQueueEntryService(SseEmitterService sseEmitterService,
-		WaitingQueueRedisRepository waitingQueueRepository, EventClient eventClient,
-		org.codenbug.broker.infra.EventStatusInitializer eventStatusInitializer,
-		InstanceConfig instanceConfig) {
-		this.sseEmitterService = sseEmitterService;
-		this.waitingQueueRepository = waitingQueueRepository;
-		this.eventClient = eventClient;
-		this.eventStatusInitializer = eventStatusInitializer;
-		this.instanceConfig = instanceConfig;
-	}
+  public WaitingQueueEntryService(SseEmitterService sseEmitterService,
+      WaitingQueueStore waitingQueueRepository, EventClient eventClient,
+      EventStatusInitializationPort eventStatusInitializer,
+      InstanceConfig instanceConfig) {
+    this.sseEmitterService = sseEmitterService;
+    this.waitingQueueRepository = waitingQueueRepository;
+    this.eventClient = eventClient;
+    this.eventStatusInitializer = eventStatusInitializer;
+    this.instanceConfig = instanceConfig;
+  }
 
   public SseEmitter entry(String eventId) throws JsonProcessingException {
     // 로그인한 유저 id 조회
     String id = getLoggedInUserId();
 
-		if (waitingQueueRepository.isUserExistInEntry(id)) {
-			throw new IllegalStateException("이미 입장 토큰이 발급되었습니다.");
-		}
+    if (waitingQueueRepository.isUserExistInEntry(id)) {
+      throw new IllegalStateException("이미 입장 토큰이 발급되었습니다.");
+    }
 
     SseEmitter emitter;
     // emitter 생성 및 저장
@@ -56,22 +55,26 @@ public class WaitingQueueEntryService {
   }
 
   /**
-   * 사용자를 대기열에 추가한다. redis의 메시지 idx를 가져와 메시지의 idx로 추가하고 1을 증가시킨다. 이후 WAITING stream에 메시지를 추가해 사용자를
+   * 사용자를 대기열에 추가한다. redis의 메시지 idx를 가져와 메시지의 idx로 추가하고 1을 증가시킨다. 이후 WAITING
+   * stream에 메시지를 추가해 사용자를
    * 대기열에 추가한다.
    *
-   * @param userId 대기열에 추가할 유저 id
+   * @param userId  대기열에 추가할 유저 id
    * @param eventId 행사의 id
    */
   private void enter(String userId, String eventId) throws JsonProcessingException {
 
-		if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
-			int seatCount = eventClient.getSeatCount(eventId);
-			waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
-		}
+    if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
+      int seatCount = eventClient.getSeatCount(eventId);
+      waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
+    }
 
-		eventStatusInitializer.ensureInitialized(eventId);
+    eventStatusInitializer.ensureInitialized(eventId);
+    if (!"OPEN".equals(eventClient.getSeatStatus(eventId))) {
+      throw new IllegalStateException("예매 가능한 이벤트가 아닙니다.");
+    }
 
-		boolean inserted = waitingQueueRepository.recordWaitingUserIfAbsent(eventId, userId);
+    boolean inserted = waitingQueueRepository.recordWaitingUserIfAbsent(eventId, userId);
     if (!inserted) {
       throw new IllegalStateException("이미 대기열에 존재합니다.");
     }
@@ -86,7 +89,8 @@ public class WaitingQueueEntryService {
   }
 
   /**
-   * 현재 로그인한 사용자의 대기열 연결을 명시적으로 해제합니다. IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게 승급할 수 있도록 돕니다.
+   * 현재 로그인한 사용자의 대기열 연결을 명시적으로 해제합니다. IN_PROGRESS 상태에 도달한 후 즉시 호출하여 다음 사용자가 빠르게
+   * 승급할 수 있도록 돕니다.
    *
    * @param eventId 행사의 id
    * @return 성공 시 200 OK 응답

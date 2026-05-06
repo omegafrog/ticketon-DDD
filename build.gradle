@@ -66,5 +66,14 @@ tasks.named('jar') {
     enabled = true
 }
 
+tasks.register('architectureRules') {
+    group = 'verification'
+    description = 'Runs DDD architecture rules backed by ArchUnit.'
+    dependsOn ':app:architectureRules'
+}
 
-
+subprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.compilerArgs += ['-parameters']
+    }
+}

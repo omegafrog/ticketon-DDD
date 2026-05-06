@@ -18,39 +18,39 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PurchaseEventPublisher {
 
-    private final RabbitTemplate rabbitTemplate;
-    private final ObjectMapper objectMapper;
+  private final RabbitTemplate rabbitTemplate;
+  private final ObjectMapper objectMapper;
 
-    private static final String PAYMENT_COMPLETED_QUEUE = "payment.completed";
-    private static final String REFUND_COMPLETED_QUEUE = "refund.completed";
+  private static final String PAYMENT_COMPLETED_QUEUE = "payment.completed";
+  private static final String REFUND_COMPLETED_QUEUE = "refund.completed";
 
-    /**
-     * 결제 완료 이벤트 발행
-     */
-    public void publishPaymentCompletedEvent(PaymentCompletedEvent event) {
-        try {
-            String message = objectMapper.writeValueAsString(event);
-            rabbitTemplate.convertAndSend(PAYMENT_COMPLETED_QUEUE, message);
-            log.info("결제 완료 이벤트 발행 성공: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId());
-        } catch (Exception e) {
-            log.error("결제 완료 이벤트 발행 실패: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId(), e);
-        }
+  /**
+   * 결제 완료 이벤트 발행
+   */
+  public void publishPaymentCompletedEvent(PaymentCompletedEvent event) {
+    try {
+      String message = objectMapper.writeValueAsString(event);
+      rabbitTemplate.convertAndSend(PAYMENT_COMPLETED_QUEUE, message);
+      log.info("결제 완료 이벤트 발행 성공: userId={}, purchaseId={}",
+          event.getUserId(), event.getPurchaseId());
+    } catch (Exception e) {
+      log.error("결제 완료 이벤트 발행 실패: userId={}, purchaseId={}",
+          event.getUserId(), event.getPurchaseId(), e);
     }
+  }
 
-    /**
-     * 환불 완료 이벤트 발행
-     */
-    public void publishRefundCompletedEvent(RefundCompletedEvent event) {
-        try {
-            String message = objectMapper.writeValueAsString(event);
-            rabbitTemplate.convertAndSend(REFUND_COMPLETED_QUEUE, message);
-            log.info("환불 완료 이벤트 발행 성공: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId());
-        } catch (Exception e) {
-            log.error("환불 완료 이벤트 발행 실패: userId={}, purchaseId={}", 
-                event.getUserId(), event.getPurchaseId(), e);
-        }
+  /**
+   * 환불 완료 이벤트 발행
+   */
+  public void publishRefundCompletedEvent(RefundCompletedEvent event) {
+    try {
+      String message = objectMapper.writeValueAsString(event);
+      rabbitTemplate.convertAndSend(REFUND_COMPLETED_QUEUE, message);
+      log.info("환불 완료 이벤트 발행 성공: userId={}, purchaseId={}",
+          event.getUserId(), event.getPurchaseId());
+    } catch (Exception e) {
+      log.error("환불 완료 이벤트 발행 실패: userId={}, purchaseId={}",
+          event.getUserId(), event.getPurchaseId(), e);
     }
+  }
 }

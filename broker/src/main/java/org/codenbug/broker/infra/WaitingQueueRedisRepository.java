@@ -11,14 +11,13 @@ import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import org.codenbug.broker.app.WaitingQueueStore;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class WaitingQueueRedisRepository {
-
-	public record PollingAdaptiveContext(String eventStatus, Long entryQueueSlots, Long waitingQueueSize) {
-	}
+public class WaitingQueueRedisRepository implements WaitingQueueStore {
 
   private final StringRedisTemplate redisTemplate;
 	private final ObjectMapper objectMapper;
@@ -75,12 +74,24 @@ public class WaitingQueueRedisRepository {
 		return redisTemplate.opsForZSet().rank(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId);
 	}
 
-	public void deleteUserFromEntry(String userId) {
-		redisTemplate.delete(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId);
+	public boolean deleteUserFromEntry(String userId) {
+		Boolean deleted = redisTemplate.delete(ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId);
+		return Boolean.TRUE.equals(deleted);
 	}
 
-	public void deleteUserFromWaiting(String eventId, String userId) {
-		redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId);
+	public boolean deleteUserFromWaiting(String eventId, String userId) {
+		Long removed = redisTemplate.opsForZSet().remove(WAITING_QUEUE_KEY_NAME + ":" + eventId, userId);
+		return removed != null && removed > 0;
+	}
+
+	public void deleteWaitingUserRecord(String eventId, String userId) {
+		redisTemplate.opsForHash().delete(WAITING_USER_IDS_KEY_NAME + ":" + eventId, userId);
+		redisTemplate.opsForHash().delete("WAITING_QUEUE_INDEX_RECORD:" + eventId, userId);
+		redisTemplate.opsForZSet().remove(WAITING_LAST_SEEN_KEY_NAME + ":" + eventId, userId);
+	}
+
+	public void clearUserQueueEvent(String userId) {
+		redisTemplate.delete(USER_QUEUE_EVENT_KEY_NAME + ":" + userId);
 	}
 
 	public boolean isUserExistInWaiting(String eventId, String userId) {
@@ -162,6 +173,11 @@ public class WaitingQueueRedisRepository {
 
 	public Long getWaitingQueueSize(String eventId) {
 		return redisTemplate.opsForZSet().size(WAITING_QUEUE_KEY_NAME + ":" + eventId);
+	}
+
+	public long countActiveEntryTokens() {
+		java.util.Set<String> keys = redisTemplate.keys(ENTRY_TOKEN_STORAGE_KEY_NAME + ":*");
+		return keys == null ? 0L : keys.size();
 	}
 
 	private String toNullableString(List<Object> values, int index) {

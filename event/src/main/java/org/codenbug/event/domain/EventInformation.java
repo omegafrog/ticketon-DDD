@@ -3,7 +3,6 @@ package org.codenbug.event.domain;
 import java.time.LocalDateTime;
 
 import org.codenbug.event.global.UpdateEventRequest;
-import org.codenbug.event.ui.NewEventRequest;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -81,39 +80,40 @@ public class EventInformation {
 		validate();
 	}
 
-	public EventInformation(NewEventRequest request) {
-		this(request.getTitle(), request.getThumbnailUrl(),
-			request.getAgeLimit(),
-			request.getRestriction(),
-			request.getDescription(), request.getBookingStart(), request.getBookingEnd(), request.getStartDate(),
-			request.getEndDate(),
-			request.isSeatSelectable(),
-			request.getMinPrice(),
-			request.getMaxPrice(),
-			EventStatus.CLOSED, request.getCategoryId());
+	public EventInformation applyChange(UpdateEventRequest request){
+		return new EventInformation(
+			request.getTitle() == null ? this.title : request.getTitle(),
+			request.getThumbnailUrl() == null ? thumbnailUrl : request.getThumbnailUrl(),
+			request.getAgeLimit() == null? this.ageLimit : request.getAgeLimit(),
+			request.getRestriction() == null ? this.restrictions : request.getRestriction(),
+			request.getDescription() == null ? this.description : request.getDescription(),
+			request.getBookingStart() == null ? this.bookingStart : request.getBookingStart(),
+			request.getBookingEnd() == null ? this.bookingEnd : request.getBookingEnd(),
+			request.getStartDate() == null ? this.eventStart : request.getStartDate(),
+			request.getEndDate() == null ? this.eventEnd : request.getEndDate(),
+			request.getSeatSelectable() == null ? this.seatSelectable : request.getSeatSelectable(),
+			this.minPrice,
+			this.maxPrice,
+			request.getStatus() == null ? this.status : request.getStatus(),
+			request.getCategoryId() == null ? this.categoryId : request.getCategoryId());
 	}
 
-	// public EventInformation(EventInformation original, UpdateEventRequest request) {
-	// 	this(request.getTitle(), request.getThumbnailUrl(), request.getAgeLimit(), request.getRestriction(), request.getDescription(),
-	// 		request.getBookingStart(), request.getBookingEnd(), request.getStartDate(), request.getEndDate(),
-	// 		request.getSeatSelectable(), request.getStatus(), original.getCategoryId() );
-	// }
-
-	public EventInformation applyChange(UpdateEventRequest request){
-		this.title = request.getTitle() == null ? this.title : request.getTitle();
-		this.thumbnailUrl = request.getThumbnailUrl() == null ? thumbnailUrl : request.getThumbnailUrl();
-		this.ageLimit = request.getAgeLimit() == null? this.ageLimit : request.getAgeLimit();
-		this.restrictions = request.getRestriction() == null ? this.restrictions : request.getRestriction();
-		this.description = request.getDescription() == null ? this.description : request.getDescription();
-		this.eventStart = request.getStartDate() == null ? this.eventStart : request.getStartDate();
-		this.eventEnd = request.getEndDate() == null ? this.eventEnd : request.getEndDate();
-		this.bookingStart = request.getBookingStart() == null ? this.bookingStart : request.getBookingStart();
-		this.bookingEnd	= request.getBookingEnd() == null ? this.bookingEnd : request.getBookingEnd();
-		this.status = request.getStatus() == null ? this.status : request.getStatus();
-		this.seatSelectable = request.getSeatSelectable() == null ? this.seatSelectable : request.getSeatSelectable();
-		this.categoryId = request.getCategoryId() == null ? this.categoryId : request.getCategoryId();
-		validate();
-		return this;
+	public EventInformation replaceThumbnail(String thumbnailUrl) {
+		return new EventInformation(
+			this.title,
+			thumbnailUrl,
+			this.ageLimit,
+			this.restrictions,
+			this.description,
+			this.bookingStart,
+			this.bookingEnd,
+			this.eventStart,
+			this.eventEnd,
+			this.seatSelectable,
+			this.minPrice,
+			this.maxPrice,
+			this.status,
+			this.categoryId);
 	}
 
 	/**
@@ -153,6 +153,17 @@ public class EventInformation {
 
 		if (bookingEnd.isAfter(eventStart))
 			throw new IllegalStateException("booking end date must be before event start date");
+	}
+
+	public boolean isPubliclyVisible() {
+		return status == EventStatus.OPEN;
+	}
+
+	public boolean isBookableAt(LocalDateTime now) {
+		return status == EventStatus.OPEN
+			&& !now.isBefore(bookingStart)
+			&& !now.isAfter(bookingEnd)
+			&& now.isBefore(eventStart);
 	}
 
 	// NOTE: Explicit getters are kept to support tooling that does not process Lombok.

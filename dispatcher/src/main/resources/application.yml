@@ -10,7 +10,7 @@ server:
 
 spring:
   profiles:
-    include: secret
+    include: secret, polling
 
   data:
     redis:

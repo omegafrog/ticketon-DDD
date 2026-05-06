@@ -21,6 +21,7 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class EntryQueueConsumer {
 	private static final Logger log = LoggerFactory.getLogger(EntryQueueConsumer.class);
+	private static final Duration ENTRY_TOKEN_TTL = Duration.ofHours(1);
 
 	private final StreamMessageListenerContainer<String, MapRecord<String, String, String>> container;
 	private final StringRedisTemplate redisTemplate;
@@ -63,12 +64,12 @@ public class EntryQueueConsumer {
 		String token = UUID.randomUUID().toString();
 		try {
 			Boolean created = redisTemplate.opsForValue()
-				.setIfAbsent(tokenKey, token, Duration.ofSeconds(300));
+				.setIfAbsent(tokenKey, token, ENTRY_TOKEN_TTL);
 			if (created == null) {
 				log.error("Failed to persist entry token for userId: {}", userId);
 				return;
 			}
-			redisTemplate.opsForValue().set(eventKey, eventId, Duration.ofSeconds(300));
+			redisTemplate.opsForValue().set(eventKey, eventId, ENTRY_TOKEN_TTL);
 			redisTemplate.opsForZSet().add(lastSeenKey, userId, System.currentTimeMillis());
 
 			String dispatchStreamKey = RedisConfig.DISPATCH_QUEUE_CHANNEL_PREFIX + instanceId;

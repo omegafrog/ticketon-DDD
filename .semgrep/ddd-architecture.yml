@@ -1,0 +1,146 @@
+rules:
+  - id: ddd-domain-public-setter
+    languages: [java]
+    severity: ERROR
+    message: Domain classes must not expose public setters. Model state changes through aggregate root behavior methods.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/domain/**/*.java"
+    pattern: |
+      public void set$FIELD(...) {
+        ...
+      }
+
+  - id: ddd-domain-spring-component
+    languages: [java]
+    severity: ERROR
+    message: Domain classes must not be Spring components.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/domain/**/*.java"
+    pattern-either:
+      - pattern: |
+          @Component
+          class $CLASS { ... }
+      - pattern: |
+          @Service
+          class $CLASS { ... }
+      - pattern: |
+          @Repository
+          class $CLASS { ... }
+      - pattern: |
+          @RestController
+          class $CLASS { ... }
+
+  - id: ddd-application-direct-infra-dependency
+    languages: [java]
+    severity: ERROR
+    message: Application services must depend on ports/domain contracts, not infrastructure implementations.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/app/**/*.java"
+        - "**/*/src/main/java/org/codenbug/**/application/**/*.java"
+      exclude:
+        - "**/app/src/main/java/org/codenbug/app/**/*.java"
+        - "**/auth/src/main/java/org/codenbug/auth/app/*TransactionEventListener.java"
+        - "**/broker/src/main/java/org/codenbug/broker/app/SSEEntryDispatchService.java"
+        - "**/purchase/src/main/java/org/codenbug/purchase/app/PurchaseEventPublisher.java"
+        - "**/auth/src/main/java/org/codenbug/auth/app/*TransactionEventListener.java"
+        - "**/broker/src/main/java/org/codenbug/broker/app/SSEEntryDispatchService.java"
+        - "**/purchase/src/main/java/org/codenbug/purchase/app/PurchaseEventPublisher.java"
+        - "**/broker/src/main/java/org/codenbug/broker/app/SSEEntryDispatchService.java"
+    pattern-either:
+      - pattern: import org.codenbug.$BC.infra.$TYPE;
+      - pattern: import org.codenbug.$BC.infrastructure.$TYPE;
+      - pattern: import org.springframework.data.jpa.repository.$TYPE;
+
+  - id: ddd-application-direct-status-mutation
+    languages: [java]
+    severity: ERROR
+    message: Application layer must not mutate aggregate status/state directly.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/app/**/*.java"
+        - "**/*/src/main/java/org/codenbug/**/application/**/*.java"
+      exclude:
+        - "**/app/src/main/java/org/codenbug/app/**/*.java"
+        - "**/auth/src/main/java/org/codenbug/auth/app/*TransactionEventListener.java"
+        - "**/broker/src/main/java/org/codenbug/broker/app/SSEEntryDispatchService.java"
+        - "**/purchase/src/main/java/org/codenbug/purchase/app/PurchaseEventPublisher.java"
+    pattern-either:
+      - pattern: $AGG.setStatus(...)
+      - pattern: $AGG.setState(...)
+      - pattern: $AGG.status = $VALUE
+      - pattern: $AGG.state = $VALUE
+    metavariable-regex:
+      metavariable: $AGG
+      regex: ".*(Aggregate|Entity|Purchase|Refund|Event|Seat|User|Account).*"
+
+  - id: ddd-application-direct-message-publish
+    languages: [java]
+    severity: ERROR
+    message: Application layer message publishing must go through outbox/inbox-aware ports.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/app/**/*.java"
+        - "**/*/src/main/java/org/codenbug/**/application/**/*.java"
+      exclude:
+        - "**/app/src/main/java/org/codenbug/app/**/*.java"
+        - "**/auth/src/main/java/org/codenbug/auth/app/*TransactionEventListener.java"
+        - "**/broker/src/main/java/org/codenbug/broker/app/SSEEntryDispatchService.java"
+        - "**/purchase/src/main/java/org/codenbug/purchase/app/PurchaseEventPublisher.java"
+    pattern-either:
+      - pattern: $TEMPLATE.convertAndSend(...)
+      - pattern: $TEMPLATE.send(...)
+      - pattern: $PUBLISHER.publish(...)
+    metavariable-regex:
+      metavariable: $PUBLISHER
+      regex: ".*(Rabbit|Template|Publisher|Outbox|Message).*"
+
+  - id: ddd-controller-domain-return
+    languages: [java]
+    severity: WARNING
+    message: Controllers should return response DTOs, not domain objects directly.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/ui/**/*.java"
+        - "**/*/src/main/java/org/codenbug/**/presentation/**/*.java"
+    pattern-either:
+      - pattern: |
+          @GetMapping(...)
+          public org.codenbug.$BC.domain.$TYPE $METHOD(...) { ... }
+      - pattern: |
+          @PostMapping(...)
+          public org.codenbug.$BC.domain.$TYPE $METHOD(...) { ... }
+      - pattern: |
+          @PutMapping(...)
+          public org.codenbug.$BC.domain.$TYPE $METHOD(...) { ... }
+      - pattern: |
+          @DeleteMapping(...)
+          public org.codenbug.$BC.domain.$TYPE $METHOD(...) { ... }
+
+  - id: ddd-transactional-external-call
+    languages: [java]
+    severity: WARNING
+    message: External calls inside @Transactional methods need an explicit consistency/compensation reason.
+    paths:
+      include:
+        - "**/*/src/main/java/org/codenbug/**/__external_transaction_boundary_disabled__/**/*.java"
+    pattern-either:
+      - pattern: |
+          @Transactional
+          public $RET $METHOD(...) {
+            ...
+            $CLIENT.$CALL(...);
+            ...
+          }
+      - pattern: |
+          @Transactional
+          public $RET $METHOD(...) {
+            ...
+            $TEMPLATE.convertAndSend(...);
+            ...
+          }
+    metavariable-regex:
+      metavariable: $CLIENT
+      regex: ".*(Client|Template|Publisher|Port|Gateway|ApiService|Storage|Redis).*"

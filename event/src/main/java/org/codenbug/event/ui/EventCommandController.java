@@ -2,7 +2,6 @@ package org.codenbug.event.ui;
 
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.event.application.FindEventService;
 import org.codenbug.event.application.ImageUploadService;
 import org.codenbug.event.application.RegisterEventService;
 import org.codenbug.event.application.UpdateEventService;

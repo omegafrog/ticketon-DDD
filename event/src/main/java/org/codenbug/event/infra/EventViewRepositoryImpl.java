@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.codenbug.event.domain.QEvent;
 import org.codenbug.event.domain.QSeatLayoutStats;
+import org.codenbug.event.domain.EventStatus;
 import org.codenbug.event.global.EventListFilter;
 import org.codenbug.event.query.EventListProjection;
 import org.codenbug.event.query.EventViewRepository;
@@ -179,6 +180,7 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 
 		// 기본 조건: 삭제되지 않은 이벤트
 		whereClause.and(event.metaData.deleted.isFalse());
+		whereClause.and(event.eventInformation.status.eq(EventStatus.OPEN));
 
 		// 키워드 검색
 		if (StringUtils.hasText(keyword)) {
@@ -250,9 +252,11 @@ public class EventViewRepositoryImpl implements EventViewRepository {
 				.from(event).leftJoin(seatLayout).on(seatLayout.id.eq(event.seatLayoutId.value)).fetchJoin()
 				.leftJoin(seatStats).on(seatStats.layoutId.eq(event.seatLayoutId.value)).leftJoin(seat)
 				.on(seatLayout.eq(seat.seatLayout)).fetchJoin()
-				.where(event.eventId.eventId.eq(eventId).and(event.metaData.deleted.isFalse())).fetchOne();
+				.where(event.eventId.eventId.eq(eventId)
+						.and(event.metaData.deleted.isFalse())
+						.and(event.eventInformation.status.eq(EventStatus.OPEN))).fetchOne();
 
-		if (dbResult.getEventId() == null) {
+		if (dbResult == null) {
 			throw new EntityNotFoundException("Event not found");
 		}
 

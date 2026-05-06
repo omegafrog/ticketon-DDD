@@ -1,6 +1,6 @@
 package org.codenbug.user.app;
 
-import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.codenbug.common.Role;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.domain.UserRepository;
@@ -19,10 +19,12 @@ public class UserProfileCommandService {
 	}
 
 	@Transactional
-	public UserInfo updateUser(UserSecurityToken token, UserId userId, UpdateUserRequest request) {
+	public UserInfo updateUser(AuthenticatedUser authenticatedUser, UserId userId, UpdateUserRequest request) {
+		authenticatedUser.verifySelf(userId);
+		authenticatedUser.requireRole(Role.USER);
 		User user = userRepository.findUser(userId);
 		user.update(request.getName(), request.getAge(), request.getLocation(), request.getPhoneNum());
 		userRepository.save(user);
-		return new UserInfo(user, token.getEmail(), token.getRole());
+		return new UserInfo(user, authenticatedUser.email(), authenticatedUser.role());
 	}
 }

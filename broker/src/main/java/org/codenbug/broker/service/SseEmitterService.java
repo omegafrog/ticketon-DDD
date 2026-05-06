@@ -5,7 +5,6 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.codenbug.broker.domain.SseConnection;
 import org.codenbug.broker.domain.Status;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -31,9 +30,9 @@ public class SseEmitterService {
 
   public SseEmitter add(String userId, String eventId) {
 
-		if (emitterMap.containsKey(userId)) {
-			throw new IllegalStateException("이미 대기열에 연결되어 있습니다.");
-		}
+    if (emitterMap.containsKey(userId)) {
+      throw new IllegalStateException("이미 대기열에 연결되어 있습니다.");
+    }
 
     // 새로운 emitter 생성
     SseEmitter emitter = new SseEmitter(0L);
@@ -99,7 +98,7 @@ public class SseEmitterService {
   /**
    * 사용자의 SSE 연결을 명시적으로 해제합니다. 클라이언트에서 IN_PROGRESS 상태 후 즉시 호출하여 다음 사용자 승급을 촉진합니다.
    *
-   * @param userId 사용자 ID
+   * @param userId  사용자 ID
    * @param eventId 이벤트 ID
    */
   public void closeConnection(String userId, String eventId) {

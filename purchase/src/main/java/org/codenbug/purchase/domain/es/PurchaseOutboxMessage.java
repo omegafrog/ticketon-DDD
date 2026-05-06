@@ -2,6 +2,8 @@ package org.codenbug.purchase.domain.es;
 
 import java.time.LocalDateTime;
 
+import org.codenbug.purchase.app.es.PaymentOutboxEventType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -14,66 +16,80 @@ import lombok.Getter;
 
 @Entity
 @Getter
-@Table(
-	name = "purchase_outbox",
-	uniqueConstraints = {
-		@UniqueConstraint(name = "uq_purchase_outbox_message_id", columnNames = {"message_id"})
-	}
-)
+@Table(name = "purchase_outbox", uniqueConstraints = {
+    @UniqueConstraint(name = "uq_purchase_outbox_message_id", columnNames = { "message_id" })
+})
 public class PurchaseOutboxMessage {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-	@Column(name = "message_id", nullable = false, length = 64)
-	private String messageId;
+  @Column(name = "message_id", nullable = false, length = 64)
+  private String messageId;
 
-	@Column(name = "queue_name", nullable = false, length = 128)
-	private String queueName;
+  @Column(name = "queue_name", nullable = false, length = 128)
+  private String queueName;
 
-	@Lob
-	@Column(name = "payload_json", nullable = false)
-	private String payloadJson;
+  @Column(name = "event_type", nullable = false)
+  private PaymentOutboxEventType eventType;
 
-	@Column(name = "created_at", nullable = false)
-	private LocalDateTime createdAt;
+  @Lob
+  @Column(name = "payload_json", nullable = false)
+  private String payloadJson;
 
-	@Column(name = "published_at")
-	private LocalDateTime publishedAt;
+  @Column(name = "created_at", nullable = false)
+  private LocalDateTime createdAt;
 
-	@Column(name = "publish_attempts", nullable = false)
-	private int publishAttempts;
+  @Column(name = "published_at")
+  private LocalDateTime publishedAt;
 
-	@Lob
-	@Column(name = "last_error")
-	private String lastError;
+  @Column(name = "publish_attempts", nullable = false)
+  private int publishAttempts;
 
-	protected PurchaseOutboxMessage() {}
+  @Lob
+  @Column(name = "last_error")
+  private String lastError;
 
-	public static PurchaseOutboxMessage of(String messageId, String queueName, String payloadJson, LocalDateTime now) {
-		PurchaseOutboxMessage msg = new PurchaseOutboxMessage();
-		msg.messageId = messageId;
-		msg.queueName = queueName;
-		msg.payloadJson = payloadJson;
-		msg.createdAt = now;
-		msg.publishAttempts = 0;
-		return msg;
-	}
+  protected PurchaseOutboxMessage() {
+  }
 
-	public void markPublishAttemptFailed(String error) {
-		this.publishAttempts++;
-		this.lastError = error;
-	}
+  public static PurchaseOutboxMessage of(String messageId, String queueName, PaymentOutboxEventType eventType,
+      String payloadJson, LocalDateTime now) {
+    PurchaseOutboxMessage msg = new PurchaseOutboxMessage();
+    msg.messageId = messageId;
+    msg.queueName = queueName;
+    msg.eventType = eventType;
+    msg.payloadJson = payloadJson;
+    msg.createdAt = now;
+    msg.publishAttempts = 0;
+    return msg;
+  }
 
-	public void markPublished(LocalDateTime now) {
-		this.publishAttempts++;
-		this.publishedAt = now;
-		this.lastError = null;
-	}
+  public void markPublishAttemptFailed(String error) {
+    this.publishAttempts++;
+    this.lastError = truncate(error);
+  }
 
-	public void markFailedPermanently(LocalDateTime now, String error) {
-		this.publishAttempts++;
-		this.publishedAt = now;
-		this.lastError = error;
-	}
+  public void markPublished(LocalDateTime now) {
+    this.publishAttempts++;
+    this.publishedAt = now;
+    this.lastError = null;
+  }
+
+  public void markFailedPermanently(LocalDateTime now, String error) {
+    this.publishAttempts++;
+    this.publishedAt = now;
+    this.lastError = truncate(error);
+  }
+
+  public String getAggregateKey() {
+    return payloadJson;
+  }
+
+  private String truncate(String error) {
+    if (error == null) {
+      return null;
+    }
+    return error.length() <= 255 ? error : error.substring(0, 255);
+  }
 }

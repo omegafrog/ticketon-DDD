@@ -21,66 +21,70 @@ import jakarta.transaction.Transactional;
 @Service
 public class UpdateEventService {
 
-	private final EventRepository eventRepository;
-	private final UpdateSeatLayoutService updateSeatLayoutService;
-	private final EventCategoryService eventCategoryService;
-	private final StringRedisTemplate redisTemplate;
-	private final ApplicationEventPublisher eventPublisher;
+  private final EventRepository eventRepository;
+  private final UpdateSeatLayoutService updateSeatLayoutService;
+  private final EventCategoryService eventCategoryService;
+  private final StringRedisTemplate redisTemplate;
+  private final ApplicationEventPublisher eventPublisher;
 
-	public UpdateEventService(EventRepository eventRepository, UpdateSeatLayoutService updateSeatLayoutService,
-			EventCategoryService eventCategoryService, StringRedisTemplate redisTemplate,
-			ApplicationEventPublisher eventPublisher) {
-		this.eventRepository = eventRepository;
-		this.updateSeatLayoutService = updateSeatLayoutService;
-		this.eventCategoryService = eventCategoryService;
-		this.redisTemplate = redisTemplate;
-		this.eventPublisher = eventPublisher;
-	}
+  public UpdateEventService(EventRepository eventRepository, UpdateSeatLayoutService updateSeatLayoutService,
+      EventCategoryService eventCategoryService, StringRedisTemplate redisTemplate,
+      ApplicationEventPublisher eventPublisher) {
+    this.eventRepository = eventRepository;
+    this.updateSeatLayoutService = updateSeatLayoutService;
+    this.eventCategoryService = eventCategoryService;
+    this.redisTemplate = redisTemplate;
+    this.eventPublisher = eventPublisher;
+  }
 
-	@Transactional
-	public void updateEvent(EventId id, UpdateEventRequest request) {
-		Event event = eventRepository.findEventForUpdate(id);
+  @Transactional
+  public void updateEvent(EventId id, UpdateEventRequest request) {
+    Event event = eventRepository.findEventForUpdate(id);
 
-		ManagerId loggedInManagerId = getLoggedInManager();
-		event.canUpdate(loggedInManagerId);
+    ManagerId loggedInManagerId = getLoggedInManager();
+    event.canUpdate(loggedInManagerId);
 
-		if (request.getCategoryId() != null) {
-			eventCategoryService.validateExist(request.getCategoryId().getValue());
-		}
+    if (request.getCategoryId() != null) {
+      eventCategoryService.validateExist(request.getCategoryId().getValue());
+    }
 
-		if (request.getSeatLayout() != null) {
-			updateSeatLayoutService.update(event.getSeatLayoutId().getValue(), request.getSeatLayout());
-		}
+    if (request.getSeatLayout() != null) {
+      if (event.getEventInformation().isBookableAt(java.time.LocalDateTime.now())) {
+        throw new IllegalStateException("Cannot update seat layout while event is selling");
+      }
+      updateSeatLayoutService.update(event.getSeatLayoutId().getValue(), request.getSeatLayout());
+    }
 
-		EventInformation newEventInformation = event.getEventInformation().applyChange(request);
-		event.update(newEventInformation);
+    EventInformation newEventInformation = event.getEventInformation().applyChange(request);
+    event.update(newEventInformation);
 
-		EventNonCoreUpdatedEvent updatedEvent = new EventNonCoreUpdatedEvent(event.getEventId().getEventId(),
-				event.getManagerId().getManagerId(), event.getEventInformation().getTitle(),
-				java.time.OffsetDateTime.now().toString());
-		eventPublisher.publishEvent(updatedEvent);
-	}
+    EventNonCoreUpdatedEvent updatedEvent = new EventNonCoreUpdatedEvent(event.getEventId().getEventId(),
+        event.getManagerId().getManagerId(), event.getEventInformation().getTitle(),
+        java.time.OffsetDateTime.now().toString());
+    eventPublisher.publishEvent(updatedEvent);
+  }
 
-	@Transactional
-	public void deleteEvent(EventId id) {
-		Event event = eventRepository.findEventForUpdate(id);
+  @Transactional
+  public void deleteEvent(EventId id) {
+    Event event = eventRepository.findEventForUpdate(id);
 
-		ManagerId loggedInManagerId = getLoggedInManager();
-		event.canDelete(loggedInManagerId);
-		updateSeatLayoutService.markAllSeatsUnavailable(event.getSeatLayoutId().getValue());
-		eventRepository.markDeleted(id);
-	}
+    ManagerId loggedInManagerId = getLoggedInManager();
+    event.canDelete(loggedInManagerId);
+    updateSeatLayoutService.markAllSeatsUnavailable(event.getSeatLayoutId().getValue());
+    event.delete();
+    eventRepository.save(event);
+  }
 
-	private ManagerId getLoggedInManager() {
-		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
-		return new ManagerId(userSecurityToken.getUserId());
-	}
+  private ManagerId getLoggedInManager() {
+    UserSecurityToken userSecurityToken = LoggedInUserContext.get();
+    return new ManagerId(userSecurityToken.getUserId());
+  }
 
-	@Transactional
-	public void changeStatus(String eventId, String status) {
-		Event event = eventRepository.findEventForUpdate(new EventId(eventId));
-		event.updateStatus(EventStatus.valueOf(status.toUpperCase()));
-		redisTemplate.opsForHash().put("event_statuses", eventId, status);
-	}
+  @Transactional
+  public void changeStatus(String eventId, String status) {
+    Event event = eventRepository.findEventForUpdate(new EventId(eventId));
+    event.updateStatus(EventStatus.valueOf(status.toUpperCase()));
+    redisTemplate.opsForHash().put("event_statuses", eventId, status);
+  }
 
 }

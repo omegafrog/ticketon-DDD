@@ -1,6 +1,5 @@
 package org.codenbug.user.app;
 
-import org.codenbug.securityaop.aop.UserSecurityToken;
 import org.codenbug.user.domain.User;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
@@ -16,8 +15,9 @@ public class UserQueryService {
 		this.userViewRepository = userViewRepository;
 	}
 
-	public UserInfo findMe(UserSecurityToken token, UserId userId){
+	public UserInfo findMe(AuthenticatedUser authenticatedUser, UserId userId){
+		authenticatedUser.verifySelf(userId);
 		User user = userViewRepository.findUserById(userId);
-		return new UserInfo(user, token.getEmail(), token.getRole());
+		return new UserInfo(user, authenticatedUser.email(), authenticatedUser.role());
 	}
 }

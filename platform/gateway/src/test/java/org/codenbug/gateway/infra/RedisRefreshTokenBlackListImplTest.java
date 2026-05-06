@@ -28,7 +28,7 @@ class RedisRefreshTokenBlackListImplTest {
     }
 
     @Test
-    void checkBlackList_completesWhenTokenIsNotBlacklisted() {
+    void 블랙리스트_체크_토큰_미블랙리스트_완료() {
         RefreshToken refreshToken = new RefreshToken("refresh-token-value");
         when(redisTemplate.hasKey("refreshToken:refresh-token-value")).thenReturn(Mono.just(false));
 
@@ -39,7 +39,7 @@ class RedisRefreshTokenBlackListImplTest {
     }
 
     @Test
-    void checkBlackList_emitsErrorWhenTokenIsBlacklisted() {
+    void 블랙리스트_체크_토큰_블랙리스트_오류() {
         RefreshToken refreshToken = new RefreshToken("blacklisted-token");
         when(redisTemplate.hasKey("refreshToken:blacklisted-token")).thenReturn(Mono.just(true));
 

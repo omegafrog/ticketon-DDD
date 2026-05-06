@@ -33,7 +33,7 @@ class WaitingQueueRedisRepositoryTest {
     }
 
     @Test
-    void entryQueueCountExists_usesHashFieldByEventId() {
+    void 입장_큐_카운트_이벤트_ID_해시_필드_사용() {
         String eventId = "e1";
 
         when(hashOperations.hasKey(RedisConfig.ENTRY_QUEUE_SLOTS_KEY_NAME, eventId)).thenReturn(true);
@@ -44,7 +44,7 @@ class WaitingQueueRedisRepositoryTest {
     }
 
     @Test
-    void updateEntryQueueCount_setsHashFieldByEventId() {
+    void 입장_큐_카운트_설정_이벤트_ID_해시_필드() {
         String eventId = "e1";
         int slots = 123;
 
@@ -54,7 +54,7 @@ class WaitingQueueRedisRepositoryTest {
     }
 
     @Test
-    void incrementEntryQueueCount_incrementsHashFieldByEventId() {
+    void 입장_큐_카운트_증가_이벤트_ID_해시_필드() {
         String eventId = "e1";
 
         repository.incrementEntryQueueCount(eventId);

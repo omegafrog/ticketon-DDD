@@ -1,7 +1,6 @@
 package org.codenbug.purchase.app;
 
 import org.codenbug.purchase.event.ManagerRefundCompletedEvent;
-import org.codenbug.purchase.infra.NotificationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ManagerRefundExample {
 
-    private final NotificationEventPublisher notificationEventPublisher;
+    private final RefundNotificationPort notificationEventPublisher;
 
     /**
      * 매니저 환불 처리 시 알림 이벤트 발행 예시

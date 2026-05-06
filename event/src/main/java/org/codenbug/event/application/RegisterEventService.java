@@ -39,7 +39,21 @@ public class RegisterEventService {
 
 		SeatLayoutResponse seatLayoutResponse = seatLayoutService.registerSeatLayout(request.getSeatLayout());
 
-		EventInformation eventInformation = new EventInformation(request);
+		EventInformation eventInformation = new EventInformation(
+			request.getTitle(),
+			request.getThumbnailUrl(),
+			request.getAgeLimit(),
+			request.getRestriction(),
+			request.getDescription(),
+			request.getBookingStart(),
+			request.getBookingEnd(),
+			request.getStartDate(),
+			request.getEndDate(),
+			request.isSeatSelectable(),
+			request.getMinPrice(),
+			request.getMaxPrice(),
+			org.codenbug.event.domain.EventStatus.CLOSED,
+			request.getCategoryId());
 
 		MetaData metaData = new MetaData();
 

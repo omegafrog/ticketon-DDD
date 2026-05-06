@@ -29,7 +29,8 @@ public class EventQueryService {
 	private final SeatLayoutRepository seatLayoutRepository;
 	private final EventCategoryService eventCategoryService;
 
-	public EventQueryService(EventRepository eventRepository, SeatLayoutRepository seatLayoutRepository, EventCategoryService eventCategoryService) {
+	public EventQueryService(EventRepository eventRepository, SeatLayoutRepository seatLayoutRepository,
+			EventCategoryService eventCategoryService) {
 		this.eventRepository = eventRepository;
 		this.seatLayoutRepository = seatLayoutRepository;
 		this.eventCategoryService = eventCategoryService;
@@ -38,12 +39,12 @@ public class EventQueryService {
 	public Page<EventListResponse> getEvents(String keyword, EventListFilter filter, Pageable pageable) {
 		Page<Event> eventPage = eventRepository.getEventList(keyword, filter, pageable);
 		List<EventCategory> categories = eventCategoryService.findAllByIds(
-			eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
+				eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
 		return eventPage.map(event -> {
 			EventCategory category = categories.stream()
-				.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Category not found"));
+					.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Category not found"));
 			return new EventListResponse(event, category.getName());
 		});
 	}
@@ -53,52 +54,51 @@ public class EventQueryService {
 		SeatLayout seatLayout = seatLayoutRepository.findSeatLayout(event.getSeatLayoutId().getValue());
 		EventCategory category = eventCategoryService.findById(event.getEventInformation().getCategoryId().getValue());
 		return new EventInfoResponse(event, category.getName(),
-			seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).max().orElse(0),
-			seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).min().orElse(0),
-			new SeatLayoutResponse(
-			seatLayout.getId(),
-			seatLayout.getLayout(),
-			seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
-			seatLayout.getLocation().getHallName(),
-			seatLayout.getLocation().getLocationName()));
+				seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).max().orElse(0),
+				seatLayout.getSeats().stream().mapToInt(seat -> seat.getAmount()).min().orElse(0),
+				new SeatLayoutResponse(
+						seatLayout.getId(),
+						seatLayout.getLayout(),
+						seatLayout.getSeats().stream().map(seat -> new SeatDto(seat)).toList(),
+						seatLayout.getLocation().getHallName(),
+						seatLayout.getLocation().getLocationName()));
 	}
 
 	public Page<EventManagerListResponse> getManagerEvents(ManagerId managerId, Pageable pageable) {
 		Page<Event> eventPage = eventRepository.getManagerEventList(managerId, pageable);
 		List<EventCategory> categories = eventCategoryService.findAllByIds(
-			eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
+				eventPage.map(event -> event.getEventInformation().getCategoryId().getValue()).toList());
 
 		List<Long> seatLayoutIds = eventPage.map(event -> event.getSeatLayoutId().getValue()).toList();
 		Map<Long, SeatLayout> seatLayoutsById = seatLayoutRepository.findSeatLayouts(seatLayoutIds)
-			.stream()
-			.collect(Collectors.toMap(SeatLayout::getId, Function.identity()));
-		
+				.stream()
+				.collect(Collectors.toMap(SeatLayout::getId, Function.identity()));
+
 		return eventPage.map(event -> {
 			EventCategory category = categories.stream()
-				.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Category not found"));
+					.filter(c -> c.getId().getId().equals(event.getEventInformation().getCategoryId().getValue()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
 			SeatLayout seatLayout = seatLayoutsById.get(event.getSeatLayoutId().getValue());
 			if (seatLayout == null) {
 				throw new IllegalArgumentException("Seat layout not found");
 			}
-			
+
 			return new EventManagerListResponse(
-				String.valueOf(event.getEventId().getEventId()),
-				event.getEventInformation().getTitle(),
-				event.getEventInformation().getCategoryId(),
-				event.getEventInformation().getThumbnailUrl(),
-				event.getEventInformation().getStatus(),
-				event.getEventInformation().getEventStart(),
-				event.getEventInformation().getEventEnd(),
-				seatLayout.getLocation().getLocationName(),
-				seatLayout.getLocation().getHallName(),
-				event.getMetaData().getDeleted(),
-				event.getEventInformation().getBookingStart(),
-				event.getEventInformation().getBookingEnd()
+					String.valueOf(event.getEventId().getEventId()),
+					event.getEventInformation().getTitle(),
+					event.getEventInformation().getCategoryId(),
+					event.getEventInformation().getThumbnailUrl(),
+					event.getEventInformation().getStatus(),
+					event.getEventInformation().getEventStart(),
+					event.getEventInformation().getEventEnd(),
+					seatLayout.getLocation().getLocationName(),
+					seatLayout.getLocation().getHallName(),
+					event.getMetaData().getDeleted(),
+					event.getEventInformation().getBookingStart(),
+					event.getEventInformation().getBookingEnd()
 			);
 		});
 	}
-
 }

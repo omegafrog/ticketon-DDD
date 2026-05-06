@@ -42,7 +42,7 @@ class WaitingQueueEntryServiceTest {
     }
 
     @Test
-    void entry_throwsWhenEntryTokenAlreadyIssued() throws Exception {
+    void 입장_토큰_이미_발급_시_예외_발생() throws Exception {
         String userId = "u1";
         String eventId = "e1";
         when(waitingQueueRedisRepository.isUserExistInEntry(userId)).thenReturn(true);

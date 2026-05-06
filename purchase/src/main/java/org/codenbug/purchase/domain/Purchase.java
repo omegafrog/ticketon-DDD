@@ -29,160 +29,196 @@ import lombok.Setter;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 public class Purchase {
-	@EmbeddedId
-	private PurchaseId purchaseId;
+  @EmbeddedId
+  private PurchaseId purchaseId;
 
-	// 클라이언트로부터 생성한 무작위 값
-	private String orderId;
+  // 클라이언트로부터 생성한 무작위 값
+  private String orderId;
 
-	private String orderName;
+  private String orderName;
 
-	private String eventId;
+  private String eventId;
 
-	private String pid;
+  private String pid;
 
-	private int amount;
+  private int amount;
 
-	/**
-	 * 결제 핵심 필드(payment-relevant fields) 변경 감지를 위한 스냅샷 버전.
-	 * - 결제 요청 시점에 Event 서비스의 salesVersion을 캡처
-	 */
-	@Column(name = "expected_sales_version")
-	private Long expectedSalesVersion;
+  /**
+   * 결제 핵심 필드(payment-relevant fields) 변경 감지를 위한 스냅샷 버전.
+   * - 결제 요청 시점에 Event 서비스의 salesVersion을 캡처
+   */
+  @Column(name = "expected_sales_version")
+  private Long expectedSalesVersion;
 
-	@Enumerated(EnumType.STRING)
-	private PaymentMethod paymentMethod;
+  @Enumerated(EnumType.STRING)
+  private PaymentMethod paymentMethod;
 
-	@Setter
-	@Enumerated(EnumType.STRING)
-	@Column(name = "payment_status", length = 50)
-	private PaymentStatus paymentStatus;
+  @Setter
+  @Enumerated(EnumType.STRING)
+  @Column(name = "payment_status", length = 50)
+  private PaymentStatus paymentStatus;
 
-	@CreatedDate
-	private LocalDateTime createdAt;
+  @CreatedDate
+  private LocalDateTime createdAt;
 
-	@Embedded
-	private UserId userId;
+  @Column(name = "payment_deadline_at")
+  private LocalDateTime paymentDeadlineAt;
 
-	@OneToMany(mappedBy = "purchase", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<Ticket> tickets = new ArrayList<>();
+  @Embedded
+  private UserId userId;
 
-	protected Purchase(){}
+  @OneToMany(mappedBy = "purchase", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+  private List<Ticket> tickets = new ArrayList<>();
 
-	public Purchase(String eventId, String orderId, int amount, Long expectedSalesVersion, UserId userid) {
-		this.purchaseId = new PurchaseId(Util.ID.createUUID());
-		this.orderId = orderId;
-		this.eventId = eventId;
-		this.amount = amount;
-		this.expectedSalesVersion = expectedSalesVersion;
-		this.userId = userid;
-		this.paymentStatus = PaymentStatus.IN_PROGRESS;
-	}
+  protected Purchase() {
+  }
 
-	public void updatePaymentInfo(
-		String paymentUuid,
-		String eventId,
-		int amount,
-		PaymentMethod paymentMethod,
-		String purchaseName,
-		LocalDateTime createdDate
-	) {
-		this.pid = paymentUuid;
-		this.eventId = eventId;
-		this.amount = amount;
-		this.paymentMethod = paymentMethod;
-		this.orderName = purchaseName;
-		this.createdAt = createdDate;
-	}
+  public Purchase(String eventId, String orderId, int amount, Long expectedSalesVersion, UserId userid) {
+    this.purchaseId = new PurchaseId(Util.ID.createUUID());
+    this.orderId = orderId;
+    this.eventId = eventId;
+    this.amount = amount;
+    this.expectedSalesVersion = expectedSalesVersion;
+    this.userId = userid;
+    this.paymentStatus = PaymentStatus.IN_PROGRESS;
+    this.paymentDeadlineAt = LocalDateTime.now().plusHours(1);
+  }
 
-	public void addTicket(Ticket ticket) {
-		this.tickets.add(ticket);
-		ticket.assignToPurchase(this);
-	}
+  public void updatePaymentInfo(
+      String paymentUuid,
+      String eventId,
+      int amount,
+      PaymentMethod paymentMethod,
+      String purchaseName,
+      LocalDateTime createdDate) {
+    this.pid = paymentUuid;
+    this.eventId = eventId;
+    this.amount = amount;
+    this.paymentMethod = paymentMethod;
+    this.orderName = purchaseName;
+    this.createdAt = createdDate;
+  }
 
-	public void addTickets(List<Ticket> tickets) {
-		for (Ticket ticket : tickets) {
-			addTicket(ticket);
-		}
-	}
+  public void addTicket(Ticket ticket) {
+    this.tickets.add(ticket);
+    ticket.assignToPurchase(this);
+  }
 
-	public void validate(String orderId, Integer amount, String userId) {
-		validateOrderId(orderId);
-		validateAmount(amount);
-		validateUserAccess(userId);
-	}
+  public void addTickets(List<Ticket> tickets) {
+    for (Ticket ticket : tickets) {
+      addTicket(ticket);
+    }
+  }
 
-	private void validateOrderId(String orderId) {
-		if(!this.orderId.equals(orderId)) {
-			throw new IllegalArgumentException("주문 번호가 일치하지 않습니다.");
-		}
-	}
+  public void validate(String orderId, Integer amount, String userId) {
+    validateOrderId(orderId);
+    validateAmount(amount);
+    validateUserAccess(userId);
+  }
 
-	private void validateAmount(Integer amount) {
-		if(this.amount != amount) {
-			throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
-		}
-	}
+  private void validateOrderId(String orderId) {
+    if (!this.orderId.equals(orderId)) {
+      throw new IllegalArgumentException("주문 번호가 일치하지 않습니다.");
+    }
+  }
 
-	private void validateUserAccess(String userId) {
-		if(!this.userId.getValue().equals(userId)) {
-			throw new AccessDeniedException("해당 구매 정보에 대한 접근 권한이 없습니다.");
-		}
-	}
+  private void validateAmount(Integer amount) {
+    if (this.amount != amount) {
+      throw new IllegalArgumentException("결제 금액이 일치하지 않습니다.");
+    }
+  }
 
-	public void markAsCompleted() {
-		this.paymentStatus = PaymentStatus.DONE;
-	}
+  private void validateUserAccess(String userId) {
+    if (!this.userId.getValue().equals(userId)) {
+      throw new AccessDeniedException("해당 구매 정보에 대한 접근 권한이 없습니다.");
+    }
+  }
 
-	public boolean isPaymentInProgress() {
-		return this.paymentStatus == PaymentStatus.IN_PROGRESS;
-	}
+  public void markAsCompleted() {
+    ensureConfirmableAt(LocalDateTime.now());
+    this.paymentStatus = PaymentStatus.DONE;
+  }
 
-	public boolean isPaymentCompleted() {
-		return this.paymentStatus == PaymentStatus.DONE;
-	}
-	
-	// 환불 관련 비즈니스 로직
-	public boolean canRefund() {
-		return isPaymentCompleted();
-	}
-	
-	public void validateRefundAmount(Integer refundAmount) {
-		if (refundAmount == null || refundAmount <= 0) {
-			throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
-		}
-		if (refundAmount > this.amount) {
-			throw new IllegalArgumentException("환불 금액이 구매 금액을 초과할 수 없습니다.");
-		}
-	}
-	
-	public void markAsRefunded() {
-		if (!canRefund()) {
-			throw new IllegalStateException("완료된 결제만 환불할 수 있습니다.");
-		}
-		this.paymentStatus = PaymentStatus.REFUNDED;
-	}
-	
-	public void markAsPartialRefunded() {
-		if (!canRefund()) {
-			throw new IllegalStateException("완료된 결제만 부분 환불할 수 있습니다.");
-		}
-		this.paymentStatus = PaymentStatus.PARTIAL_REFUNDED;
-	}
-	
-	public int getTotalAmount() {
-		return this.amount;
-	}
-	
-	public String getPaymentKey() {
-		return this.pid;
-	}
-	
-	public void cancel() {
-		this.paymentStatus = PaymentStatus.CANCELED;
-	}
-	
-	public void markAsFailed() {
-		this.paymentStatus = PaymentStatus.FAILED;
-	}
+  public boolean isPaymentInProgress() {
+    return this.paymentStatus == PaymentStatus.IN_PROGRESS;
+  }
+
+  public boolean isPaymentCompleted() {
+    return this.paymentStatus == PaymentStatus.DONE;
+  }
+
+  // 환불 관련 비즈니스 로직
+  public boolean canRefund() {
+    return isPaymentCompleted();
+  }
+
+  public void validateRefundAmount(Integer refundAmount) {
+    if (refundAmount == null || refundAmount <= 0) {
+      throw new IllegalArgumentException("환불 금액은 0보다 커야 합니다.");
+    }
+    if (refundAmount != this.amount) {
+      throw new IllegalArgumentException("부분 환불은 허용하지 않습니다.");
+    }
+  }
+
+  public void markAsRefunded() {
+    if (!canRefund()) {
+      throw new IllegalStateException("완료된 결제만 환불할 수 있습니다.");
+    }
+    this.paymentStatus = PaymentStatus.REFUNDED;
+  }
+
+  public void markAsPartialRefunded() {
+    throw new IllegalStateException("부분 환불은 허용하지 않습니다.");
+  }
+
+  public int getTotalAmount() {
+    return this.amount;
+  }
+
+  public String getPaymentKey() {
+    return this.pid;
+  }
+
+  public void cancel() {
+    this.paymentStatus = PaymentStatus.CANCELED;
+  }
+
+  public void markAsFailed() {
+    this.paymentStatus = PaymentStatus.FAILED;
+  }
+
+  public boolean isPaymentPending() {
+    return this.paymentStatus == PaymentStatus.IN_PROGRESS;
+  }
+
+  public boolean isExpiredAt(LocalDateTime now) {
+    return isPaymentPending() && paymentDeadlineAt != null && now.isAfter(paymentDeadlineAt);
+  }
+
+  public void expireIfOverdue(LocalDateTime now) {
+    if (isExpiredAt(now)) {
+      this.paymentStatus = PaymentStatus.EXPIRED;
+    }
+  }
+
+  public void ensureConfirmableAt(LocalDateTime now) {
+    if (isExpiredAt(now)) {
+      throw new ConfirmExpiredException("결제 제한시간이 초과되었습니다.");
+    }
+    if (!isPaymentPending()) {
+      throw new IllegalStateException("결제 대기 상태가 아닙니다.");
+    }
+  }
+
+  public void cancelPending() {
+    if (!isPaymentPending()) {
+      throw new IllegalStateException("결제 대기 상태만 취소할 수 있습니다.");
+    }
+    this.paymentStatus = PaymentStatus.CANCELED;
+  }
+
+  public void expire() {
+    this.paymentStatus = PaymentStatus.EXPIRED;
+  }
 }

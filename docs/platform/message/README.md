@@ -1,4 +1,0 @@
-# message 문서
-
-## 추가 문서
-- [rabbitmq.md](rabbitmq.md)

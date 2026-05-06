@@ -57,6 +57,9 @@ public class Refund {
     
     @Column(name = "pg_transaction_id")
     private String pgTransactionId;
+
+    @Column(name = "retry_count")
+    private int retryCount;
     
     @Embedded
     private UserId processedBy;
@@ -80,6 +83,7 @@ public class Refund {
         this.refundReason = Objects.requireNonNull(refundReason, "환불 사유는 필수입니다.");
         this.processedBy = processedBy;
         this.status = RefundStatus.REQUESTED;
+        this.retryCount = 0;
         
         validateRefundAmount(purchase, refundAmount);
     }
@@ -138,6 +142,13 @@ public class Refund {
         this.refundReason = new RefundReason(this.refundReason.getValue() + " (실패 사유: " + reason + ")");
         this.processedAt = LocalDateTime.now();
     }
+
+    public void recordRetryFailure(String reason, int maxRetryCount) {
+        this.retryCount++;
+        if (this.retryCount >= maxRetryCount) {
+            failRefund(reason);
+        }
+    }
     
     public void markAsPartialRefund() {
         this.status = RefundStatus.PARTIAL_REFUNDED;
@@ -146,8 +157,8 @@ public class Refund {
     
     // 검증 로직
     private void validateRefundAmount(Purchase purchase, RefundAmount refundAmount) {
-        if (refundAmount.getValue() > purchase.getAmount()) {
-            throw new IllegalArgumentException("환불 금액이 구매 금액을 초과할 수 없습니다.");
+        if (!refundAmount.getValue().equals(purchase.getAmount())) {
+            throw new IllegalArgumentException("부분 환불은 허용하지 않습니다.");
         }
     }
     

@@ -1,0 +1,31 @@
+name: Architecture Lint
+
+on:
+  pull_request:
+    paths:
+      - "**/*.java"
+      - "**/*.gradle"
+      - ".semgrep/ddd-architecture.yml"
+      - ".github/workflows/architecture-lint.yml"
+  workflow_dispatch:
+
+jobs:
+  architecture-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Run ArchUnit architecture rules
+        run: ./gradlew --no-daemon architectureRules
+
+      - name: Run Semgrep DDD rules
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: .semgrep/ddd-architecture.yml

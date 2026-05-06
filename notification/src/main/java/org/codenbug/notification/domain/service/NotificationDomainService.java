@@ -4,9 +4,7 @@ import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationContent;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.UserId;
-import org.springframework.stereotype.Service;
 
-@Service
 public class NotificationDomainService {
 
     public Notification createNotification(String userId, NotificationType type, String title,

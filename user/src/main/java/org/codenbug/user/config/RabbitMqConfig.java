@@ -39,20 +39,25 @@ public class RabbitMqConfig {
     return new Queue("user-created-failed");
   }
 
-
-  @Bean
+  @Bean("user-securityuser-exchanger")
   public DirectExchange topicExchange() {
     return new DirectExchange("user-securityuser-exchanger");
   }
 
+  @Bean("user-created-failed-exchanger")
+  public DirectExchange userCreatedFailedtopicExchange() {
+    return new DirectExchange("user-created-failed-exchanger");
+  }
+
   @Bean
-  public Binding userQueueBinding(@Qualifier("user-created") Queue queue, DirectExchange exchange) {
+  public Binding userQueueBinding(@Qualifier("user-created") Queue queue,
+      @Qualifier("user-securityuser-exchanger") DirectExchange exchange) {
     return BindingBuilder.bind(queue).to(exchange).with("user.created");
   }
 
   @Bean
   public Binding userCreatedFailedQueueBinding(@Qualifier("user-created-failed") Queue queue,
-      DirectExchange exchange) {
+      @Qualifier("user-created-failed-exchanger") DirectExchange exchange) {
     return BindingBuilder.bind(queue).to(exchange).with("user.created-failed");
   }
 
@@ -83,6 +88,5 @@ public class RabbitMqConfig {
   public MessageConverter jackson2JsonMessageConverter() {
     return new Jackson2JsonMessageConverter();
   }
-
 
 }

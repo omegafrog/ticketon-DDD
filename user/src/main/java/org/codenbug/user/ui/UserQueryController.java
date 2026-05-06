@@ -10,6 +10,7 @@ import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.codenbug.securityaop.aop.UserSecurityToken;
+import org.codenbug.user.app.AuthenticatedUser;
 import org.codenbug.user.app.UserQueryService;
 import org.codenbug.user.domain.UserId;
 import org.codenbug.user.global.dto.UserInfo;
@@ -37,7 +38,8 @@ public class UserQueryController {
 	@RoleRequired(value = { Role.USER, Role.MANAGER })
 	public ResponseEntity<RsData<UserInfo>> getMe() {
 		UserSecurityToken userSecurityToken = LoggedInUserContext.get();
-		UserInfo userinfo = userQueryService.findMe(userSecurityToken, new UserId(userSecurityToken.getUserId()));
+		AuthenticatedUser authenticatedUser = AuthenticatedUser.from(userSecurityToken);
+		UserInfo userinfo = userQueryService.findMe(authenticatedUser, authenticatedUser.asUserId());
 		return ResponseEntity.ok(new RsData<>("200", "User info", userinfo));
 	}
 }

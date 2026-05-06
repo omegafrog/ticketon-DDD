@@ -37,3 +37,19 @@ dependencyManagement {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+bootRun {
+    jvmArgs = [
+        "-javaagent:/mnt/e/workspace/utils/opentelemetry/opentelemetry-javaagent.jar",
+
+        "-Dotel.service.name=ticketon-gateway",
+        "-Dotel.exporter.otlp.endpoint=http://localhost:4317",
+        "-Dotel.exporter.otlp.protocol=grpc",
+
+        "-Dotel.traces.exporter=otlp",
+        "-Dotel.metrics.exporter=none",
+        "-Dotel.logs.exporter=none",
+
+        "-Dotel.resource.attributes=deployment.environment=local"
+    ]
+}

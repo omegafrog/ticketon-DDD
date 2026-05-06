@@ -41,7 +41,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create 
       naming:
         physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
     properties:
@@ -72,9 +72,9 @@ spring:
 
 services:
   event:
-    base-url: http://localhost:9002
+    base-url: http://app
   seat:
-    base-url: http://localhost:9005
+    base-url: http://app
 
 server:
   port: 9000
