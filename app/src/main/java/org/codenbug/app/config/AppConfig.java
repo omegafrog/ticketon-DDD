@@ -2,7 +2,7 @@ package org.codenbug.app.config;
 
 import org.codenbug.event.config.EventConfig;
 import org.codenbug.notification.config.NotificationConfig;
-import org.codenbug.purchase.config.PurchaseConfig;
+import org.codenbug.purchase.infra.config.PurchaseConfig;
 import org.codenbug.securityaop.aop.AopConfig;
 import org.codenbug.seat.global.SeatLayoutConfig;
 import org.codenbug.user.config.UserConfig;

@@ -3,9 +3,9 @@ package org.codenbug.purchase.infra;
 import java.util.Base64;
 import java.util.Map;
 
-import org.codenbug.purchase.app.PGApiService;
-import org.codenbug.purchase.app.PaymentProvider;
-import org.codenbug.purchase.config.TossPaymentProperties;
+import org.codenbug.purchase.domain.port.PGApiService;
+import org.codenbug.purchase.domain.PaymentProvider;
+import org.codenbug.purchase.infra.config.TossPaymentProperties;
 import org.codenbug.purchase.domain.PaymentCancellationInfo;
 import org.codenbug.purchase.domain.PaymentConfirmationInfo;
 import org.springframework.beans.factory.annotation.Qualifier;

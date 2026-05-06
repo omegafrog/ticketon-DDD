@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.codenbug.purchase.domain.SeatInfo;
 import org.codenbug.purchase.domain.SeatLayoutInfo;
-import org.codenbug.purchase.domain.SeatLayoutProvider;
+import org.codenbug.purchase.domain.port.SeatLayoutProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

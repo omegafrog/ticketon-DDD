@@ -7,7 +7,7 @@ import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.Refund;
 import org.codenbug.purchase.domain.RefundId;
-import org.codenbug.purchase.domain.RefundRepository;
+import org.codenbug.purchase.domain.port.RefundRepository;
 import org.codenbug.purchase.domain.RefundStatus;
 import org.codenbug.purchase.domain.UserId;
 import org.springframework.data.domain.Page;

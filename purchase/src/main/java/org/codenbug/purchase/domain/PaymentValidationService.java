@@ -1,5 +1,7 @@
 package org.codenbug.purchase.domain;
 
+import org.codenbug.purchase.domain.port.EventInfoProvider;
+import org.codenbug.purchase.domain.port.SeatLayoutProvider;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;

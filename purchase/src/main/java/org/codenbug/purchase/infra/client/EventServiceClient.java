@@ -1,7 +1,7 @@
 package org.codenbug.purchase.infra.client;
 
 import org.codenbug.common.RsData;
-import org.codenbug.purchase.domain.EventInfoProvider;
+import org.codenbug.purchase.domain.port.EventInfoProvider;
 import org.codenbug.purchase.domain.EventSummary;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

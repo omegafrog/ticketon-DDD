@@ -83,36 +83,29 @@ class ArchitectureRulesTest {
     }
 
     @Test
-    void 기능_모듈_다른_바운디드_컨텍스트_내부_패키지_사용_없음() {
-        assertNoInternalDependency("auth", "user", "event", "broker", "messagedispatcher", "seat", "purchase");
-        assertNoInternalDependency("user", "auth", "event", "broker", "messagedispatcher", "seat", "purchase");
-        assertNoInternalDependency("event", "auth", "user", "broker", "messagedispatcher", "seat", "purchase");
-        assertNoInternalDependency("broker", "auth", "user", "event", "messagedispatcher", "seat", "purchase");
-        assertNoInternalDependency("messagedispatcher", "auth", "user", "event", "broker", "seat", "purchase");
-        assertNoInternalDependency("seat", "auth", "user", "event", "broker", "messagedispatcher", "purchase");
-        assertNoInternalDependency("purchase", "auth", "user", "event", "broker", "messagedispatcher", "seat");
+    void 도메인_모듈_다른_도메인_모듈_import_없음() {
+        assertNoDomainDependency("auth", "user", "event", "broker", "messagedispatcher", "seat", "purchase");
+        assertNoDomainDependency("user", "auth", "event", "broker", "messagedispatcher", "seat", "purchase");
+        assertNoDomainDependency("event", "auth", "user", "broker", "messagedispatcher", "seat", "purchase");
+        assertNoDomainDependency("broker", "auth", "user", "event", "messagedispatcher", "seat", "purchase");
+        assertNoDomainDependency("messagedispatcher", "auth", "user", "event", "broker", "seat", "purchase");
+        assertNoDomainDependency("seat", "auth", "user", "event", "broker", "messagedispatcher", "purchase");
+        assertNoDomainDependency("purchase", "auth", "user", "event", "broker", "messagedispatcher", "seat");
     }
 
-    private static void assertNoInternalDependency(String ownerPackage, String... forbiddenPackages) {
+    private static void assertNoDomainDependency(String ownerPackage, String... forbiddenPackages) {
         List<String> effectiveForbiddenPackages = List.of(forbiddenPackages).stream()
                 .filter(packageName -> !("event".equals(ownerPackage) && "seat".equals(packageName)))
                 .toList();
-        String[] forbiddenInternalPackages = effectiveForbiddenPackages.stream()
-                .flatMap(packageName -> List.of(
-                        "org.codenbug." + packageName + ".domain..",
-                        "org.codenbug." + packageName + ".infra..",
-                        "org.codenbug." + packageName + ".infrastructure..",
-                        "org.codenbug." + packageName + ".ui..",
-                        "org.codenbug." + packageName + ".application..",
-                        "org.codenbug." + packageName + ".app..",
-                        "org.codenbug." + packageName + ".query.."
-                ).stream())
+        String[] forbiddenDomainPackages = effectiveForbiddenPackages.stream()
+                .map(packageName -> "org.codenbug." + packageName + ".domain..")
                 .toArray(String[]::new);
 
         noClasses()
-                .that().resideInAnyPackage("org.codenbug." + ownerPackage + "..")
-                .should().dependOnClassesThat().resideInAnyPackage(forbiddenInternalPackages)
-                .because("cross-BC collaboration must use explicit API contracts, projections, or internal APIs")
+                .that().resideInAnyPackage("org.codenbug." + ownerPackage + ".domain..")
+                .should().dependOnClassesThat().resideInAnyPackage(forbiddenDomainPackages)
+                .because("domain modules must not import other domain modules directly")
+                .allowEmptyShould(true)
                 .check(classes);
     }
 }

@@ -3,7 +3,7 @@ package org.codenbug.purchase.infra;
 import java.util.List;
 
 import org.codenbug.purchase.domain.Ticket;
-import org.codenbug.purchase.domain.TicketRepository;
+import org.codenbug.purchase.domain.port.TicketRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository

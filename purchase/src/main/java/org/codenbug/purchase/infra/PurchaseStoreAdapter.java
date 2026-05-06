@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.codenbug.purchase.app.PurchaseRepository;
+import org.codenbug.purchase.domain.port.PurchaseRepository;
 import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;

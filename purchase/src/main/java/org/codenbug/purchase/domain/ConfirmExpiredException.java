@@ -1,6 +1,6 @@
 package org.codenbug.purchase.domain;
 
-public class ConfirmExpiredException extends RuntimeException {
+public class ConfirmExpiredException extends IllegalStateException {
 
   public ConfirmExpiredException(String message) {
     super(message);

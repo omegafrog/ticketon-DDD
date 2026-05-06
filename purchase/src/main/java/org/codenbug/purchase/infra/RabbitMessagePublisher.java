@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.codenbug.message.SeatPurchasedCanceledEvent;
 import org.codenbug.message.SeatPurchasedEvent;
-import org.codenbug.purchase.domain.MessagePublisher;
+import org.codenbug.purchase.domain.port.MessagePublisher;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 

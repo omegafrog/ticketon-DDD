@@ -1,8 +1,8 @@
 package org.codenbug.purchase.infra;
 
-import org.codenbug.purchase.event.ManagerRefundCompletedEvent;
-import org.codenbug.purchase.event.RefundCompletedEvent;
-import org.codenbug.purchase.app.RefundNotificationPort;
+import org.codenbug.purchase.domain.event.ManagerRefundCompletedEvent;
+import org.codenbug.purchase.domain.event.RefundCompletedEvent;
+import org.codenbug.purchase.domain.port.RefundNotificationPort;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 

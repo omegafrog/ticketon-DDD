@@ -2,8 +2,6 @@ package org.codenbug.purchase.infra.es;
 
 import java.util.List;
 
-import org.codenbug.purchase.app.es.PaymentOutboxEventType;
-import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

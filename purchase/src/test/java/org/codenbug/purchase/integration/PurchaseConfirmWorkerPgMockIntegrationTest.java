@@ -16,25 +16,22 @@ import org.awaitility.Awaitility;
 import org.codenbug.common.redis.EntryTokenValidator;
 import org.codenbug.common.redis.RedisKeyScanner;
 import org.codenbug.purchase.PurchaseTestApplication;
-import org.codenbug.purchase.app.PaymentProvider;
-import org.codenbug.purchase.app.es.PurchaseConfirmCommandService;
-import org.codenbug.purchase.app.es.PurchaseConfirmScheduler;
-import org.codenbug.purchase.app.es.PurchaseConfirmWorker;
-import org.codenbug.purchase.app.es.PurchaseInitCommandService;
+import org.codenbug.purchase.domain.PaymentProvider;
+import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
+import org.codenbug.purchase.app.command.es.PurchaseConfirmScheduler;
+import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
+import org.codenbug.purchase.app.command.es.PurchaseInitCommandService;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatusProjection;
-import org.codenbug.purchase.domain.es.PurchaseEventType;
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
-import org.codenbug.purchase.domain.es.PurchaseStoredEvent;
-import org.codenbug.purchase.global.ConfirmPaymentRequest;
-import org.codenbug.purchase.global.InitiatePaymentRequest;
+import org.codenbug.purchase.ui.request.ConfirmPaymentRequest;
+import org.codenbug.purchase.ui.request.InitiatePaymentRequest;
 import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.codenbug.purchase.infra.TossPaymentPgApiService;
 import org.codenbug.purchase.infra.es.JpaPurchaseConfirmStatusProjectionRepository;
-import org.codenbug.purchase.infra.es.JpaPurchaseEventStoreRepository;
 import org.codenbug.purchase.infra.es.JpaPurchaseOutboxRepository;
 import org.codenbug.redislock.RedisLockService;
 import org.codenbug.redislock.RedisLockServiceImpl;
@@ -53,7 +50,6 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -190,9 +186,6 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	private JpaPurchaseConfirmStatusProjectionRepository projectionRepository;
 
 	@Autowired
-	private JpaPurchaseEventStoreRepository eventStoreRepository;
-
-	@Autowired
 	private JpaPurchaseOutboxRepository outboxRepository;
 
 	@Autowired
@@ -201,16 +194,12 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	@Autowired
 	private StringRedisTemplate stringRedisTemplate;
 
-	@Autowired
-	private JdbcTemplate jdbcTemplate;
-
 	@MockBean
 	private TossPaymentPgApiService tossPaymentPgApiService;
 
 	@BeforeEach
 	void setUp() {
 		reset(tossPaymentPgApiService);
-		ensureCommandUniqueConstraintRemovedForIntegrationPath();
 
 		when(tossPaymentPgApiService.supports(PaymentProvider.TOSS)).thenReturn(true);
 		when(tossPaymentPgApiService.confirmPayment(anyString(), anyString(), anyInt(), anyString()))
@@ -226,19 +215,6 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 			));
 	}
 
-	private void ensureCommandUniqueConstraintRemovedForIntegrationPath() {
-		Integer indexCount = jdbcTemplate.queryForObject(
-			"SELECT COUNT(1) FROM information_schema.statistics " +
-				"WHERE table_schema = DATABASE() " +
-				"AND table_name = 'purchase_event_store' " +
-				"AND index_name = 'uq_purchase_event_store_purchase_command'",
-			Integer.class
-		);
-		if (indexCount != null && indexCount > 0) {
-			jdbcTemplate.execute("ALTER TABLE purchase_event_store DROP INDEX uq_purchase_event_store_purchase_command");
-		}
-	}
-
 	@Test
 	void confirmScheduler_processesConfirmToDone_withOnlyPgApiMocked() {
 		String userId = "user-1";
@@ -252,18 +228,12 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 				PurchaseConfirmStatusProjection projection = projectionRepository.findById(purchaseId)
 					.orElseThrow();
 				assertThat(projection.getStatus()).isEqualTo(PurchaseConfirmStatus.DONE);
-				assertThat(projection.getLastEventType()).isEqualTo(PurchaseEventType.PAYMENT_COMPLETED.name());
+				assertThat(projection.getMessage()).isEqualTo("done");
 			});
 
 		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
 			.orElseThrow();
 		assertThat(purchase.isPaymentCompleted()).isTrue();
-
-		List<PurchaseStoredEvent> events = eventStoreRepository.findByPurchaseIdOrderByIdAsc(purchaseId);
-		assertThat(events).extracting(PurchaseStoredEvent::getEventType)
-			.contains(PurchaseEventType.CONFIRM_REQUESTED.name())
-			.contains(PurchaseEventType.PG_CONFIRM_SUCCEEDED.name())
-			.contains(PurchaseEventType.PAYMENT_COMPLETED.name());
 
 		PurchaseOutboxMessage outboxMessage = findOutboxByPurchaseId(purchaseId);
 		assertThat(outboxMessage.getPublishedAt()).isNotNull();

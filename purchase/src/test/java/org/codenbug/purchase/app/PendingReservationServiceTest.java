@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.Optional;
 
 import org.codenbug.common.exception.AccessDeniedException;
+import org.codenbug.purchase.app.command.PendingReservationService;
 import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.UserId;
+import org.codenbug.purchase.domain.port.PurchaseRepository;
 import org.codenbug.redislock.RedisLockService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

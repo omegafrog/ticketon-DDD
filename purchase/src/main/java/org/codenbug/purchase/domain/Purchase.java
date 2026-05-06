@@ -204,6 +204,7 @@ public class Purchase {
 
   public void ensureConfirmableAt(LocalDateTime now) {
     if (isExpiredAt(now)) {
+      this.paymentStatus = PaymentStatus.EXPIRED;
       throw new ConfirmExpiredException("결제 제한시간이 초과되었습니다.");
     }
     if (!isPaymentPending()) {

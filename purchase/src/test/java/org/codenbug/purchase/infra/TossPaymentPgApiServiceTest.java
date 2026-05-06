@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import org.codenbug.purchase.config.TossPaymentProperties;
+import org.codenbug.purchase.infra.config.TossPaymentProperties;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;

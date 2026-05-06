@@ -2,7 +2,7 @@ package org.codenbug.purchase.domain.es;
 
 import java.time.LocalDateTime;
 
-import org.codenbug.purchase.app.es.PaymentOutboxEventType;
+import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

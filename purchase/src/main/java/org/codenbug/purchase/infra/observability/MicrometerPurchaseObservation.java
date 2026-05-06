@@ -1,5 +1,6 @@
 package org.codenbug.purchase.infra.observability;
 
+import org.codenbug.purchase.domain.Refund;
 import org.codenbug.purchase.app.PurchaseObservation;
 import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.domain.RefundStatus;
