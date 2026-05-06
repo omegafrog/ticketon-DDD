@@ -28,9 +28,8 @@ class PurchaseOutboxStoreAdapter implements PurchaseOutboxStore {
     return repository.findUnpublishedByQueueName(queueName, pageable);
   }
 
-  // TODO : TEST 작성해야됨
   @Override
   public boolean existsByPurchaseIdAndEventType(PurchaseId purchaseId, PaymentOutboxEventType eventType) {
-    return repository.existsByPurchaseIdAndEventType(eventType.value + ":" + purchaseId.getValue());
+    return repository.existsByPurchaseIdAndEventType(PurchaseOutboxMessage.idempotencyKey(purchaseId, eventType));
   }
 }

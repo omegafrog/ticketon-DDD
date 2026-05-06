@@ -2,6 +2,7 @@ package org.codenbug.purchase.domain.es;
 
 import java.time.LocalDateTime;
 
+import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
 
 import jakarta.persistence.Column;
@@ -63,6 +64,10 @@ public class PurchaseOutboxMessage {
     msg.createdAt = now;
     msg.publishAttempts = 0;
     return msg;
+  }
+
+  public static String idempotencyKey(PurchaseId purchaseId, PaymentOutboxEventType eventType) {
+    return eventType.value + ":" + purchaseId.getValue();
   }
 
   public void markPublishAttemptFailed(String error) {

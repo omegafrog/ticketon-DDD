@@ -1,5 +1,6 @@
 package org.codenbug.purchase.app.es;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -8,6 +9,7 @@ import java.util.Optional;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
+import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
 import org.codenbug.purchase.domain.port.PurchaseRepository;
 import org.codenbug.purchase.domain.port.es.PurchaseConfirmStatusProjectionStore;
@@ -15,6 +17,7 @@ import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import org.codenbug.purchase.ui.request.ConfirmPaymentRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -71,8 +74,10 @@ class PurchaseConfirmCommandServiceTest {
 
     service.requestConfirm(req, "u1");
 
+    ArgumentCaptor<PurchaseOutboxMessage> outboxCaptor = ArgumentCaptor.forClass(PurchaseOutboxMessage.class);
     verify(statusProjectionRepository).save(any());
-    verify(outboxRepository).save(any());
+    verify(outboxRepository).save(outboxCaptor.capture());
+    assertEquals("confirm:p1", outboxCaptor.getValue().getMessageId());
     verify(eventPublisher).publishEvent(any(Object.class));
   }
 
