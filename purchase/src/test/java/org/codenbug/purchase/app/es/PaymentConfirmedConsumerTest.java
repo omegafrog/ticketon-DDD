@@ -5,6 +5,9 @@ import static org.mockito.Mockito.*;
 
 import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
 import org.codenbug.purchase.app.event.PaymentConfirmedConsumer;
+import org.codenbug.purchase.domain.PurchaseId;
+import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
+import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,5 +67,17 @@ class PaymentConfirmedConsumerTest {
     consumer.handle(json);
 
     verify(confirmWorker).process("confirm:p1", json);
+  }
+
+  @Test
+  void handle_whenPublishedOutboxPayloadConsumed_usesSameIdempotencyKeyAsOutbox() {
+    String json = "{\"purchaseId\":\"p1\",\"eventType\":\"PAYMENT_CONFIRM_REQUESTED\"}";
+    String outboxMessageId = PurchaseOutboxMessage.messageIdFor(
+        PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED,
+        new PurchaseId("p1"));
+
+    consumer.handle(json);
+
+    verify(confirmWorker).process(outboxMessageId, json);
   }
 }

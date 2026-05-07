@@ -34,6 +34,10 @@ public class PurchaseConfirmTransactionCommittedListener {
   }
 
   private void publishAndMark(PurchaseOutboxMessage message) {
+    if (message.getPublishedAt() != null) {
+      return;
+    }
+
     try {
       messagePublisher.publish(message);
     } catch (Exception e) {
