@@ -57,6 +57,28 @@ class PollingWaitingQueueServiceTest {
     }
 
 	@Test
+	void 좌석수가_입장_슬롯_수를_결정하지_않는다() throws Exception {
+		String userId = "u1";
+		String eventId = "e1";
+		when(waitingQueueRedisRepository.isUserExistInEntry(userId)).thenReturn(false);
+		when(waitingQueueRedisRepository.setUserQueueEventIfAbsent(userId, eventId)).thenReturn(true);
+		when(waitingQueueRedisRepository.entryQueueCountExists(eventId)).thenReturn(false);
+		when(eventClient.getSeatCount(eventId)).thenReturn(10_000);
+		when(eventClient.getSeatStatus(eventId)).thenReturn("OPEN");
+		when(waitingQueueRedisRepository.recordWaitingUserIfAbsent(eventId, userId)).thenReturn(true);
+		when(waitingQueueRedisRepository.incrementWaitingQueueIdx(eventId)).thenReturn(1L);
+		when(instanceConfig.getInstanceId()).thenReturn("broker-1");
+
+		try (LoggedInUserContext ignored = LoggedInUserContext
+			.open(new UserSecurityToken(userId, "u1@test.local", Role.USER))) {
+			service.enter(eventId);
+		}
+
+		verify(waitingQueueRedisRepository).initializeEntryAdmissionSlots(eventId, 500, 10_000);
+		verify(waitingQueueRedisRepository, never()).updateEntryQueueCount(eventId, 10_000);
+	}
+
+	@Test
 	void 입장_토큰_발급_시_빠른_폴링_반환() throws Exception {
 		String userId = "u1";
 		String eventId = "e1";
@@ -157,7 +179,7 @@ class PollingWaitingQueueServiceTest {
 		}
 
 		verify(waitingQueueRedisRepository).clearUserQueueEvent(userId);
-		verify(waitingQueueRedisRepository, never()).incrementEntryQueueCount(eventId);
+		verify(waitingQueueRedisRepository, never()).releaseEntryAdmissionSlot(eq(eventId), anyInt());
 		verify(waitingQueueRedisRepository, never()).deleteWaitingUserRecord(eventId, userId);
 	}
 
@@ -173,7 +195,7 @@ class PollingWaitingQueueServiceTest {
 			service.disconnect(eventId);
 		}
 
-		verify(waitingQueueRedisRepository).incrementEntryQueueCount(eventId);
+		verify(waitingQueueRedisRepository).releaseEntryAdmissionSlot(eventId, 500);
 	}
 
 	@Test
@@ -189,6 +211,6 @@ class PollingWaitingQueueServiceTest {
 		}
 
 		verify(waitingQueueRedisRepository).deleteWaitingUserRecord(eventId, userId);
-		verify(waitingQueueRedisRepository, never()).incrementEntryQueueCount(eventId);
+		verify(waitingQueueRedisRepository, never()).releaseEntryAdmissionSlot(eq(eventId), anyInt());
 	}
 }

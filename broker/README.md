@@ -2,6 +2,58 @@
 
 The Broker service manages real-time Server-Sent Events (SSE) connections for the waiting queue system, providing users with live updates on their queue position and promotion status.
 
+## Queue Admission Slots
+
+Broker treats sellable seats and purchase-flow admission slots as separate limits.
+
+- `totalSeatCount`: total sellable inventory from event/seat domain. Use for business availability and sold-out decisions.
+- `maxActiveShoppers`: max users allowed inside purchase/payment flow at once. Default: `500`.
+- `newUsersPerMinute`: max promotion rate into purchase flow. Default: `3000`.
+- `promotionBatchSize`: max users promoted per dispatcher tick. Default: `50`.
+- `entryTokenTtlMinutes`: entry token TTL. Default: `10`. This is not payment deadline.
+- `pollingIntervalSeconds`: default polling interval. Default: `5`.
+- `maxPollingIntervalSeconds`: max adaptive polling interval. Default: `15`.
+
+`ENTRY_QUEUE_SLOTS` remains for compatibility, but now means available active shopper admission capacity for an event. It must not be initialized directly from seat count. New events initialize capacity as:
+
+```text
+effectiveCapacity = min(maxActiveShoppers, remainingSeatCount)
+```
+
+Load reduction formula:
+
+```text
+loadReduction = 1 - maxActiveShoppers / concurrentUsers
+1 - 500 / 5000 = 0.9
+```
+
+For 5,000 concurrent users and `maxActiveShoppers = 500`, purchase-flow direct load drops from 5,000 to 500 users. That is 90% reduction, approximately 10x load isolation.
+
+Recommended config:
+
+```yaml
+queue:
+  max-active-shoppers: 500
+  new-users-per-minute: 3000
+  promotion-batch-size: 50
+  promotion-interval-ms: 1000
+  entry-token-ttl-minutes: 10
+  polling-interval-seconds: 5
+  max-polling-interval-seconds: 15
+```
+
+Load test guidance:
+
+```bash
+QUEUE_MAX_ACTIVE_SHOPPERS=500 \
+QUEUE_PROMOTION_BATCH_SIZE=50 \
+QUEUE_NEW_USERS_PER_MINUTE=3000 \
+EVENT_ID=<event-id> \
+k6 run k6/admission-control-5000.js
+```
+
+Validate active shoppers never exceed 500, promotion rate is about 50/sec, purchase service request volume is about 90% lower than no admission control, and p95 purchase/payment API latency improves against baseline.
+
 ## 🎯 Purpose
 
 - **Real-time Communication**: SSE-based live queue updates
