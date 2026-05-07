@@ -17,7 +17,6 @@ import org.codenbug.purchase.domain.EventSummary;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
 import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
 import org.codenbug.purchase.domain.PaymentConfirmationInfo;
-import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -221,6 +220,12 @@ public class PurchaseConfirmWorker {
   private void recordPgConfirmFailure(ConfirmContext ctx, Exception ex) {
     PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
     executeInTransaction(transactionManager, () -> {
+      purchaseRepository.findById(purchaseId)
+          .filter(Purchase::isPaymentPending)
+          .ifPresent(purchase -> {
+            purchase.markAsFailed();
+            purchaseRepository.save(purchase);
+          });
       eventAppendService.upadteProjectionStatus(purchaseId,
           Map.of("error", ex.getClass().getSimpleName()),
           PurchaseConfirmStatus.FAILED, "pg confirm failed");
@@ -259,8 +264,7 @@ public class PurchaseConfirmWorker {
   }
 
   private boolean isTerminalEvent(Purchase purchase) {
-    return purchase.getPaymentStatus() == PaymentStatus.DONE
-        || purchase.getPaymentStatus() == PaymentStatus.CANCELED;
+    return !purchase.isPaymentPending();
   }
 
   private Map<String, Object> parseJson(String json) {
