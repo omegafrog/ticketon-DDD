@@ -94,6 +94,12 @@ classDiagram
 
 ## 🔄 데이터 흐름
 
+### Asynchronous purchase confirm process
+
+![Asynchronous purchase confirm process](../docs/purchase/purchase-process.svg)
+
+See [Purchase Process](../docs/purchase/purchase-process.md) for the async confirm flow, PG API boundary, payment status meanings, and outbox retry/idempotency behavior.
+
 ### 구매 흐름 시퀀스
 
 ```sequence

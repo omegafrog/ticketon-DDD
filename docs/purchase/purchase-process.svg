@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1120" viewBox="0 0 1440 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Asynchronous purchase confirm process</title>
+  <desc id="desc">Purchase process showing asynchronous payment confirmation, PG API call, payment status updates, and the outbox pattern.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7f8fb; }
+      .lane { fill: #ffffff; stroke: #ccd3df; stroke-width: 1.4; }
+      .lane-title { fill: #1f2937; font: 700 18px Arial, sans-serif; }
+      .section-title { fill: #111827; font: 700 30px Arial, sans-serif; }
+      .section-subtitle { fill: #4b5563; font: 400 16px Arial, sans-serif; }
+      .box { fill: #ffffff; stroke: #374151; stroke-width: 1.6; rx: 8; }
+      .box-blue { fill: #e8f1ff; stroke: #1d4ed8; }
+      .box-green { fill: #e9f8ef; stroke: #15803d; }
+      .box-yellow { fill: #fff7d6; stroke: #ca8a04; }
+      .box-red { fill: #feecec; stroke: #dc2626; }
+      .box-purple { fill: #f0eafe; stroke: #7c3aed; }
+      .box-gray { fill: #f3f4f6; stroke: #6b7280; }
+      .label { fill: #111827; font: 700 15px Arial, sans-serif; }
+      .text { fill: #374151; font: 400 13px Arial, sans-serif; }
+      .small { fill: #4b5563; font: 400 12px Arial, sans-serif; }
+      .status { fill: #111827; font: 700 13px Arial, sans-serif; }
+      .pill { rx: 15; }
+      .arrow { stroke: #374151; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .async { stroke: #7c3aed; stroke-width: 2.4; fill: none; stroke-dasharray: 8 6; marker-end: url(#arrow-purple); }
+      .db { fill: #eef2f7; stroke: #475569; stroke-width: 1.5; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#374151" />
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7c3aed" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1440" height="1120" />
+  <text class="section-title" x="70" y="64">Purchase Process: Async Confirm, PG Call, Payment Status, Outbox</text>
+  <text class="section-subtitle" x="70" y="94">The API accepts the confirm command quickly, persists the outbox message transactionally, and a worker performs the external PG call.</text>
+
+  <rect class="lane" x="50" y="130" width="170" height="760" rx="10" />
+  <text class="lane-title" x="78" y="165">Client</text>
+  <rect class="lane" x="245" y="130" width="220" height="760" rx="10" />
+  <text class="lane-title" x="273" y="165">Purchase API</text>
+  <rect class="lane" x="490" y="130" width="250" height="760" rx="10" />
+  <text class="lane-title" x="518" y="165">Purchase DB</text>
+  <rect class="lane" x="765" y="130" width="220" height="760" rx="10" />
+  <text class="lane-title" x="793" y="165">Outbox Publisher</text>
+  <rect class="lane" x="1010" y="130" width="180" height="760" rx="10" />
+  <text class="lane-title" x="1038" y="165">Confirm Worker</text>
+  <rect class="lane" x="1215" y="130" width="175" height="760" rx="10" />
+  <text class="lane-title" x="1243" y="165">PG Provider</text>
+
+  <rect class="box box-blue" x="75" y="215" width="120" height="64" />
+  <text class="label" x="95" y="240">1. Init</text>
+  <text class="text" x="89" y="260">POST /payments/init</text>
+  <line class="arrow" x1="195" y1="247" x2="275" y2="247" />
+
+  <rect class="box box-blue" x="275" y="205" width="160" height="84" />
+  <text class="label" x="296" y="232">Create purchase</text>
+  <text class="text" x="294" y="254">Validate event, seats,</text>
+  <text class="text" x="294" y="272">amount, entry token</text>
+  <line class="arrow" x1="435" y1="247" x2="535" y2="247" />
+
+  <path class="db" d="M535 205 h160 v58 c0 18 -160 18 -160 0 z" />
+  <ellipse class="db" cx="615" cy="205" rx="80" ry="18" />
+  <text class="label" x="563" y="233">Purchase</text>
+  <text class="status" x="555" y="255">PaymentStatus:</text>
+  <text class="status" x="555" y="274">IN_PROGRESS</text>
+  <line class="arrow" x1="535" y1="300" x2="195" y2="300" />
+  <text class="small" x="310" y="292">201 Created, purchaseId</text>
+
+  <rect class="box box-purple" x="75" y="370" width="120" height="74" />
+  <text class="label" x="96" y="396">2. Confirm</text>
+  <text class="text" x="89" y="418">POST /payments/</text>
+  <text class="text" x="89" y="436">confirm</text>
+  <line class="arrow" x1="195" y1="407" x2="275" y2="407" />
+
+  <rect class="box box-purple" x="275" y="350" width="160" height="114" />
+  <text class="label" x="292" y="378">Accept command</text>
+  <text class="text" x="294" y="400">Validate ownership,</text>
+  <text class="text" x="294" y="418">orderId, amount,</text>
+  <text class="text" x="294" y="436">deadline</text>
+  <line class="arrow" x1="435" y1="407" x2="535" y2="407" />
+
+  <rect class="box box-purple" x="535" y="335" width="160" height="150" />
+  <text class="label" x="556" y="361">Same DB tx</text>
+  <text class="text" x="555" y="386">purchase_confirm_status</text>
+  <text class="status" x="555" y="406">PENDING</text>
+  <text class="text" x="555" y="431">purchase_outbox row</text>
+  <text class="small" x="555" y="451">messageId:</text>
+  <text class="small" x="555" y="467">confirm:{purchaseId}</text>
+  <line class="arrow" x1="535" y1="520" x2="195" y2="520" />
+  <text class="small" x="300" y="512">202 Accepted, statusUrl</text>
+
+  <line class="async" x1="695" y1="407" x2="805" y2="407" />
+  <rect class="box box-purple" x="805" y="360" width="140" height="94" />
+  <text class="label" x="827" y="386">Publish</text>
+  <text class="text" x="824" y="408">afterCommit event</text>
+  <text class="text" x="824" y="426">or scheduled retry</text>
+  <line class="async" x1="945" y1="407" x2="1045" y2="407" />
+
+  <rect class="box box-yellow" x="1045" y="350" width="110" height="114" />
+  <text class="label" x="1065" y="378">Worker</text>
+  <text class="text" x="1060" y="400">Inbox guard:</text>
+  <text class="text" x="1060" y="418">processed</text>
+  <text class="text" x="1060" y="436">message</text>
+
+  <line class="arrow" x1="1100" y1="464" x2="1100" y2="525" />
+  <rect class="box box-yellow" x="1028" y="525" width="144" height="122" />
+  <text class="label" x="1047" y="551">Pre-PG checks</text>
+  <text class="text" x="1045" y="573">terminal event?</text>
+  <text class="text" x="1045" y="591">sales version?</text>
+  <text class="status" x="1045" y="615">PROCESSING</text>
+  <text class="small" x="1045" y="635">pg confirm requested</text>
+  <line class="arrow" x1="1172" y1="586" x2="1245" y2="586" />
+
+  <rect class="box box-yellow" x="1245" y="525" width="115" height="122" />
+  <text class="label" x="1262" y="551">PG API</text>
+  <text class="text" x="1260" y="573">confirmPayment</text>
+  <text class="text" x="1260" y="591">paymentKey</text>
+  <text class="text" x="1260" y="609">orderId</text>
+  <text class="text" x="1260" y="627">amount</text>
+  <line class="arrow" x1="1245" y1="630" x2="1172" y2="630" />
+  <text class="small" x="1192" y="622">result</text>
+
+  <line class="arrow" x1="1100" y1="647" x2="1100" y2="710" />
+  <rect class="box box-green" x="1028" y="710" width="144" height="118" />
+  <text class="label" x="1047" y="736">Finalize local</text>
+  <text class="text" x="1045" y="758">generate tickets</text>
+  <text class="text" x="1045" y="776">save purchase</text>
+  <text class="text" x="1045" y="794">publish seat event</text>
+  <text class="status" x="1045" y="814">DONE</text>
+  <line class="arrow" x1="1028" y1="770" x2="695" y2="770" />
+
+  <rect class="box box-green" x="535" y="700" width="160" height="140" />
+  <text class="label" x="557" y="727">Persist result</text>
+  <text class="status" x="555" y="752">PaymentStatus:</text>
+  <text class="status" x="555" y="772">DONE</text>
+  <text class="text" x="555" y="797">tickets saved</text>
+  <text class="text" x="555" y="815">confirm status DONE</text>
+
+  <rect class="box box-red" x="805" y="705" width="150" height="123" />
+  <text class="label" x="824" y="731">Failure paths</text>
+  <text class="text" x="824" y="754">PG failure: FAILED</text>
+  <text class="text" x="824" y="774">Event changed:</text>
+  <text class="text" x="824" y="792">REJECTED</text>
+  <text class="text" x="824" y="812">Local failure after PG:</text>
+  <text class="text" x="824" y="830">compensate or manual</text>
+  <line class="arrow" x1="1028" y1="807" x2="955" y2="807" />
+
+  <rect class="box box-gray" x="75" y="735" width="120" height="84" />
+  <text class="label" x="91" y="762">3. Poll</text>
+  <text class="text" x="89" y="784">GET /payments/</text>
+  <text class="text" x="89" y="802">confirm/{id}/status</text>
+  <line class="arrow" x1="195" y1="777" x2="535" y2="777" />
+
+  <rect class="box box-gray" x="70" y="925" width="290" height="140" />
+  <text class="label" x="95" y="955">Purchase payment status</text>
+  <text class="text" x="95" y="982">IN_PROGRESS: payment prepared or pending confirm</text>
+  <text class="text" x="95" y="1004">DONE: PG confirm and local finalization succeeded</text>
+  <text class="text" x="95" y="1026">FAILED: payment or local processing failed</text>
+  <text class="text" x="95" y="1048">EXPIRED / CANCELED / REFUNDED: terminal lifecycle states</text>
+
+  <rect class="box box-gray" x="395" y="925" width="330" height="140" />
+  <text class="label" x="420" y="955">Async confirm status projection</text>
+  <text class="text" x="420" y="982">PENDING: request accepted, outbox row saved</text>
+  <text class="text" x="420" y="1004">PROCESSING: worker is checking or calling PG</text>
+  <text class="text" x="420" y="1026">DONE: payment completed</text>
+  <text class="text" x="420" y="1048">FAILED / REJECTED / COMPENSATION_REQUIRED: terminal outcomes</text>
+
+  <rect class="box box-gray" x="760" y="925" width="300" height="140" />
+  <text class="label" x="785" y="955">Outbox pattern</text>
+  <text class="text" x="785" y="982">The confirm request and message are saved in one DB tx.</text>
+  <text class="text" x="785" y="1004">afterCommit publish is fast path.</text>
+  <text class="text" x="785" y="1026">Scheduler retries unpublished rows.</text>
+  <text class="text" x="785" y="1048">Worker inbox makes duplicate deliveries idempotent.</text>
+
+  <rect class="box box-gray" x="1095" y="925" width="275" height="140" />
+  <text class="label" x="1120" y="955">PG call boundary</text>
+  <text class="text" x="1120" y="982">External PG confirm is outside the accept tx.</text>
+  <text class="text" x="1120" y="1004">Idempotency key: confirm:{purchaseId}</text>
+  <text class="text" x="1120" y="1026">Local finalization failure triggers PG cancel.</text>
+  <text class="text" x="1120" y="1048">Manual compensation is recorded when cancel fails.</text>
+</svg>
