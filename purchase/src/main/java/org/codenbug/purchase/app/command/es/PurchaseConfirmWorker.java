@@ -66,7 +66,7 @@ public class PurchaseConfirmWorker {
       return;
     }
 
-    if (!tryMarkProcessed(messageId)) {
+    if (!tryAcquireProcessingMarker(messageId)) {
       return;
     }
 
@@ -121,7 +121,7 @@ public class PurchaseConfirmWorker {
     return value == null || value.isBlank();
   }
 
-  private boolean tryMarkProcessed(String messageId) {
+  private boolean tryAcquireProcessingMarker(String messageId) {
     try {
       processedMessageRepository.save(new PurchaseProcessedMessage(messageId, LocalDateTime.now()));
       return true;
@@ -230,6 +230,12 @@ public class PurchaseConfirmWorker {
   private void recordPgConfirmFailure(ConfirmContext ctx, Exception ex) {
     PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
     executeInTransaction(transactionManager, () -> {
+      purchaseRepository.findById(purchaseId)
+          .filter(Purchase::isPaymentPending)
+          .ifPresent(purchase -> {
+            purchase.markAsFailed();
+            purchaseRepository.save(purchase);
+          });
       eventAppendService.upadteProjectionStatus(purchaseId,
           Map.of("error", ex.getClass().getSimpleName()),
           PurchaseConfirmStatus.FAILED, "pg confirm failed");

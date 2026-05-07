@@ -2,8 +2,15 @@ package org.codenbug.purchase.app.es;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,13 +62,13 @@ class PurchaseConfirmWorkerTest {
   @Mock
   private PaymentProviderRouter paymentProviderRouter;
   @Mock
+  private PGApiService pgApiService;
+  @Mock
   private PurchasePaymentFinalizationService finalizationService;
   @Mock
   private PurchaseRepository purchaseRepository;
   @Mock
   private RefundRepository refundRepository;
-  @Mock
-  private PGApiService pgApiService;
 
   private PurchaseConfirmWorker worker;
 
@@ -87,9 +94,7 @@ class PurchaseConfirmWorkerTest {
     when(eventServiceClient.getEventSummary("e1")).thenReturn(
         new EventSummary("e1", 1L, true, "OPEN", 2L, 2L, "event-title"));
 
-    worker.process("msg-1",
-        "{\"purchaseId\":\"%s\",\"userId\":\"u1\",\"eventId\":\"e1\",\"expectedSalesVersion\":1,\"paymentKey\":\"payKey\",\"orderId\":\"order1\",\"amount\":1000,\"provider\":\"TOSS\"}"
-            .formatted(purchase.getPurchaseId().getValue()));
+    worker.process("msg-1", payloadFor(purchase));
 
     verify(eventAppendService).upadteProjectionStatus(any(PurchaseId.class), anyMap(),
         eq(PurchaseConfirmStatus.PROCESSING), eq("processing"));
@@ -99,20 +104,23 @@ class PurchaseConfirmWorkerTest {
   }
 
   @Test
-  void process_whenPgConfirmFailsBeforeApproval_doesNotCompensate() {
+  void process_whenPgConfirmFailsBeforeApproval_doesNotCompensateAndReleasesMarker() {
     Purchase purchase = new Purchase("e1", "order1", 1000, 1L, new UserId("u1"));
+    String messageId = "confirm:" + purchase.getPurchaseId().getValue();
+
     when(purchaseRepository.findById(any(PurchaseId.class))).thenReturn(Optional.of(purchase));
     when(eventServiceClient.getEventSummary("e1")).thenReturn(eventSummary("e1", 1L));
     when(paymentProviderRouter.get(PaymentProvider.TOSS)).thenReturn(pgApiService);
-    when(pgApiService.confirmPayment("payKey", "order1", 1000, "confirm:" + purchase.getPurchaseId().getValue()))
-        .thenThrow(new RuntimeException("pg unavailable"));
+    when(pgApiService.confirmPayment("payKey", "order1", 1000, messageId))
+        .thenThrow(new IllegalStateException("pg unavailable"));
 
-    assertThatThrownBy(() -> worker.process("msg-pg-fail", payloadFor(purchase)))
-        .isInstanceOf(RuntimeException.class)
+    assertThatThrownBy(() -> worker.process(messageId, payloadFor(purchase)))
+        .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("pg unavailable");
 
     verify(pgApiService, never()).cancelPayment(anyString(), anyString(), anyString());
     verifyNoInteractions(refundRepository);
+    verify(processedMessageRepository).deleteById(messageId);
     verify(eventAppendService).upadteProjectionStatus(any(PurchaseId.class), anyMap(),
         eq(PurchaseConfirmStatus.FAILED), eq("pg confirm failed"));
   }

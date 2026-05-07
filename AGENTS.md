@@ -75,6 +75,26 @@ export PATH="$JAVA_HOME/bin:$PATH"
 docker-compose -f docker/docker-compose.yml up -d
 ```
 
+## Full System Startup
+- Before validating or running the full system, confirm related Docker containers are running:
+  ```bash
+  docker-compose -f docker/docker-compose.yml ps
+  ```
+- Start local infra if containers are stopped:
+  ```bash
+  docker-compose -f docker/docker-compose.yml up -d
+  ```
+- A fully running local system requires all of the following Gradle boot tasks:
+  ```bash
+  ./gradlew :platform:eureka:bootRun
+  ./gradlew :platform:gateway:bootRun
+  ./gradlew :app:bootRun
+  ./gradlew :auth:bootRun
+  ./gradlew :broker:bootRun
+  ./gradlew :dispatcher:bootRun
+  ```
+- Keep these services running concurrently when testing full-system behavior.
+
 ## Runtime Verification Policy (Agent)
 - When validating "server starts normally" or runtime execution results, prefer JDB MCP-based verification over log-only checks.
 - Default flow:

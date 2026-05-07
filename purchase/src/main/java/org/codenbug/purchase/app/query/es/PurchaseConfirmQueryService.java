@@ -34,6 +34,7 @@ public class PurchaseConfirmQueryService {
     return new ConfirmPaymentStatusResponse(
         purchaseId.getValue(),
         proj.getStatus().name(),
+        purchase.getPaymentStatus().name(),
         proj.getMessage(),
         proj.getUpdatedAt());
   }

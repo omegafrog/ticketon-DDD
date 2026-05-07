@@ -50,7 +50,6 @@ public class PurchaseCommandController {
   private final EntryTokenValidator entryTokenValidator;
   private final PendingReservationService pendingReservationService;
 
-  // TODO: orderId도 리턴에 추가하도록 수정
   @Operation(summary = "결제 준비", description = "티켓 구매를 위한 결제 준비 과정을 시작합니다. 대기열 인증 토큰이 필요합니다.")
   @ApiResponses({
       @ApiResponse(responseCode = "200", description = "결제 준비 성공"),
