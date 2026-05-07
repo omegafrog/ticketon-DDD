@@ -54,11 +54,11 @@ class WaitingQueueRedisRepositoryTest {
     }
 
     @Test
-    void 입장_큐_카운트_증가_이벤트_ID_해시_필드() {
+    void 입장_슬롯_초기화는_좌석수가_아닌_활성_쇼퍼_한도를_사용한다() {
         String eventId = "e1";
 
-        repository.incrementEntryQueueCount(eventId);
+        repository.initializeEntryAdmissionSlots(eventId, 500, 10_000);
 
-        verify(hashOperations).increment(RedisConfig.ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, 1);
+        verify(hashOperations).putIfAbsent(RedisConfig.ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, "500");
     }
 }

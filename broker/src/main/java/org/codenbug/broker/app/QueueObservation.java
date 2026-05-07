@@ -5,6 +5,12 @@ public interface QueueObservation {
 
 	void recordQueueState(String eventId, Long waitingUsers, Long entrySlots);
 
+	void recordEntryTokenIssued(String eventId);
+
+	void recordEntryTokenExpired(String eventId);
+
+	void recordSlotReleased(String eventId, boolean released);
+
 	static QueueObservation noop() {
 		return NoopQueueObservation.INSTANCE;
 	}

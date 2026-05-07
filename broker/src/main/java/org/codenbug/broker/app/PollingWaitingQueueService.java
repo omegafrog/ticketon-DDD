@@ -1,6 +1,7 @@
 package org.codenbug.broker.app;
 
 import org.codenbug.broker.config.InstanceConfig;
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.ui.PollingQueueInfo;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.stereotype.Service;
@@ -15,22 +16,24 @@ public class PollingWaitingQueueService {
   private final EventStatusInitializationPort eventStatusInitializer;
   private final InstanceConfig instanceConfig;
   private final QueueObservation queueObservation;
+  private final QueueProperties queueProperties;
 
   public PollingWaitingQueueService(EventClient eventClient, WaitingQueueStore waitingQueueRedisRepository,
       EventStatusInitializationPort eventStatusInitializer, InstanceConfig instanceConfig) {
     this(eventClient, waitingQueueRedisRepository, eventStatusInitializer, instanceConfig,
-        QueueObservation.noop());
+        QueueObservation.noop(), new QueueProperties());
   }
 
   @org.springframework.beans.factory.annotation.Autowired
   public PollingWaitingQueueService(EventClient eventClient, WaitingQueueStore waitingQueueRedisRepository,
       EventStatusInitializationPort eventStatusInitializer, InstanceConfig instanceConfig,
-      QueueObservation queueObservation) {
+      QueueObservation queueObservation, QueueProperties queueProperties) {
     this.eventClient = eventClient;
     this.waitingQueueRedisRepository = waitingQueueRedisRepository;
     this.eventStatusInitializer = eventStatusInitializer;
     this.instanceConfig = instanceConfig;
     this.queueObservation = queueObservation;
+    this.queueProperties = queueProperties;
   }
 
   public void enter(String eventId) {
@@ -47,7 +50,7 @@ public class PollingWaitingQueueService {
     }
     if (!waitingQueueRedisRepository.entryQueueCountExists(eventId)) {
       int seatCount = eventClient.getSeatCount(eventId);
-      waitingQueueRedisRepository.updateEntryQueueCount(eventId, seatCount);
+      waitingQueueRedisRepository.initializeEntryAdmissionSlots(eventId, queueProperties.getMaxActiveShoppers(), seatCount);
     }
 
     eventStatusInitializer.ensureInitialized(eventId);
@@ -150,7 +153,7 @@ public class PollingWaitingQueueService {
     if (hasEntryToken) {
       return 1000L;
     }
-    return 5000L;
+    return queueProperties.getPollingIntervalSeconds() * 1000L;
   }
 
   public void disconnect(String eventId) {
@@ -162,7 +165,9 @@ public class PollingWaitingQueueService {
     }
     waitingQueueRedisRepository.clearUserQueueEvent(userId);
     if (removedEntryToken) {
-      waitingQueueRedisRepository.incrementEntryQueueCount(eventId);
+      boolean released = waitingQueueRedisRepository.releaseEntryAdmissionSlot(eventId,
+          queueProperties.getMaxActiveShoppers());
+      queueObservation.recordSlotReleased(eventId, released);
     }
     recordQueueState(eventId);
   }
