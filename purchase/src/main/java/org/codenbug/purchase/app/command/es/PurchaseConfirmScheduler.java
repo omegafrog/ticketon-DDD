@@ -106,7 +106,8 @@ public class PurchaseConfirmScheduler {
     }
     return status == PurchaseConfirmStatus.DONE
         || status == PurchaseConfirmStatus.FAILED
-        || status == PurchaseConfirmStatus.REJECTED;
+        || status == PurchaseConfirmStatus.REJECTED
+        || status == PurchaseConfirmStatus.COMPENSATION_REQUIRED;
   }
 
   private String extractPurchaseId(String payloadJson) {
