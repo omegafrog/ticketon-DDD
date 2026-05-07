@@ -103,7 +103,7 @@ public class PurchaseConfirmCommandService {
     projection.update(PurchaseConfirmStatus.PENDING, "accepted", now);
     statusProjectionRepository.save(projection);
 
-    String messageId = confirmCommandId(purchaseId);
+    String messageId = PurchaseOutboxMessage.messageIdFor(eventType, purchaseId);
     PurchaseOutboxMessage saved = outboxRepository
         .save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
             payloadJson, now));
@@ -135,6 +135,6 @@ public class PurchaseConfirmCommandService {
   }
 
   public static String confirmCommandId(PurchaseId purchaseId) {
-    return PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED.value + ":" + purchaseId.getValue();
+    return PurchaseOutboxMessage.messageIdFor(PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED, purchaseId);
   }
 }

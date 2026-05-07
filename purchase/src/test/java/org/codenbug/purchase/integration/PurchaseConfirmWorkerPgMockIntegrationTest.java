@@ -243,6 +243,36 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	}
 
 	@Test
+	void requestConfirm_doesNotCreateDuplicateOutboxForSamePurchaseId() {
+		String userId = "user-duplicate-confirm";
+		String eventId = "event-1";
+		String seatId = "A-1";
+		String orderId = "order-duplicate-confirm";
+		String paymentKey = "payment-key-duplicate-confirm";
+		int amount = 1000;
+
+		seedSeatLock(userId, eventId, seatId);
+
+		var initResponse = initCommandService.initiatePayment(
+			new InitiatePaymentRequest(eventId, orderId, amount),
+			userId
+		);
+		String purchaseId = initResponse.getPurchaseId();
+		ConfirmPaymentRequest request = new ConfirmPaymentRequest(purchaseId, paymentKey, orderId, amount, "TOSS");
+
+		confirmCommandService.requestConfirm(request, userId);
+		confirmCommandService.requestConfirm(request, userId);
+
+		List<PurchaseOutboxMessage> messages = outboxRepository.findAll().stream()
+			.filter(message -> message.getPayloadJson() != null
+				&& message.getPayloadJson().contains("\"purchaseId\":\"" + purchaseId + "\""))
+			.toList();
+
+		assertThat(messages).hasSize(1);
+		assertThat(messages.getFirst().getMessageId()).isEqualTo("confirm:" + purchaseId);
+	}
+
+	@Test
 	void confirmScheduler_reprocessesWhenStatusIsProcessing_withOnlyPgApiMocked() {
 		String userId = "user-processing";
 		String purchaseId = requestConfirm(userId, "event-1", "A-1", "order-processing", "payment-key-processing", 1000);

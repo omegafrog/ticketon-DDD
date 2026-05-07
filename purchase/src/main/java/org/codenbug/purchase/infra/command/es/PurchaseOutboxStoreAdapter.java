@@ -37,6 +37,6 @@ class PurchaseOutboxStoreAdapter implements PurchaseOutboxStore {
   // TODO : TEST 작성해야됨
   @Override
   public boolean existsByPurchaseIdAndEventType(PurchaseId purchaseId, PaymentOutboxEventType eventType) {
-    return repository.existsByPurchaseIdAndEventType(eventType.value + ":" + purchaseId.getValue());
+    return repository.existsByPurchaseIdAndEventType(PurchaseOutboxMessage.messageIdFor(eventType, purchaseId));
   }
 }
