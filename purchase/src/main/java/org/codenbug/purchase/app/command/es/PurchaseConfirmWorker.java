@@ -61,7 +61,7 @@ public class PurchaseConfirmWorker {
       return;
     }
 
-    if (!tryMarkProcessed(messageId)) {
+    if (!tryAcquireProcessingMarker(messageId)) {
       return;
     }
 
@@ -112,7 +112,7 @@ public class PurchaseConfirmWorker {
     return value == null || value.isBlank();
   }
 
-  private boolean tryMarkProcessed(String messageId) {
+  private boolean tryAcquireProcessingMarker(String messageId) {
     try {
       processedMessageRepository.save(new PurchaseProcessedMessage(messageId, LocalDateTime.now()));
       return true;
