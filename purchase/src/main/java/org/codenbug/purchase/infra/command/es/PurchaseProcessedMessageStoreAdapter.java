@@ -17,4 +17,9 @@ class PurchaseProcessedMessageStoreAdapter implements PurchaseProcessedMessageSt
 	public PurchaseProcessedMessage save(PurchaseProcessedMessage message) {
 		return repository.save(message);
 	}
+
+	@Override
+	public void deleteById(String messageId) {
+		repository.deleteById(messageId);
+	}
 }

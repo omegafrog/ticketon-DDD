@@ -5,7 +5,6 @@ import org.codenbug.purchase.domain.port.es.PurchaseConfirmStatusProjectionStore
 import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
@@ -65,10 +64,10 @@ public class PurchaseConfirmCommandService {
     boolean alreadyRequested = outboxRepository.existsByPurchaseIdAndEventType(new PurchaseId(purchaseId),
         PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED);
 
-    String payloadJson = null;
+    PurchaseOutboxMessage outboxMessage = null;
     if (!alreadyRequested) {
       try {
-        payloadJson = appendConfirmRequestedAndEnqueue(request, userId, new PurchaseId(purchaseId),
+        outboxMessage = appendConfirmRequestedAndEnqueue(request, userId, new PurchaseId(purchaseId),
             PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED,
             purchase);
       } catch (DataIntegrityViolationException e) {
@@ -77,13 +76,16 @@ public class PurchaseConfirmCommandService {
       }
     }
 
-    eventPublisher.publishEvent(new PurchaseConfirmTransactionCommitted(payloadJson));
+    if (outboxMessage != null) {
+      eventPublisher.publishEvent(
+          new PurchaseConfirmTransactionCommitted(outboxMessage.getMessageId(), outboxMessage.getPayloadJson()));
+    }
 
     String statusUrl = "/api/v1/payments/confirm/" + purchaseId + "/status";
     return new ConfirmPaymentAcceptedResponse(purchaseId, "PENDING", statusUrl);
   }
 
-  private String appendConfirmRequestedAndEnqueue(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId,
+  private PurchaseOutboxMessage appendConfirmRequestedAndEnqueue(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId,
       PaymentOutboxEventType eventType, Purchase purchase) {
     Long expectedSalesVersion = purchase.getExpectedSalesVersion();
 
@@ -101,12 +103,12 @@ public class PurchaseConfirmCommandService {
     projection.update(PurchaseConfirmStatus.PENDING, "accepted", now);
     statusProjectionRepository.save(projection);
 
-    String messageId = UUID.randomUUID().toString();
+    String messageId = confirmCommandId(purchaseId);
     PurchaseOutboxMessage saved = outboxRepository
         .save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
             payloadJson, now));
 
-    return payloadJson;
+    return saved;
   }
 
   private String getPayloadJson(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId, Purchase purchase,
@@ -130,5 +132,9 @@ public class PurchaseConfirmCommandService {
     } catch (Exception e) {
       throw new IllegalStateException("json serialization failed", e);
     }
+  }
+
+  public static String confirmCommandId(PurchaseId purchaseId) {
+    return PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED.value + ":" + purchaseId.getValue();
   }
 }

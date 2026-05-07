@@ -2,6 +2,7 @@ package org.codenbug.purchase.infra.command.es;
 
 import org.codenbug.purchase.infra.es.JpaPurchaseOutboxRepository;
 import java.util.List;
+import java.util.Optional;
 
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
 import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
@@ -26,6 +27,11 @@ class PurchaseOutboxStoreAdapter implements PurchaseOutboxStore {
   @Override
   public List<PurchaseOutboxMessage> findUnpublishedByQueueName(String queueName, Pageable pageable) {
     return repository.findUnpublishedByQueueName(queueName, pageable);
+  }
+
+  @Override
+  public Optional<PurchaseOutboxMessage> findByMessageId(String messageId) {
+    return repository.findByMessageId(messageId);
   }
 
   // TODO : TEST 작성해야됨

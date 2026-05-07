@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import java.util.Optional;
 
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
+import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
@@ -16,6 +17,7 @@ import org.codenbug.purchase.ui.request.ConfirmPaymentRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -53,7 +55,7 @@ class PurchaseConfirmCommandServiceTest {
 
     verify(outboxRepository, never()).save(any());
     verify(statusProjectionRepository, never()).save(any());
-    verify(eventPublisher).publishEvent(any(Object.class));
+    verify(eventPublisher, never()).publishEvent(any(Object.class));
   }
 
   @Test
@@ -73,7 +75,11 @@ class PurchaseConfirmCommandServiceTest {
 
     verify(statusProjectionRepository).save(any());
     verify(outboxRepository).save(any());
-    verify(eventPublisher).publishEvent(any(Object.class));
+    ArgumentCaptor<Object> eventCaptor = ArgumentCaptor.forClass(Object.class);
+    verify(eventPublisher).publishEvent(eventCaptor.capture());
+    PurchaseConfirmTransactionCommitted event = (PurchaseConfirmTransactionCommitted) eventCaptor.getValue();
+    org.assertj.core.api.Assertions.assertThat(event.getMessageId()).isEqualTo("confirm:p1");
+    org.assertj.core.api.Assertions.assertThat(event.getPayloadJson()).contains("\"purchaseId\":\"p1\"");
   }
 
   @Test

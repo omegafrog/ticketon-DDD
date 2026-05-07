@@ -65,26 +65,26 @@ public class PurchaseConfirmWorker {
       return;
     }
 
-    Purchase purchase = purchaseRepository.findById(extractPurchaseId(payloadJson))
-        .orElseThrow(() -> new RuntimeException("결제를 찾을 수 없습니다."));
-
-    PurchaseId purchaseId = purchase.getPurchaseId();
-    if (isBlank(purchaseId.getValue())) {
-      return;
-    }
-
-    ConfirmContext ctx = loadConfirmContext(purchase, payloadJson);
-    if (ctx == null) {
-      recordMissingConfirmRequest(purchaseId);
-      return;
-    }
-    if (shouldStopBeforePgCall(ctx)) {
-      return;
-    }
-
-    markProcessingStarted(ctx);
-
+    ConfirmContext ctx = null;
     try {
+      Purchase purchase = purchaseRepository.findById(extractPurchaseId(payloadJson))
+          .orElseThrow(() -> new RuntimeException("결제를 찾을 수 없습니다."));
+
+      PurchaseId purchaseId = purchase.getPurchaseId();
+      if (isBlank(purchaseId.getValue())) {
+        return;
+      }
+
+      ctx = loadConfirmContext(purchase, payloadJson);
+      if (ctx == null) {
+        recordMissingConfirmRequest(purchaseId);
+        return;
+      }
+      if (shouldStopBeforePgCall(ctx)) {
+        return;
+      }
+
+      markProcessingStarted(ctx);
       Long actualSalesVersion = loadActualSalesVersion(ctx);
       if (!ctx.expectedSalesVersion.equals(actualSalesVersion)) {
         recordEventChanged(ctx, actualSalesVersion);
@@ -94,9 +94,16 @@ public class PurchaseConfirmWorker {
       PaymentConfirmationInfo paymentInfo = confirmWithPg(ctx);
       finalizeConfirmedPayment(ctx, purchase, payloadJson, paymentInfo);
     } catch (ConcurrencyFailureException ex) {
+      releaseProcessingMarker(messageId);
       throw new RuntimeException(ex.getMessage(), ex.getCause());
     } catch (Exception ex) {
-      recordPgConfirmFailure(ctx, ex);
+      try {
+        if (ctx != null) {
+          recordPgConfirmFailure(ctx, ex);
+        }
+      } finally {
+        releaseProcessingMarker(messageId);
+      }
       throw ex;
     }
   }
@@ -111,6 +118,13 @@ public class PurchaseConfirmWorker {
       return true;
     } catch (DataIntegrityViolationException e) {
       return false;
+    }
+  }
+
+  private void releaseProcessingMarker(String messageId) {
+    try {
+      processedMessageRepository.deleteById(messageId);
+    } catch (Exception ignore) {
     }
   }
 
@@ -260,7 +274,7 @@ public class PurchaseConfirmWorker {
   }
 
   private String confirmCommandId(PurchaseId purchaseId) {
-    return "confirm:" + purchaseId.getValue();
+    return PurchaseConfirmCommandService.confirmCommandId(purchaseId);
   }
 
   private String stageCommandId(PurchaseId purchaseId, PaymentOutboxEventType eventType) {

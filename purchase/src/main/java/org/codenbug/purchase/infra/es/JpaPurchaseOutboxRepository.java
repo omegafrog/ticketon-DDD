@@ -1,6 +1,7 @@
 package org.codenbug.purchase.infra.es;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface JpaPurchaseOutboxRepository extends JpaRepository<PurchaseOutboxMessage, Long> {
+  Optional<PurchaseOutboxMessage> findByMessageId(String messageId);
+
   @Query("""
       	select m from PurchaseOutboxMessage m
       	where m.publishedAt is null

@@ -1,9 +1,9 @@
 package org.codenbug.purchase.app.command.es;
 
 import org.codenbug.purchase.domain.port.es.PurchaseConfirmStatusProjectionStore;
+import org.codenbug.purchase.domain.port.es.PurchaseConfirmMessagePublisher;
 import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,18 +27,18 @@ public class PurchaseConfirmScheduler {
   private final ObjectMapper objectMapper;
   private final PurchaseOutboxStore outboxRepository;
   private final PurchaseConfirmStatusProjectionStore statusProjectionRepository;
-  private final PurchaseConfirmWorker confirmWorker;
+  private final PurchaseConfirmMessagePublisher messagePublisher;
   private final int maxPublishAttempts;
 
   public PurchaseConfirmScheduler(ObjectMapper objectMapper,
       PurchaseOutboxStore outboxRepository,
       PurchaseConfirmStatusProjectionStore statusProjectionRepository,
-      PurchaseConfirmWorker confirmWorker,
+      PurchaseConfirmMessagePublisher messagePublisher,
       @Value("${purchase.outbox.max-publish-attempts:5}") int maxPublishAttempts) {
     this.objectMapper = objectMapper;
     this.outboxRepository = outboxRepository;
     this.statusProjectionRepository = statusProjectionRepository;
-    this.confirmWorker = confirmWorker;
+    this.messagePublisher = messagePublisher;
     this.maxPublishAttempts = maxPublishAttempts;
   }
 
@@ -73,7 +73,7 @@ public class PurchaseConfirmScheduler {
       }
 
       try {
-        confirmWorker.process(msg.getMessageId(), msg.getPayloadJson());
+        messagePublisher.publish(msg);
         msg.markPublished(LocalDateTime.now());
         outboxRepository.save(msg);
       } catch (Exception e) {

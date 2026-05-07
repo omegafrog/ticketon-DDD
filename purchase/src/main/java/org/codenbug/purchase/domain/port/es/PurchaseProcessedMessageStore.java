@@ -4,4 +4,6 @@ import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
 
 public interface PurchaseProcessedMessageStore {
 	PurchaseProcessedMessage save(PurchaseProcessedMessage message);
+
+	void deleteById(String messageId);
 }
