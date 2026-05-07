@@ -17,6 +17,8 @@ class PurchaseConfirmStatePolicyTest {
         .contains(PaymentStatus.FAILED);
     assertThat(PurchaseConfirmStatePolicy.terminalPurchaseStatusFor(PurchaseConfirmStatus.REJECTED))
         .contains(PaymentStatus.CANCELED);
+    assertThat(PurchaseConfirmStatePolicy.terminalPurchaseStatusFor(PurchaseConfirmStatus.COMPENSATION_REQUIRED))
+        .isEmpty();
   }
 
   @Test
@@ -27,8 +29,11 @@ class PurchaseConfirmStatePolicyTest {
     assertThat(PurchaseConfirmStatePolicy.isTerminalConfirmStatus(PurchaseConfirmStatus.DONE)).isTrue();
     assertThat(PurchaseConfirmStatePolicy.isTerminalConfirmStatus(PurchaseConfirmStatus.FAILED)).isTrue();
     assertThat(PurchaseConfirmStatePolicy.isTerminalConfirmStatus(PurchaseConfirmStatus.REJECTED)).isTrue();
+    assertThat(PurchaseConfirmStatePolicy.isTerminalConfirmStatus(PurchaseConfirmStatus.COMPENSATION_REQUIRED)).isTrue();
 
     assertThat(PurchaseConfirmStatePolicy.isTerminalConfirmStatus(PurchaseConfirmStatus.PENDING)).isFalse();
     assertThat(PurchaseConfirmStatePolicy.isRetryableConfirmStatus(PurchaseConfirmStatus.FAILED)).isFalse();
+    assertThat(PurchaseConfirmStatePolicy.isRetryableConfirmStatus(PurchaseConfirmStatus.COMPENSATION_REQUIRED))
+        .isFalse();
   }
 }

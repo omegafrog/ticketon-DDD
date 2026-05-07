@@ -8,10 +8,12 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codenbug.purchase.domain.PaymentCancellationInfo;
 import org.codenbug.purchase.domain.port.PGApiService;
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.app.support.PaymentProviderRouter;
 import org.codenbug.purchase.domain.port.PurchaseRepository;
+import org.codenbug.purchase.domain.port.RefundRepository;
 import org.codenbug.purchase.domain.port.EventInfoProvider;
 import org.codenbug.purchase.domain.EventSummary;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
@@ -19,6 +21,7 @@ import org.codenbug.purchase.domain.es.PurchaseProcessedMessage;
 import org.codenbug.purchase.domain.PaymentConfirmationInfo;
 import org.codenbug.purchase.domain.Purchase;
 import org.codenbug.purchase.domain.PurchaseId;
+import org.codenbug.purchase.domain.Refund;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -36,6 +39,7 @@ public class PurchaseConfirmWorker {
   private final EventInfoProvider eventServiceClient;
   private final PaymentProviderRouter paymentProviderRouter;
   private final PurchaseRepository purchaseRepository;
+  private final RefundRepository refundRepository;
   private final PurchasePaymentFinalizationService finalizationService;
 
   public PurchaseConfirmWorker(ObjectMapper objectMapper,
@@ -43,7 +47,8 @@ public class PurchaseConfirmWorker {
       PurchaseProcessedMessageStore processedMessageRepository,
       PurchaseConfirmStatusProjectionSerivce eventAppendService,
       EventInfoProvider eventServiceClient, PaymentProviderRouter paymentProviderRouter,
-      PurchasePaymentFinalizationService finalizationService, PurchaseRepository purchaseRepository) {
+      PurchasePaymentFinalizationService finalizationService, PurchaseRepository purchaseRepository,
+      RefundRepository refundRepository) {
     this.objectMapper = objectMapper;
     this.transactionManager = transactionManager;
     this.processedMessageRepository = processedMessageRepository;
@@ -52,6 +57,7 @@ public class PurchaseConfirmWorker {
     this.paymentProviderRouter = paymentProviderRouter;
     this.finalizationService = finalizationService;
     this.purchaseRepository = purchaseRepository;
+    this.refundRepository = refundRepository;
   }
 
   public void process(String messageId, String payloadJson) {
@@ -91,7 +97,11 @@ public class PurchaseConfirmWorker {
       }
       markPgConfirmRequested(ctx);
       PaymentConfirmationInfo paymentInfo = confirmWithPg(ctx);
-      finalizeConfirmedPayment(ctx, purchase, payloadJson, paymentInfo);
+      try {
+        finalizeConfirmedPayment(ctx, purchase, payloadJson, paymentInfo);
+      } catch (Exception finalizationFailure) {
+        recordFinalizationFailureAfterPgSuccess(ctx, paymentInfo, finalizationFailure);
+      }
     } catch (ConcurrencyFailureException ex) {
       releaseProcessingMarker(messageId);
       throw new RuntimeException(ex.getMessage(), ex.getCause());
@@ -233,6 +243,74 @@ public class PurchaseConfirmWorker {
     });
   }
 
+  private void recordFinalizationFailureAfterPgSuccess(ConfirmContext ctx, PaymentConfirmationInfo paymentInfo,
+      Exception finalizationFailure) {
+    PGApiService pgApiService = paymentProviderRouter.get(PaymentProvider.from(ctx.provider));
+    try {
+      PaymentCancellationInfo cancellationInfo = pgApiService.cancelPayment(
+          paymentInfo.getPaymentKey(),
+          "Local payment finalization failed after PG confirm",
+          compensationCommandId(new PurchaseId(ctx.purchaseId)));
+      recordCompensationSucceeded(ctx, paymentInfo, cancellationInfo, finalizationFailure);
+    } catch (Exception compensationFailure) {
+      recordCompensationRequired(ctx, paymentInfo, finalizationFailure, compensationFailure);
+    }
+  }
+
+  private void recordCompensationSucceeded(ConfirmContext ctx, PaymentConfirmationInfo paymentInfo,
+      PaymentCancellationInfo cancellationInfo, Exception finalizationFailure) {
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      Purchase purchase = purchaseRepository.findById(purchaseId)
+          .orElseThrow(() -> new IllegalArgumentException("purchase not found"));
+      if (purchase.isPaymentPending()) {
+        purchase.markAsFailed();
+        purchaseRepository.save(purchase);
+      }
+
+      Refund refund = Refund.createSystemRefund(
+          purchase,
+          purchase.getTotalAmount(),
+          "Compensation for local finalization failure after PG confirm");
+      refund.startProcessing();
+      refund.completeRefund(cancellationInfo.getPaymentKey(), cancellationInfo.getReceiptUrl());
+      refundRepository.save(refund);
+
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of(
+              "paymentKey", paymentInfo.getPaymentKey(),
+              "cancelStatus", cancellationInfo.getStatus(),
+              "finalizationError", finalizationFailure.getClass().getSimpleName()),
+          PurchaseConfirmStatus.FAILED, "pg confirm compensated after finalization failure");
+      return null;
+    });
+  }
+
+  private void recordCompensationRequired(ConfirmContext ctx, PaymentConfirmationInfo paymentInfo,
+      Exception finalizationFailure, Exception compensationFailure) {
+    PurchaseId purchaseId = new PurchaseId(ctx.purchaseId);
+    executeInTransaction(transactionManager, () -> {
+      Purchase purchase = purchaseRepository.findById(purchaseId)
+          .orElseThrow(() -> new IllegalArgumentException("purchase not found"));
+
+      Refund refund = Refund.createSystemRefund(
+          purchase,
+          purchase.getTotalAmount(),
+          "Manual compensation required after local finalization failure");
+      refund.startProcessing();
+      refund.failRefund(compensationFailure.getMessage());
+      refundRepository.save(refund);
+
+      eventAppendService.upadteProjectionStatus(purchaseId,
+          Map.of(
+              "paymentKey", paymentInfo.getPaymentKey(),
+              "finalizationError", finalizationFailure.getClass().getSimpleName(),
+              "compensationError", compensationFailure.getClass().getSimpleName()),
+          PurchaseConfirmStatus.COMPENSATION_REQUIRED, "pg confirm succeeded; compensation required");
+      return null;
+    });
+  }
+
   private ConfirmContext loadConfirmContext(Purchase purchase, String payloadJson) {
 
     boolean terminal = false;
@@ -283,6 +361,10 @@ public class PurchaseConfirmWorker {
 
   private String stageCommandId(PurchaseId purchaseId, PaymentOutboxEventType eventType) {
     return confirmCommandId(purchaseId) + ":" + eventType.name();
+  }
+
+  private String compensationCommandId(PurchaseId purchaseId) {
+    return "compensate:" + purchaseId.getValue();
   }
 
   private static class ConfirmContext {

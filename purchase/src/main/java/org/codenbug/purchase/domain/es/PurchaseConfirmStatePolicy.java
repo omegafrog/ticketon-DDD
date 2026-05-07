@@ -11,7 +11,8 @@ public final class PurchaseConfirmStatePolicy {
   public static boolean isTerminalConfirmStatus(PurchaseConfirmStatus status) {
     return status == PurchaseConfirmStatus.DONE
         || status == PurchaseConfirmStatus.FAILED
-        || status == PurchaseConfirmStatus.REJECTED;
+        || status == PurchaseConfirmStatus.REJECTED
+        || status == PurchaseConfirmStatus.COMPENSATION_REQUIRED;
   }
 
   public static boolean isRetryableConfirmStatus(PurchaseConfirmStatus status) {
@@ -24,7 +25,7 @@ public final class PurchaseConfirmStatePolicy {
       case DONE -> Optional.of(PaymentStatus.DONE);
       case FAILED -> Optional.of(PaymentStatus.FAILED);
       case REJECTED -> Optional.of(PaymentStatus.CANCELED);
-      case PENDING, PROCESSING -> Optional.empty();
+      case COMPENSATION_REQUIRED, PENDING, PROCESSING -> Optional.empty();
     };
   }
 }

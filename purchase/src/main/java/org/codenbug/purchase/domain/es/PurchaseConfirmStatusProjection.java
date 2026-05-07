@@ -23,7 +23,7 @@ public class PurchaseConfirmStatusProjection {
   private String purchaseId;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false, length = 16)
+  @Column(name = "status", nullable = false, length = 32)
   private PurchaseConfirmStatus status;
 
   @Column(name = "message", length = 255)
