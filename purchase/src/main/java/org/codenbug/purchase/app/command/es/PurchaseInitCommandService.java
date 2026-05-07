@@ -13,6 +13,7 @@ import org.codenbug.purchase.ui.request.InitiatePaymentRequest;
 import org.codenbug.purchase.ui.response.InitiatePaymentResponse;
 import org.codenbug.purchase.app.exception.OrderExistException;
 import org.codenbug.purchase.domain.port.PurchaseRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +56,7 @@ public class PurchaseInitCommandService {
         eventSummary.getSalesVersion(),
         memberId);
 
-    Purchase saved = purchaseRepository.save(purchase);
+    Purchase saved = saveWithUniqueOrderId(purchase);
 
     // String purchaseId = purchase.getPurchaseId().getValue();
     // String commandId = "init:" + purchaseId;
@@ -79,13 +80,21 @@ public class PurchaseInitCommandService {
     // metadataJson,
     // now));
 
-    return new InitiatePaymentResponse(saved.getPurchaseId().getValue(), purchase.getPaymentStatus().name(),
-        purchase.getPaymentDeadlineAt(), saved.getOrderId());
+    return InitiatePaymentResponse.initiated(saved.getPurchaseId().getValue(), saved.getPaymentStatus().name(),
+        saved.getPaymentDeadlineAt(), saved.getOrderId());
   }
 
   private void ensureUniqueOrderId(String orderId) {
     if (purchaseRepository.existsByOrderId(orderId)) {
       throw new OrderIdExistException("이미 존재하는 orderId입니다.");
+    }
+  }
+
+  private Purchase saveWithUniqueOrderId(Purchase purchase) {
+    try {
+      return purchaseRepository.save(purchase);
+    } catch (DataIntegrityViolationException ex) {
+      throw new OrderIdExistException("이미 존재하는 orderId입니다.", ex);
     }
   }
 
