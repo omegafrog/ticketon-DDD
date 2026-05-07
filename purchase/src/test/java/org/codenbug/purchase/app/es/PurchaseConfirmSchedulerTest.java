@@ -122,6 +122,26 @@ class PurchaseConfirmSchedulerTest {
     assertThat(message.getLastError()).contains("boom");
   }
 
+  @Test
+  void processPendingConfirms_marksMalformedPayloadFailedWithoutPublishing() {
+    PurchaseOutboxMessage message = PurchaseOutboxMessage.of(
+        "msg-malformed",
+        PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE,
+        PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED,
+        "{\"eventType\":\"PAYMENT_CONFIRM_REQUESTED\"}",
+        LocalDateTime.now());
+    when(outboxRepository.findUnpublishedByQueueName(eq(PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE), any()))
+        .thenReturn(List.of(message));
+
+    scheduler.processPendingConfirms();
+
+    verify(messagePublisher, never()).publish(any());
+    verify(statusProjectionRepository, never()).findById(any(PurchaseId.class));
+    verify(outboxRepository).save(message);
+    assertThat(message.getPublishedAt()).isNotNull();
+    assertThat(message.getLastError()).contains("invalid outbox payload");
+  }
+
   private PurchaseOutboxMessage outbox(String purchaseId) {
     return PurchaseOutboxMessage.of(
         "msg-" + purchaseId,
