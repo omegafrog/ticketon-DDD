@@ -4,12 +4,14 @@ import lombok.Getter;
 
 @Getter
 public class PurchaseConfirmTransactionCommitted {
+  private String messageId;
   private String payloadJson;
 
   protected PurchaseConfirmTransactionCommitted() {
   }
 
-  public PurchaseConfirmTransactionCommitted(String payloadJson) {
+  public PurchaseConfirmTransactionCommitted(String messageId, String payloadJson) {
+    this.messageId = messageId;
     this.payloadJson = payloadJson;
   }
 

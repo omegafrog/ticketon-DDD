@@ -4,19 +4,16 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
+import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
 import org.codenbug.purchase.infra.config.PurchaseRabbitMqConfig;
 import org.codenbug.purchase.domain.PurchaseId;
-import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rabbitmq.client.AMQP.Channel;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -26,23 +23,22 @@ public class PaymentConfirmedConsumer {
   private final ObjectMapper objectMapper;
 
   @RabbitListener(queues = { PurchaseRabbitMqConfig.PAYMENT_CONFIRM_QUEUE })
-  public void handle(PurchaseConfirmTransactionCommitted message, Channel channel, Message rawMessage) {
-    String json = message.getPayloadJson();
-    Map<String, Object> valueMap = null;
+  public void handle(String json) {
+    Map<String, Object> valueMap;
     try {
-
       valueMap = objectMapper.readValue(
           json,
           new TypeReference<Map<String, Object>>() {
           });
     } catch (IOException e) {
-      e.printStackTrace();
-      new RuntimeException(e);
+      throw new IllegalArgumentException("invalid payment confirm message", e);
     }
 
-    PurchaseId purchaseId = (PurchaseId) valueMap.get("purchaseId");
-    PaymentOutboxEventType eventType = (PaymentOutboxEventType) valueMap.get("eventType");
-    String messageId = eventType.toString() + ":" + purchaseId.getValue();
+    PurchaseId purchaseId = new PurchaseId(String.valueOf(valueMap.get("purchaseId")));
+    PaymentOutboxEventType eventType = PaymentOutboxEventType.valueOf(String.valueOf(valueMap.get("eventType")));
+    String messageId = eventType == PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED
+        ? PurchaseConfirmCommandService.confirmCommandId(purchaseId)
+        : eventType.value + ":" + purchaseId.getValue();
     confirmWorker.process(messageId, json);
   }
 

@@ -64,10 +64,10 @@ public class PurchaseConfirmCommandService {
     boolean alreadyRequested = outboxRepository.existsByPurchaseIdAndEventType(new PurchaseId(purchaseId),
         PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED);
 
-    String payloadJson = null;
+    PurchaseOutboxMessage outboxMessage = null;
     if (!alreadyRequested) {
       try {
-        payloadJson = appendConfirmRequestedAndEnqueue(request, userId, new PurchaseId(purchaseId),
+        outboxMessage = appendConfirmRequestedAndEnqueue(request, userId, new PurchaseId(purchaseId),
             PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED,
             purchase);
       } catch (DataIntegrityViolationException e) {
@@ -76,13 +76,16 @@ public class PurchaseConfirmCommandService {
       }
     }
 
-    eventPublisher.publishEvent(new PurchaseConfirmTransactionCommitted(payloadJson));
+    if (outboxMessage != null) {
+      eventPublisher.publishEvent(
+          new PurchaseConfirmTransactionCommitted(outboxMessage.getMessageId(), outboxMessage.getPayloadJson()));
+    }
 
     String statusUrl = "/api/v1/payments/confirm/" + purchaseId + "/status";
     return new ConfirmPaymentAcceptedResponse(purchaseId, "PENDING", statusUrl);
   }
 
-  private String appendConfirmRequestedAndEnqueue(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId,
+  private PurchaseOutboxMessage appendConfirmRequestedAndEnqueue(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId,
       PaymentOutboxEventType eventType, Purchase purchase) {
     Long expectedSalesVersion = purchase.getExpectedSalesVersion();
 
@@ -101,10 +104,11 @@ public class PurchaseConfirmCommandService {
     statusProjectionRepository.save(projection);
 
     String messageId = PurchaseOutboxMessage.messageIdFor(eventType, purchaseId);
-    outboxRepository.save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
-        payloadJson, now));
+    PurchaseOutboxMessage saved = outboxRepository
+        .save(PurchaseOutboxMessage.of(messageId, CONFIRM_WORK_QUEUE, eventType,
+            payloadJson, now));
 
-    return payloadJson;
+    return saved;
   }
 
   private String getPayloadJson(ConfirmPaymentRequest request, String userId, PurchaseId purchaseId, Purchase purchase,
@@ -128,5 +132,9 @@ public class PurchaseConfirmCommandService {
     } catch (Exception e) {
       throw new IllegalStateException("json serialization failed", e);
     }
+  }
+
+  public static String confirmCommandId(PurchaseId purchaseId) {
+    return PurchaseOutboxMessage.messageIdFor(PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED, purchaseId);
   }
 }

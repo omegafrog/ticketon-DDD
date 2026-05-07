@@ -10,12 +10,12 @@ import java.util.Optional;
 
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmScheduler;
-import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatusProjection;
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
+import org.codenbug.purchase.domain.port.es.PurchaseConfirmMessagePublisher;
 import org.codenbug.purchase.domain.port.es.PurchaseConfirmStatusProjectionStore;
 import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +36,7 @@ class PurchaseConfirmSchedulerTest {
   @Mock
   private PurchaseConfirmStatusProjectionStore statusProjectionRepository;
   @Mock
-  private PurchaseConfirmWorker confirmWorker;
+  private PurchaseConfirmMessagePublisher messagePublisher;
 
   private PurchaseConfirmScheduler scheduler;
 
@@ -46,7 +46,7 @@ class PurchaseConfirmSchedulerTest {
         new ObjectMapper(),
         outboxRepository,
         statusProjectionRepository,
-        confirmWorker,
+        messagePublisher,
         3);
   }
 
@@ -61,7 +61,7 @@ class PurchaseConfirmSchedulerTest {
 
     scheduler.processPendingConfirms();
 
-    verify(confirmWorker).process(eq(message.getMessageId()), eq(message.getPayloadJson()));
+    verify(messagePublisher).publish(eq(message));
     verify(outboxRepository, atLeastOnce()).save(eq(message));
     assertThat(message.getPublishedAt()).isNotNull();
     assertThat(message.getLastError()).isNull();
@@ -78,7 +78,7 @@ class PurchaseConfirmSchedulerTest {
 
     scheduler.processPendingConfirms();
 
-    verify(confirmWorker, never()).process(anyString(), anyString());
+    verify(messagePublisher, never()).publish(any());
     verify(outboxRepository, atLeastOnce()).save(eq(message));
     assertThat(message.getPublishedAt()).isNotNull();
     assertThat(message.getLastError()).contains("non-retryable status");
@@ -98,7 +98,7 @@ class PurchaseConfirmSchedulerTest {
 
     scheduler.processPendingConfirms();
 
-    verify(confirmWorker, never()).process(anyString(), anyString());
+    verify(messagePublisher, never()).publish(any());
     verify(statusProjectionRepository).save(projection);
     assertThat(projection.getStatus()).isEqualTo(PurchaseConfirmStatus.FAILED);
     assertThat(message.getPublishedAt()).isNotNull();
@@ -106,17 +106,17 @@ class PurchaseConfirmSchedulerTest {
   }
 
   @Test
-  void processPendingConfirms_keepsOutboxUnpublishedWhenWorkerThrows() {
+  void processPendingConfirms_keepsOutboxUnpublishedWhenPublishThrows() {
     PurchaseOutboxMessage message = outbox("purchase-throw");
     when(outboxRepository.findUnpublishedByQueueName(eq(PurchaseConfirmCommandService.CONFIRM_WORK_QUEUE), any()))
         .thenReturn(List.of(message));
     when(statusProjectionRepository.findById(any(PurchaseId.class)))
         .thenReturn(Optional.of(projection("purchase-throw", PurchaseConfirmStatus.PENDING)));
-    doThrow(new IllegalStateException("boom")).when(confirmWorker).process(anyString(), anyString());
+    doThrow(new IllegalStateException("boom")).when(messagePublisher).publish(any());
 
     scheduler.processPendingConfirms();
 
-    verify(confirmWorker).process(eq(message.getMessageId()), eq(message.getPayloadJson()));
+    verify(messagePublisher).publish(eq(message));
     assertThat(message.getPublishedAt()).isNull();
     assertThat(message.getPublishAttempts()).isEqualTo(1);
     assertThat(message.getLastError()).contains("boom");

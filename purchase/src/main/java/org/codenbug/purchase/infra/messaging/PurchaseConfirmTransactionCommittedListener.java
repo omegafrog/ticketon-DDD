@@ -1,24 +1,53 @@
 package org.codenbug.purchase.infra.messaging;
 
 import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
+import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
+import org.codenbug.purchase.domain.port.es.PurchaseConfirmMessagePublisher;
+import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 
-import org.codenbug.purchase.infra.config.PurchaseRabbitMqConfig;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import java.time.LocalDateTime;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-@Component
-public class PurchaseConfirmTransactionCommittedListener {
-  private final RabbitTemplate rabbitTemplate;
+import lombok.extern.slf4j.Slf4j;
 
-  public PurchaseConfirmTransactionCommittedListener(RabbitTemplate rabbitTemplate) {
-    this.rabbitTemplate = rabbitTemplate;
+@Component
+@Slf4j
+public class PurchaseConfirmTransactionCommittedListener {
+  private final PurchaseOutboxStore outboxRepository;
+  private final PurchaseConfirmMessagePublisher messagePublisher;
+
+  public PurchaseConfirmTransactionCommittedListener(PurchaseOutboxStore outboxRepository,
+      PurchaseConfirmMessagePublisher messagePublisher) {
+    this.outboxRepository = outboxRepository;
+    this.messagePublisher = messagePublisher;
   }
 
   @TransactionalEventListener(PurchaseConfirmTransactionCommitted.class)
   public void publishMessage(PurchaseConfirmTransactionCommitted event) {
-    rabbitTemplate.convertAndSend(PurchaseRabbitMqConfig.PAYMENT_EXCHANGE,
-        PurchaseRabbitMqConfig.PAYMENT_CONFIRM_ROUTING_KEY,
-        event.getPayloadJson());
+    if (event.getMessageId() == null || event.getMessageId().isBlank()) {
+      return;
+    }
+    outboxRepository.findByMessageId(event.getMessageId())
+        .ifPresent(this::publishAndMark);
+  }
+
+  private void publishAndMark(PurchaseOutboxMessage message) {
+    try {
+      messagePublisher.publish(message);
+    } catch (Exception e) {
+      log.warn("payment confirm afterCommit publish failed. messageId={}", message.getMessageId(), e);
+      message.markPublishAttemptFailed(e.getMessage());
+      outboxRepository.save(message);
+      return;
+    }
+
+    try {
+      message.markPublished(LocalDateTime.now());
+      outboxRepository.save(message);
+    } catch (Exception e) {
+      log.warn("payment confirm afterCommit publishedAt update failed. messageId={}", message.getMessageId(), e);
+    }
   }
 }
