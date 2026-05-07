@@ -52,7 +52,14 @@ public class PurchaseConfirmScheduler {
     }
 
     for (PurchaseOutboxMessage msg : batch) {
-      PurchaseId purchaseId = new PurchaseId(extractPurchaseId(msg.getPayloadJson()));
+      String purchaseIdValue = extractPurchaseId(msg.getPayloadJson());
+      if (purchaseIdValue == null || purchaseIdValue.isBlank()) {
+        msg.markFailedPermanently(LocalDateTime.now(), "invalid outbox payload: missing purchaseId");
+        outboxRepository.save(msg);
+        continue;
+      }
+
+      PurchaseId purchaseId = new PurchaseId(purchaseIdValue);
       PurchaseConfirmStatus currentStatus = findCurrentStatus(purchaseId);
 
       if (isTerminalStatus(currentStatus)) {
