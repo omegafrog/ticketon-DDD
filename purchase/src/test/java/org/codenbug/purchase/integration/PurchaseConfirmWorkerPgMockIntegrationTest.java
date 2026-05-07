@@ -1,6 +1,7 @@
 package org.codenbug.purchase.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -17,6 +18,7 @@ import org.codenbug.common.redis.EntryTokenValidator;
 import org.codenbug.common.redis.RedisKeyScanner;
 import org.codenbug.purchase.PurchaseTestApplication;
 import org.codenbug.purchase.domain.PaymentProvider;
+import org.codenbug.purchase.domain.PaymentStatus;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmScheduler;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
@@ -181,6 +183,9 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 
 	@Autowired
 	private PurchaseConfirmScheduler confirmScheduler;
+
+	@Autowired
+	private PurchaseConfirmWorker confirmWorker;
 
 	@Autowired
 	private JpaPurchaseConfirmStatusProjectionRepository projectionRepository;
@@ -361,6 +366,38 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 		assertThat(updatedOutbox.getLastError()).contains("max publish attempts exceeded");
 
 		verify(tossPaymentPgApiService, never()).confirmPayment(anyString(), anyString(), anyInt(), anyString());
+	}
+
+	@Test
+	void confirmWorker_marksPurchaseFailedWhenPgConfirmThrows() {
+		String userId = "user-pg-failure";
+		String purchaseId = requestConfirm(
+			userId,
+			"event-1",
+			"A-1",
+			"order-pg-failure",
+			"payment-key-pg-failure",
+			1000
+		);
+		PurchaseOutboxMessage outboxMessage = findOutboxByPurchaseId(purchaseId);
+		when(tossPaymentPgApiService.confirmPayment(anyString(), anyString(), anyInt(), anyString()))
+			.thenThrow(new IllegalStateException("pg temporary failure"));
+
+		assertThatThrownBy(() -> confirmWorker.process("confirm:" + purchaseId, outboxMessage.getPayloadJson()))
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("pg temporary failure");
+
+		PurchaseConfirmStatusProjection projection = projectionRepository.findById(purchaseId).orElseThrow();
+		assertThat(projection.getStatus()).isEqualTo(PurchaseConfirmStatus.FAILED);
+		assertThat(projection.getMessage()).isEqualTo("pg confirm failed");
+
+		Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId)).orElseThrow();
+		assertThat(purchase.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
+
+		confirmWorker.process("confirm:" + purchaseId, outboxMessage.getPayloadJson());
+
+		verify(tossPaymentPgApiService, times(1))
+			.confirmPayment(eq("payment-key-pg-failure"), eq("order-pg-failure"), eq(1000), eq("confirm:" + purchaseId));
 	}
 
 	private String requestConfirm(String userId, String eventId, String seatId, String orderId, String paymentKey, int amount) {
