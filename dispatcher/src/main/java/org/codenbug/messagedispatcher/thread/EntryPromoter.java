@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import org.codenbug.messagedispatcher.config.QueueProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.stream.StreamRecords;
@@ -33,6 +34,9 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,6 +50,10 @@ public class EntryPromoter {
   private final DefaultRedisScript<Long> promoteAllScript;
   private final AtomicLong promotionCounter;
   private final ExecutorService executorService;
+  private final QueueProperties queueProperties;
+  private final Counter promotionsTotal;
+  private final Timer promotionDuration;
+  private final Timer luaDuration;
 
   private static final String PROMOTION_TASK_LIST_KEY = "PROMOTION_TASK_LIST";
   private static final String EVENT_STATUSES_HASH_KEY = "event_statuses";
@@ -54,11 +62,21 @@ public class EntryPromoter {
 
   public EntryPromoter(RedisTemplate<String, Object> redisTemplate,
       StringRedisTemplate stringRedisTemplate, ObjectMapper objectMapper,
-      AtomicLong promotionCounter) {
+      AtomicLong promotionCounter, QueueProperties queueProperties, MeterRegistry meterRegistry) {
     this.redisTemplate = redisTemplate;
     this.stringRedisTemplate = stringRedisTemplate;
     this.objectMapper = objectMapper;
     this.promotionCounter = promotionCounter;
+    this.queueProperties = queueProperties;
+    this.promotionsTotal = Counter.builder("queue.promotions.total")
+        .description("Total promoted users")
+        .register(meterRegistry);
+    this.promotionDuration = Timer.builder("queue.dispatcher.promotion.duration")
+        .description("Dispatcher promotion cycle duration")
+        .register(meterRegistry);
+    this.luaDuration = Timer.builder("queue.dispatcher.lua.duration")
+        .description("Redis Lua promotion duration")
+        .register(meterRegistry);
 
     // ThreadPoolExecutor with CallerRunsPolicy for backpressure
     this.executorService = new ThreadPoolExecutor(THREAD_POOL_SIZE, // corePoolSize
@@ -98,8 +116,9 @@ public class EntryPromoter {
     }
   }
 
-  @Scheduled(fixedRate = 1000)
+  @Scheduled(fixedRateString = "${queue.promotion-interval-ms:1000}")
   public void promoteToEntryQueue() {
+    promotionDuration.record(() -> {
     try {
       // 1) waiting 스트림의 모든 레코드를 조회
       List<String> keys = scanWaitingQueueKeys();
@@ -156,6 +175,7 @@ public class EntryPromoter {
     } catch (Exception e) {
       log.error("Error in promoteToEntryQueue: {}", e.getMessage(), e);
     }
+    });
   }
 
   /**
@@ -199,15 +219,24 @@ public class EntryPromoter {
           waitingInUserHash, entryStreamKey);
 
       // Lua 스크립트 실행
-      Long cnt = redisTemplate.execute(promoteAllScript, scriptKeys, eventId);
+      int rateBudget = promotionRateBudgetForTick();
+      Long cnt = luaDuration.record(() -> redisTemplate.execute(promoteAllScript, scriptKeys, eventId,
+          String.valueOf(queueProperties.getPromotionBatchSize()), String.valueOf(rateBudget)));
 
       if (cnt != null && cnt > 0) {
         promotionCounter.addAndGet(cnt);
+        promotionsTotal.increment(cnt);
         log.debug("Promoted {} users for event {}", cnt, eventId);
       }
     } catch (Exception e) {
       log.error("Error executing promotion script for event {}: {}", eventId, e.getMessage(), e);
     }
+  }
+
+  private int promotionRateBudgetForTick() {
+    long perTick = Math.round(queueProperties.getNewUsersPerMinute()
+        * (queueProperties.getPromotionIntervalMs() / 60_000.0d));
+    return (int) Math.max(1, perTick);
   }
 
   private boolean isEventOpen(String eventId) {

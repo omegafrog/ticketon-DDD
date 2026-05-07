@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.codenbug.messagedispatcher.config.QueueProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -15,6 +16,9 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 
 @Component
 public class QueueReaper {
@@ -33,9 +37,17 @@ public class QueueReaper {
   private static final String ENTRY_EVENT_PREFIX = "ENTRY_EVENT:";
 
   private final StringRedisTemplate redisTemplate;
+  private final QueueProperties queueProperties;
+  private final Counter expiredTokens;
+  private final Counter releasedSlots;
+  private final Counter duplicateReleases;
 
-  public QueueReaper(StringRedisTemplate redisTemplate) {
+  public QueueReaper(StringRedisTemplate redisTemplate, QueueProperties queueProperties, MeterRegistry meterRegistry) {
     this.redisTemplate = redisTemplate;
+    this.queueProperties = queueProperties;
+    this.expiredTokens = Counter.builder("queue.entry_token.expired.total").register(meterRegistry);
+    this.releasedSlots = Counter.builder("queue.slot.released.total").register(meterRegistry);
+    this.duplicateReleases = Counter.builder("queue.slot.release.duplicate.total").register(meterRegistry);
   }
 
   @Scheduled(fixedRate = 1000)
@@ -106,7 +118,13 @@ public class QueueReaper {
       redisTemplate.delete(ENTRY_EVENT_PREFIX + userId);
 
       if (eventId != null && !eventId.isBlank()) {
-        redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, 1);
+        boolean released = releaseSlot(eventId);
+        if (released) {
+          releasedSlots.increment();
+        } else {
+          duplicateReleases.increment();
+        }
+        expiredTokens.increment();
       }
 
       redisTemplate.opsForZSet().remove(ENTRY_LAST_SEEN_KEY, userId);
@@ -118,6 +136,25 @@ public class QueueReaper {
     if (reapedCount > 0) {
       log.debug("Reaped {} orphan entry users whose entryAuthToken expired", reapedCount);
     }
+  }
+
+  private boolean releaseSlot(String eventId) {
+    Long released = redisTemplate.execute(new org.springframework.data.redis.core.script.DefaultRedisScript<>("""
+        local current = redis.call("HGET", KEYS[1], ARGV[1])
+        local max = tonumber(ARGV[2])
+        if current == false then
+          redis.call("HSET", KEYS[1], ARGV[1], max)
+          return 1
+        end
+        local currentNumber = tonumber(current)
+        if currentNumber == nil or currentNumber >= max then
+          return 0
+        end
+        redis.call("HINCRBY", KEYS[1], ARGV[1], 1)
+        return 1
+        """, Long.class), List.of(ENTRY_QUEUE_SLOTS_KEY_NAME), eventId,
+        String.valueOf(queueProperties.getMaxActiveShoppers()));
+    return released != null && released > 0;
   }
 
   private void clearUserQueueEventIfMatch(String userId, String eventId) {
