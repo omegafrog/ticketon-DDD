@@ -10,6 +10,7 @@ import lombok.Getter;
 public class ConfirmPaymentStatusResponse {
 	private String purchaseId;
 	private String status;
+	private String paymentStatus;
 	private String message;
 	private LocalDateTime updatedAt;
 }

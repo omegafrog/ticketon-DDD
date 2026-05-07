@@ -24,19 +24,19 @@ services:
       - "9411:9411"   # Zipkin 호환, 필요 없으면 빼도 됨
     restart: unless-stopped
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.151.0
-    container_name: otel-collector
-    command: ["--config=/etc/otelcol-contrib/config.yaml"]
-    volumes:
-      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
-      - ./jaeger-ui.config.json:/etc/jaeger/jaeger-ui.config.json:ro
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-    depends_on:
-      - jaeger
-    restart: unless-stopped
+  # otel-collector:
+  #   image: otel/opentelemetry-collector-contrib:0.151.0
+  #   container_name: otel-collector
+  #   command: ["--config=/etc/otelcol-contrib/config.yaml"]
+  #   volumes:
+  #     - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml
+  #     - ./jaeger-ui.config.json:/etc/jaeger/jaeger-ui.config.json:ro
+  #   ports:
+  #     - "4317:4317"
+  #     - "4318:4318"
+  #   depends_on:
+  #     - jaeger
+  #   restart: unless-stopped
 
   # kafka-1:
   #   image: apache/kafka:latest
@@ -112,16 +112,16 @@ services:
     command: redis-server --save 60 1 --loglevel warning
     networks:
       - common
-  cache:
-    image: redis:alpine
-    ports:
-      - "6380:6379"
-    volumes:
-      - ./cache/data:/data
-    restart: always
-    command: redis-server --save 60 1 --loglevel warning
-    networks:
-      - common
+  # cache:
+  #   image: redis:alpine
+  #   ports:
+  #     - "6380:6379"
+  #   volumes:
+  #     - ./cache/data:/data
+  #   restart: always
+  #   command: redis-server --save 60 1 --loglevel warning
+  #   networks:
+  #     - common
   mysql-master:
     image: mysql:lts
     container_name: mysql-master
