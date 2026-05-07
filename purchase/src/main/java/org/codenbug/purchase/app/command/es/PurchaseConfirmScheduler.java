@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.codenbug.purchase.domain.PurchaseId;
 import org.codenbug.purchase.domain.es.PurchaseConfirmStatus;
+import org.codenbug.purchase.domain.es.PurchaseConfirmStatePolicy;
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -104,9 +105,7 @@ public class PurchaseConfirmScheduler {
     if (status == null) {
       return false;
     }
-    return status == PurchaseConfirmStatus.DONE
-        || status == PurchaseConfirmStatus.FAILED
-        || status == PurchaseConfirmStatus.REJECTED;
+    return PurchaseConfirmStatePolicy.isTerminalConfirmStatus(status);
   }
 
   private String extractPurchaseId(String payloadJson) {
