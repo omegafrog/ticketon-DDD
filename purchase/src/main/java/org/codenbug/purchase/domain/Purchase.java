@@ -33,6 +33,7 @@ public class Purchase {
   private PurchaseId purchaseId;
 
   // 클라이언트로부터 생성한 무작위 값
+  @Column(name = "order_id", nullable = false, unique = true)
   private String orderId;
 
   private String orderName;
