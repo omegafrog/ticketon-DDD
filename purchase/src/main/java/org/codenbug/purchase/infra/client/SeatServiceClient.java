@@ -2,9 +2,14 @@ package org.codenbug.purchase.infra.client;
 
 import java.util.List;
 
+import org.codenbug.common.RsData;
 import org.codenbug.purchase.domain.SeatInfo;
 import org.codenbug.purchase.domain.SeatLayoutInfo;
 import org.codenbug.purchase.domain.port.SeatLayoutProvider;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -23,7 +28,13 @@ public class SeatServiceClient implements SeatLayoutProvider {
 	@Override
 	public SeatLayoutInfo getSeatLayout(Long seatLayoutId) {
 		String url = "%s/internal/seat-layouts/%s".formatted(seatServiceBaseUrl, seatLayoutId);
-		SeatLayoutResponse response = restTemplate.getForObject(url, SeatLayoutResponse.class);
+		ResponseEntity<RsData<SeatLayoutResponse>> responseEntity = restTemplate.exchange(
+			url,
+			HttpMethod.GET,
+			HttpEntity.EMPTY,
+			new ParameterizedTypeReference<RsData<SeatLayoutResponse>>() {
+			});
+		SeatLayoutResponse response = responseEntity.getBody() == null ? null : responseEntity.getBody().getData();
 		if (response == null) {
 			throw new IllegalArgumentException("좌석 레이아웃 정보를 찾을 수 없습니다.");
 		}

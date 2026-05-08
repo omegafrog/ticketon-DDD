@@ -1,0 +1,17 @@
+{
+  "payments": [
+    {
+      "email": "user1@ticketon.site",
+      "password": "password123",
+      "accessToken": "replace-with-access-token-without-Bearer-prefix",
+      "refreshToken": "replace-with-refresh-token",
+      "entryAuthToken": "replace-with-entry-token",
+      "eventId": "replace-with-event-id",
+      "purchaseId": "replace-with-init-response-purchase-id",
+      "orderId": "k6-payment-order-000001",
+      "paymentKey": "k6-payment-key-000001",
+      "amount": 50000,
+      "provider": "TOSS"
+    }
+  ]
+}

@@ -132,12 +132,14 @@ services:
       MYSQL_PASSWORD: ticketon
     volumes:
       - mysql_master_data:/var/lib/mysql
-      - ./mysql/master/master.cnf:/etc/my.cnf
+      # - ./mysql/master/master.cnf:/etc/my.cnf
       - ../ops/mysql/init-master.sql:/docker-entrypoint-initdb.d/01-init-master.sql:ro
     ports:
       - "3306:3306"
       - "33060:33060"
     restart: always
+    command:
+      - --server-id=1
     networks:
       - common
     healthcheck:
@@ -154,7 +156,7 @@ services:
       MYSQL_USER: ticketon
       MYSQL_PASSWORD: ticketon
     volumes:
-      - ./mysql/replica/replica.cnf:/etc/my.cnf
+      # - ./mysql/replica/replica.cnf:/etc/my.cnf
       - mysql_replica_data:/var/lib/mysql
       - ../ops/mysql/init-replica.sql:/docker-entrypoint-initdb.d/01-init-replica.sql:ro
     ports:
@@ -164,6 +166,8 @@ services:
       mysql-master:
         condition: service_healthy
     restart: always
+    command:
+      - --server-id=2
     networks:
       - common
     healthcheck:

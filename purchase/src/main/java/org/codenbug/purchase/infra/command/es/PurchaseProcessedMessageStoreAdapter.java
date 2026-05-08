@@ -15,7 +15,7 @@ class PurchaseProcessedMessageStoreAdapter implements PurchaseProcessedMessageSt
 
 	@Override
 	public PurchaseProcessedMessage save(PurchaseProcessedMessage message) {
-		return repository.save(message);
+		return repository.saveAndFlush(message);
 	}
 
 	@Override
