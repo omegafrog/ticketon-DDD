@@ -27,6 +27,7 @@
 ### 2.1 전체 구조
 
 ```mermaid
+%%{init: {"flowchart": {"curve": "step"}}}%%
 flowchart TB
     Client[Client]
 
