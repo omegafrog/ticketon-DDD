@@ -27,32 +27,38 @@
 ### 2.1 전체 구조
 
 ```mermaid
-flowchart LR
+flowchart TB
     Client[Client]
 
-    Gateway[API Gateway<br/>Spring Cloud Gateway]
-    Eureka[Eureka Server]
+    subgraph Platform[Platform Layer]
+        Gateway[API Gateway<br/>Spring Cloud Gateway]
+        Eureka[Eureka Server<br/>Service Discovery]
+    end
 
-    App[App Service<br/>Event / Seat / User / Purchase / Notification]
-    Auth[Auth Service]
-    Broker[Broker Service<br/>Waiting Queue Entry / Polling]
-    Dispatcher[Dispatcher Service<br/>Queue Promotion Worker]
+    subgraph Services[Application Services]
+        Auth[Auth Service]
+        App[App Service<br/>Event / Seat / User / Purchase / Notification]
+        Broker[Broker Service<br/>Waiting Queue Entry / Polling]
+        Dispatcher[Dispatcher Service<br/>Queue Promotion Worker]
+    end
 
-    Redis[(Redis)]
-    MySQL[(MySQL)]
-    RabbitMQ[(RabbitMQ)]
+    subgraph Infra[Storage / Messaging]
+        Redis[(Redis)]
+        MySQL[(MySQL)]
+        RabbitMQ[(RabbitMQ)]
+    end
+
     PG[External PG<br/>Toss Payments]
 
     Client --> Gateway
-
     Gateway --> Auth
     Gateway --> App
     Gateway --> Broker
 
-    Auth --> Eureka
-    App --> Eureka
-    Broker --> Eureka
-    Gateway --> Eureka
+    Gateway -. service discovery .-> Eureka
+    Auth -. register .-> Eureka
+    App -. register .-> Eureka
+    Broker -. register .-> Eureka
 
     Broker --> Redis
     Dispatcher --> Redis
