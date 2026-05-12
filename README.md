@@ -28,49 +28,19 @@
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "step"}}}%%
-flowchart TB
+flowchart LR
     Client[Client]
-
-    subgraph Platform[Platform Layer]
-        Gateway[API Gateway<br/>Spring Cloud Gateway]
-        Eureka[Eureka Server<br/>Service Discovery]
-    end
-
-    subgraph Services[Application Services]
-        Auth[Auth Service]
-        App[App Service<br/>Event / Seat / User / Purchase / Notification]
-        Broker[Broker Service<br/>Waiting Queue Entry / Polling]
-        Dispatcher[Dispatcher Service<br/>Queue Promotion Worker]
-    end
-
-    subgraph Infra[Storage / Messaging]
-        Redis[(Redis)]
-        MySQL[(MySQL)]
-        RabbitMQ[(RabbitMQ)]
-    end
-
+    Gateway[API Gateway<br/>Spring Cloud Gateway]
+    Eureka[Eureka Server<br/>Service Discovery]
+    Services[Application Services<br/>Auth / App / Broker / Dispatcher]
+    Infra[Storage / Messaging<br/>Redis / MySQL / RabbitMQ]
     PG[External PG<br/>Toss Payments]
 
     Client --> Gateway
-    Gateway --> Auth
-    Gateway --> App
-    Gateway --> Broker
-
+    Gateway --> Services
     Gateway -. service discovery .-> Eureka
-    Auth -. register .-> Eureka
-    App -. register .-> Eureka
-    Broker -. register .-> Eureka
-
-    Broker --> Redis
-    Dispatcher --> Redis
-
-    App --> MySQL
-    Auth --> MySQL
-
-    App --> RabbitMQ
-    RabbitMQ --> App
-
-    App --> PG
+    Services --> Infra
+    Services --> PG
 ```
 
 ### 2.2 모듈 구조
