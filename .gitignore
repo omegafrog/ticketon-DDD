@@ -43,6 +43,12 @@ out/
 /node_modules/
 /k6/*
 !/k6/sse-throughput-test.js
+!/k6/queue-impact-comparison.js
+!/k6/compare_queue_results.py
+!/k6/queue-impact-comparison.md
+!/k6/queue-impact-report.ko.md
+!/k6/seed-queue-comparison-users.py
+!/k6/seed-queue-comparison-data.sh
 !/k6/AGENTS.md
 /package.json
 /terraform/

@@ -26,6 +26,7 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
 
     implementation project(':platform:common')
+    implementation project(':platform:infra')
     implementation project(':security-aop')
     implementation project(':redislock')
     // runtimeOnly 'com.h2database:h2'

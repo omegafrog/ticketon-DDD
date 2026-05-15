@@ -12,7 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 
 import org.codenbug.common.Role;
-import org.codenbug.common.redis.EntryTokenValidator;
+import org.codenbug.infra.redis.EntryTokenValidator;
 import org.codenbug.purchase.app.command.PendingReservationService;
 import org.codenbug.purchase.app.command.PurchaseCancelService;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;

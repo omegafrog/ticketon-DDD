@@ -19,6 +19,7 @@ dependencies {
 
     implementation project(':platform:message')
     implementation project(':platform:common')
+    implementation project(':platform:infra')
     implementation project(':security-aop')
     implementation project(':redislock')
 }

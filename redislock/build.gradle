@@ -12,6 +12,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation project(':platform:common')
+    implementation project(':platform:infra')
 }
 
 tasks.named('test') {

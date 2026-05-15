@@ -28,6 +28,7 @@ class ArchitectureRulesTest {
                 Path.of("../purchase/build/classes/java/main"),
                 Path.of("../platform/common/build/classes/java/main"),
                 Path.of("../platform/message/build/classes/java/main"),
+                Path.of("../platform/infra/build/classes/java/main"),
                 Path.of("../security-aop/build/classes/java/main"),
                 Path.of("../redislock/build/classes/java/main"),
                 Path.of("build/classes/java/main")
@@ -69,13 +70,10 @@ class ArchitectureRulesTest {
     }
 
     @Test
-    void 애플리케이션_레이어_인프라_구현_의존_없음() {
+    void 애플리케이션_레이어_JPA_의존_없음() {
         ArchRule rule = noClasses()
-                .that().resideInAnyPackage("org.codenbug..app..", "org.codenbug..application..")
-                .and().resideOutsideOfPackage("org.codenbug.app..")
+                .that().resideInAnyPackage("org.codenbug.event.app..", "org.codenbug.user.app..")
                 .should().dependOnClassesThat().resideInAnyPackage(
-                        "..infra..",
-                        "..infrastructure..",
                         "org.springframework.data.jpa.repository.."
                 );
 

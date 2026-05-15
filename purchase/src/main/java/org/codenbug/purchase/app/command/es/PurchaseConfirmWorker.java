@@ -2,7 +2,7 @@ package org.codenbug.purchase.app.command.es;
 
 import org.codenbug.purchase.domain.event.PaymentOutboxEventType;
 import org.codenbug.purchase.domain.port.es.PurchaseProcessedMessageStore;
-import static org.codenbug.common.transaction.TransactionExecutor.*;
+import static org.codenbug.infra.transaction.TransactionExecutor.*;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

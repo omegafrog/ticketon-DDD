@@ -3,7 +3,6 @@ package org.codenbug.common;
 import java.time.Instant;
 
 import javax.crypto.SecretKey;
-import io.opentelemetry.instrumentation.annotations.WithSpan;
 
 import io.jsonwebtoken.Claims;
 import lombok.Getter;
@@ -24,7 +23,6 @@ public class AccessToken {
     this.type = type;
   }
 
-  @WithSpan
   public AccessToken decode(String key) {
     this.claims = Util.getClaims(this.rawValue, Util.Key.convertSecretKey(key));
     return this;

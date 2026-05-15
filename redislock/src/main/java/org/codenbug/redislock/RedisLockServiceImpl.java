@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 
-import org.codenbug.common.redis.RedisKeyScanner;
+import org.codenbug.infra.redis.RedisKeyScanner;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 

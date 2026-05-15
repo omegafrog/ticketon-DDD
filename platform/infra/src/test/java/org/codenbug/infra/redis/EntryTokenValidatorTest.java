@@ -1,4 +1,4 @@
-package org.codenbug.common.redis;
+package org.codenbug.infra.redis;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

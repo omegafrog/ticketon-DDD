@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
-import org.codenbug.common.redis.EntryTokenValidator;
+import org.codenbug.infra.redis.EntryTokenValidator;
 import org.codenbug.seat.app.UpdateSeatLayoutService;
 import org.codenbug.seat.global.SeatCancelRequest;
 import org.codenbug.seat.global.SeatSelectRequest;

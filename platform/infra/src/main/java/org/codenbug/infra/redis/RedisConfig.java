@@ -1,4 +1,4 @@
-package org.codenbug.common.redis;
+package org.codenbug.infra.redis;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@ComponentScan(basePackages = {"org.codenbug.common.redis"})
+@ComponentScan(basePackages = {"org.codenbug.infra.redis"})
 public class RedisConfig {
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory){

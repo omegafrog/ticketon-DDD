@@ -18,6 +18,9 @@ public class FindSeatLayoutService {
 
 	public SeatLayoutResponse findSeatLayout(Long seatLayoutId) {
 		SeatLayout seatLayout = repository.findSeatLayout(seatLayoutId);
+		if (seatLayout == null) {
+			throw new IllegalArgumentException("좌석 레이아웃을 찾을 수 없습니다. seatLayoutId=" + seatLayoutId);
+		}
 		return new SeatLayoutResponse(
 			seatLayout.getId(),
 			seatLayout.getLayout(), seatLayout.getSeats().stream()
@@ -32,6 +35,9 @@ public class FindSeatLayoutService {
 	public SeatLayoutResponse findSeatLayoutByEventId(String eventId) {
 		EventSeatLayoutSummary event = eventServiceClient.getEventSummary(eventId);
 		SeatLayout seatLayout = repository.findSeatLayout(event.seatLayoutId());
+		if (seatLayout == null) {
+			throw new IllegalArgumentException("좌석 레이아웃을 찾을 수 없습니다. seatLayoutId=" + event.seatLayoutId());
+		}
 		return new SeatLayoutResponse(
 			seatLayout.getId(),
 			seatLayout.getLayout(),

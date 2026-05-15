@@ -2,7 +2,7 @@ spring:
   application:
     name: app  # 통합 애플리케이션 이름
   profiles:
-    active: dev
+    active: dev,modulith
     include: secret
   rabbitmq:
     host: localhost # RabbitMQ host ip

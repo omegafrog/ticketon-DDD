@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.awaitility.Awaitility;
-import org.codenbug.common.redis.EntryTokenValidator;
-import org.codenbug.common.redis.RedisKeyScanner;
+import org.codenbug.infra.redis.EntryTokenValidator;
+import org.codenbug.infra.redis.RedisKeyScanner;
 import org.codenbug.purchase.PurchaseTestApplication;
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.domain.PaymentStatus;

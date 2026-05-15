@@ -1,13 +1,10 @@
-package org.codenbug.common.transaction;
+package org.codenbug.infra.transaction;
 
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-/**
- * 명시적 트랜잭션 실행 헬퍼 메소드
- */
 public class TransactionExecutor {
 
 	public static <T> T executeInTransaction(PlatformTransactionManager manager, TransactionCallback<T> callback) {
@@ -26,5 +23,3 @@ public class TransactionExecutor {
 		}
 	}
 }
-
-
