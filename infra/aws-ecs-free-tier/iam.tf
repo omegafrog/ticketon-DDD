@@ -23,6 +23,11 @@ resource "aws_iam_role_policy_attachment" "ecs_instance_codedeploy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_instance_ssm" {
+  role       = aws_iam_role.ecs_instance.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 resource "aws_iam_role_policy" "ecs_instance_deploy" {
   name = "${local.name}-ecs-instance-deploy"
   role = aws_iam_role.ecs_instance.id

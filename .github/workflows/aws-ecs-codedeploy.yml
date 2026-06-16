@@ -116,6 +116,13 @@ jobs:
             --output text 2>/dev/null || true)"
 
           if [[ "$status" == "ACTIVE" ]]; then
+            aws ecs update-service \
+              --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+              --service "${{ steps.names.outputs.codedeploy_group }}" \
+              --desired-count 1 >/dev/null
+            aws ecs wait services-stable \
+              --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+              --services "${{ steps.names.outputs.codedeploy_group }}"
             exit 0
           fi
 

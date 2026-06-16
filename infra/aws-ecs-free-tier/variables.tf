@@ -34,6 +34,12 @@ variable "root_volume_size_gb" {
   default     = 30
 }
 
+variable "swap_size_gb" {
+  description = "Swap file size on the ECS container instance. Helps tiny free-tier instances survive Java container bursts."
+  type        = number
+  default     = 2
+}
+
 variable "associate_public_ip_address" {
   description = "Attach a public IPv4 address to the ECS instance. Needed for direct browser access without ALB."
   type        = bool

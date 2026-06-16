@@ -32,6 +32,7 @@ resource "aws_launch_template" "ecs" {
     cluster_name = aws_ecs_cluster.this.name
     service_name = local.name
     aws_region   = data.aws_region.current.name
+    swap_size_gb = var.swap_size_gb
   }))
 
   tag_specifications {

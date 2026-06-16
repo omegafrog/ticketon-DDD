@@ -8,6 +8,16 @@ EOF
 
 mkdir -p /ecs/ticketon/mysql /ecs/ticketon/redis /ecs/ticketon/polling /ecs/ticketon/rabbitmq
 
+if [ "${swap_size_gb}" -gt 0 ] && [ ! -f /swapfile ]; then
+  fallocate -l ${swap_size_gb}G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=$(( ${swap_size_gb} * 1024 ))
+  chmod 600 /swapfile
+  mkswap /swapfile
+  swapon /swapfile
+  echo '/swapfile none swap sw 0 0' >> /etc/fstab
+  sysctl vm.swappiness=20
+  echo 'vm.swappiness=20' > /etc/sysctl.d/99-ticketon-swap.conf
+fi
+
 cat <<'EOF' > /etc/ticketon-deploy.env
 AWS_REGION=${aws_region}
 ECS_CLUSTER_NAME=${cluster_name}
