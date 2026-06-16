@@ -1,0 +1,29 @@
+aws_region  = "ap-northeast-2"
+environment = "dev"
+
+# t2.micro/t3.micro can be free-tier eligible depending on account age and region.
+instance_type = "t2.micro"
+
+# First apply: false, create ECR repositories and the EC2/ECS base.
+# After pushing images: set true and apply again.
+enable_ecs_service = false
+
+# Narrow this before exposing a real deployment.
+allowed_http_cidrs = ["0.0.0.0/0"]
+allowed_ssh_cidrs  = []
+key_name           = null
+
+db_password         = "replace-with-a-strong-password"
+mysql_root_password = "replace-with-a-strong-root-password"
+rabbitmq_password   = "replace-with-a-strong-rabbitmq-password"
+
+# Use this for non-secret runtime values. Secrets here are stored in Terraform state.
+service_environment = {
+  gateway = {}
+  app     = {}
+  auth    = {}
+}
+
+# Optional: create a GitHub Actions OIDC deploy role.
+# After apply, set the repository variable AWS_ROLE_TO_ASSUME to output github_actions_role_arn.
+github_repository = "your-github-owner/ticketon-DDD"

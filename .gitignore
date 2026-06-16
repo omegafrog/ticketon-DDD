@@ -52,6 +52,11 @@ out/
 !/k6/AGENTS.md
 /package.json
 /terraform/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
 /.claude/
 /.idea/
 /logs/

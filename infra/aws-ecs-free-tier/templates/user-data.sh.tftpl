@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euxo pipefail
+
+cat <<'EOF' >> /etc/ecs/ecs.config
+ECS_CLUSTER=${cluster_name}
+ECS_ENABLE_CONTAINER_METADATA=true
+EOF
+
+mkdir -p /ecs/ticketon/mysql /ecs/ticketon/redis /ecs/ticketon/polling /ecs/ticketon/rabbitmq
+
+cat <<'EOF' > /etc/ticketon-deploy.env
+AWS_REGION=${aws_region}
+ECS_CLUSTER_NAME=${cluster_name}
+ECS_SERVICE_NAME=${service_name}
+EOF
+
+if command -v dnf >/dev/null 2>&1; then
+  dnf install -y awscli ruby wget curl
+else
+  yum install -y awscli ruby wget curl
+fi
+
+cd /tmp
+wget -q "https://aws-codedeploy-${aws_region}.s3.${aws_region}.amazonaws.com/latest/install" -O codedeploy-install
+chmod +x codedeploy-install
+./codedeploy-install auto
+systemctl enable codedeploy-agent
+systemctl restart codedeploy-agent

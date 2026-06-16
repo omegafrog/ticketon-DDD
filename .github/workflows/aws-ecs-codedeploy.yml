@@ -1,0 +1,145 @@
+name: aws-ecs-codedeploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-northeast-2' }}
+  PROJECT_NAME: ${{ vars.PROJECT_NAME || 'ticketon' }}
+  DEPLOY_ENV: ${{ vars.DEPLOY_ENV || 'dev' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve deployment names
+        id: names
+        shell: bash
+        run: |
+          set -euo pipefail
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          name="${PROJECT_NAME}-${DEPLOY_ENV}"
+          echo "account_id=$account_id" >> "$GITHUB_OUTPUT"
+          echo "ecr_registry=${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com" >> "$GITHUB_OUTPUT"
+          echo "codedeploy_app=${CODEDEPLOY_APPLICATION_NAME:-$name}" >> "$GITHUB_OUTPUT"
+          echo "codedeploy_group=${CODEDEPLOY_DEPLOYMENT_GROUP_NAME:-$name}" >> "$GITHUB_OUTPUT"
+          echo "codedeploy_bucket=${CODEDEPLOY_S3_BUCKET:-${name}-codedeploy-${account_id}-${AWS_REGION}}" >> "$GITHUB_OUTPUT"
+        env:
+          CODEDEPLOY_APPLICATION_NAME: ${{ vars.CODEDEPLOY_APPLICATION_NAME }}
+          CODEDEPLOY_DEPLOYMENT_GROUP_NAME: ${{ vars.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }}
+          CODEDEPLOY_S3_BUCKET: ${{ vars.CODEDEPLOY_S3_BUCKET }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build jars
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :platform:eureka:build :platform:gateway:build :app:build :auth:build :broker:build :dispatcher:build -x test --no-daemon
+
+      - name: Build and push runtime images
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          build_push() {
+            local service="$1"
+            local dockerfile="$2"
+            local context="$3"
+            local repo="${{ steps.names.outputs.ecr_registry }}/${PROJECT_NAME}-${DEPLOY_ENV}/${service}"
+            docker build -f "$dockerfile" -t "$repo:${GITHUB_SHA}" -t "$repo:latest" "$context"
+            docker push "$repo:${GITHUB_SHA}"
+            docker push "$repo:latest"
+          }
+
+          build_push eureka platform/eureka/Dockerfile.runtime platform/eureka
+          build_push gateway platform/gateway/Dockerfile.runtime platform/gateway
+          build_push app app/Dockerfile.runtime app
+          build_push auth auth/Dockerfile.runtime auth
+          build_push broker broker/Dockerfile.runtime broker
+          build_push dispatcher dispatcher/Dockerfile.runtime dispatcher
+
+      - name: Create CodeDeploy bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x codedeploy/scripts/*.sh
+          rm -rf codedeploy-bundle
+          mkdir -p codedeploy-bundle/codedeploy/scripts
+          cp codedeploy/appspec.yml codedeploy-bundle/appspec.yml
+          cp codedeploy/scripts/*.sh codedeploy-bundle/codedeploy/scripts/
+          (cd codedeploy-bundle && zip -r ../codedeploy-bundle.zip .)
+
+      - name: Upload CodeDeploy bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          key="codedeploy/${GITHUB_SHA}.zip"
+          aws s3 cp codedeploy-bundle.zip "s3://${{ steps.names.outputs.codedeploy_bucket }}/${key}"
+          echo "key=$key" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure ECS service exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(aws ecs describe-services \
+            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+            --services "${{ steps.names.outputs.codedeploy_group }}" \
+            --query 'services[0].status' \
+            --output text 2>/dev/null || true)"
+
+          if [[ "$status" == "ACTIVE" ]]; then
+            exit 0
+          fi
+
+          aws ecs create-service \
+            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+            --service-name "${{ steps.names.outputs.codedeploy_group }}" \
+            --task-definition "${{ steps.names.outputs.codedeploy_group }}" \
+            --desired-count 1 \
+            --capacity-provider-strategy capacityProvider=${{ steps.names.outputs.codedeploy_group }}-ec2,weight=1 \
+            --deployment-configuration minimumHealthyPercent=0,maximumPercent=100 >/dev/null
+
+          aws ecs wait services-stable \
+            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+            --services "${{ steps.names.outputs.codedeploy_group }}"
+
+      - name: Create CodeDeploy deployment
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployment_id="$(aws deploy create-deployment \
+            --application-name "${{ steps.names.outputs.codedeploy_app }}" \
+            --deployment-group-name "${{ steps.names.outputs.codedeploy_group }}" \
+            --s3-location bucket=${{ steps.names.outputs.codedeploy_bucket }},key=${{ steps.bundle.outputs.key }},bundleType=zip \
+            --description "Deploy ${GITHUB_SHA} from GitHub Actions" \
+            --query deploymentId \
+            --output text)"
+          aws deploy wait deployment-successful --deployment-id "$deployment_id"
