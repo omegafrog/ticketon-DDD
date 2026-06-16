@@ -25,14 +25,14 @@ ECS_SERVICE_NAME=${service_name}
 EOF
 
 if command -v dnf >/dev/null 2>&1; then
-  dnf install -y awscli ruby wget curl
+  dnf install -y awscli ruby wget
 else
-  yum install -y awscli ruby wget curl
+  yum install -y awscli ruby wget
 fi
 
 cd /tmp
 wget -q "https://aws-codedeploy-${aws_region}.s3.${aws_region}.amazonaws.com/latest/install" -O codedeploy-install
 chmod +x codedeploy-install
 ./codedeploy-install auto
-systemctl enable codedeploy-agent
-systemctl restart codedeploy-agent
+systemctl enable codedeploy-agent || true
+systemctl restart codedeploy-agent || systemctl start codedeploy-agent
