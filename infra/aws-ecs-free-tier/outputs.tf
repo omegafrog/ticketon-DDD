@@ -3,6 +3,11 @@ output "cluster_name" {
   value       = aws_ecs_cluster.this.name
 }
 
+output "aws_region" {
+  description = "AWS region used by this stack."
+  value       = var.aws_region
+}
+
 output "service_name" {
   description = "ECS service name."
   value       = local.name

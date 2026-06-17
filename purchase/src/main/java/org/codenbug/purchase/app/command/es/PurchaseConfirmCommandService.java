@@ -6,6 +6,7 @@ import org.codenbug.purchase.domain.port.es.PurchaseOutboxStore;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.codenbug.infra.redis.EntryTokenValidator;
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
 import org.codenbug.purchase.domain.ConfirmExpiredException;
@@ -33,24 +34,29 @@ public class PurchaseConfirmCommandService {
   private final PurchaseOutboxStore outboxRepository;
   private final PurchaseConfirmStatusProjectionStore statusProjectionRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final EntryTokenValidator entryTokenValidator;
 
   public PurchaseConfirmCommandService(ObjectMapper objectMapper, PurchaseRepository purchaseRepository,
       PurchaseOutboxStore outboxRepository,
-      PurchaseConfirmStatusProjectionStore statusProjectionRepository, ApplicationEventPublisher eventPublisher) {
+      PurchaseConfirmStatusProjectionStore statusProjectionRepository, ApplicationEventPublisher eventPublisher,
+      EntryTokenValidator entryTokenValidator) {
     this.objectMapper = objectMapper;
     this.purchaseRepository = purchaseRepository;
     this.outboxRepository = outboxRepository;
     this.statusProjectionRepository = statusProjectionRepository;
     this.eventPublisher = eventPublisher;
+    this.entryTokenValidator = entryTokenValidator;
   }
 
   @Transactional
-  public ConfirmPaymentAcceptedResponse requestConfirm(ConfirmPaymentRequest request, String userId) {
+  public ConfirmPaymentAcceptedResponse requestConfirm(ConfirmPaymentRequest request, String userId,
+      String entryAuthToken) {
     String purchaseId = request.getPurchaseId();
 
     Purchase purchase = purchaseRepository.findById(new PurchaseId(purchaseId))
         .orElseThrow(() -> new IllegalArgumentException("구매 정보를 찾을 수 없습니다."));
 
+    entryTokenValidator.validate(userId, entryAuthToken, purchase.getEventId());
     purchase.validate(request.getOrderId(), request.getAmount(), userId);
 
     try {

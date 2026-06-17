@@ -83,7 +83,7 @@ public class PurchaseCommandController {
       @Parameter(description = "결제 승인 요청 정보", required = true) @Valid @RequestBody ConfirmPaymentRequest request,
       @Parameter(description = "대기열 진입 인증 토큰", required = true) @RequestHeader("entryAuthToken") String entryAuthToken) {
     String userId = LoggedInUserContext.get().getUserId();
-    ConfirmPaymentAcceptedResponse response = confirmCommandService.requestConfirm(request, userId);
+    ConfirmPaymentAcceptedResponse response = confirmCommandService.requestConfirm(request, userId, entryAuthToken);
     return ResponseEntity.accepted().body(new RsData<>("202", "결제 승인 요청완료", response));
   }
 

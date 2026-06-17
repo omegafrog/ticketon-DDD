@@ -19,6 +19,8 @@ filter:
       - method: "*"
         url: "/api/v1/events/list"
       - method: GET
+        url: "/api/v1/categories"
+      - method: GET
         url: "/api/v1/events/{id}"
       - method: GET
         url: "/static/**"
