@@ -19,6 +19,7 @@ import org.codenbug.infra.redis.RedisKeyScanner;
 import org.codenbug.purchase.PurchaseTestApplication;
 import org.codenbug.purchase.domain.PaymentProvider;
 import org.codenbug.purchase.domain.PaymentStatus;
+import org.codenbug.purchase.domain.PaymentConfirmationInfo;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmScheduler;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmWorker;
@@ -30,7 +31,6 @@ import org.codenbug.purchase.domain.es.PurchaseConfirmStatusProjection;
 import org.codenbug.purchase.domain.es.PurchaseOutboxMessage;
 import org.codenbug.purchase.ui.request.ConfirmPaymentRequest;
 import org.codenbug.purchase.ui.request.InitiatePaymentRequest;
-import org.codenbug.purchase.infra.ConfirmedPaymentInfo;
 import org.codenbug.purchase.infra.PurchaseRepository;
 import org.codenbug.purchase.infra.TossPaymentPgApiService;
 import org.codenbug.purchase.infra.es.JpaPurchaseConfirmStatusProjectionRepository;
@@ -57,6 +57,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.web.client.RestTemplate;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.containers.RabbitMQContainer;
@@ -110,8 +111,8 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 		}
 
 		@Bean
-		RedisKeyScanner redisKeyScanner(@Qualifier("simpleRedisTemplate") RedisTemplate<String, String> simpleRedisTemplate) {
-			return new RedisKeyScanner(simpleRedisTemplate);
+		RedisKeyScanner redisKeyScanner(@Qualifier("objectRedisTemplate") RedisTemplate<String, Object> objectRedisTemplate) {
+			return new RedisKeyScanner(objectRedisTemplate);
 		}
 
 		@Bean
@@ -122,6 +123,11 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 		@Bean
 		EntryTokenValidator entryTokenValidator(@Qualifier("objectRedisTemplate") RedisTemplate<String, Object> objectRedisTemplate) {
 			return new EntryTokenValidator(objectRedisTemplate);
+		}
+
+		@Bean("appRestTemplate")
+		RestTemplate appRestTemplate() {
+			return new RestTemplate();
 		}
 
 		@Bean(name = {"primaryQueryFactory", "readOnlyQueryFactory"})
@@ -199,6 +205,10 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	@Autowired
 	private StringRedisTemplate stringRedisTemplate;
 
+	@Autowired
+	@Qualifier("objectRedisTemplate")
+	private RedisTemplate<String, Object> objectRedisTemplate;
+
 	@MockBean
 	private TossPaymentPgApiService tossPaymentPgApiService;
 
@@ -208,7 +218,7 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 
 		when(tossPaymentPgApiService.supports(PaymentProvider.TOSS)).thenReturn(true);
 		when(tossPaymentPgApiService.confirmPayment(anyString(), anyString(), anyInt(), anyString()))
-			.thenAnswer(invocation -> new ConfirmedPaymentInfo(
+			.thenAnswer(invocation -> new PaymentConfirmationInfo(
 				invocation.getArgument(0),
 				invocation.getArgument(1),
 				"테스트 주문",
@@ -216,7 +226,7 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 				"DONE",
 				"CARD",
 				"2026-03-26T08:00:00+09:00",
-				new ConfirmedPaymentInfo.Receipt("https://receipt.example.com")
+				"https://receipt.example.com"
 			));
 	}
 
@@ -264,9 +274,11 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 		);
 		String purchaseId = initResponse.getPurchaseId();
 		ConfirmPaymentRequest request = new ConfirmPaymentRequest(purchaseId, paymentKey, orderId, amount, "TOSS");
+		String entryAuthToken = "entry-token-" + userId;
+		seedEntryToken(userId, eventId, entryAuthToken);
 
-		confirmCommandService.requestConfirm(request, userId);
-		confirmCommandService.requestConfirm(request, userId);
+		confirmCommandService.requestConfirm(request, userId, entryAuthToken);
+		confirmCommandService.requestConfirm(request, userId, entryAuthToken);
 
 		List<PurchaseOutboxMessage> messages = outboxRepository.findAll().stream()
 			.filter(message -> message.getPayloadJson() != null
@@ -407,10 +419,13 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 			new InitiatePaymentRequest(eventId, orderId, amount),
 			userId
 		);
+		String entryAuthToken = "entry-token-" + userId;
+		seedEntryToken(userId, eventId, entryAuthToken);
 
 		confirmCommandService.requestConfirm(
 			new ConfirmPaymentRequest(initResponse.getPurchaseId(), paymentKey, orderId, amount, "TOSS"),
-			userId
+			userId,
+			entryAuthToken
 		);
 
 		return initResponse.getPurchaseId();
@@ -426,6 +441,13 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 	private void seedSeatLock(String userId, String eventId, String seatId) {
 		String key = "seat:lock:" + userId + ":" + eventId + ":" + seatId;
 		stringRedisTemplate.opsForValue().set(key, "lock-holder");
+	}
+
+	private void seedEntryToken(String userId, String eventId, String entryAuthToken) {
+		objectRedisTemplate.opsForValue().set(EntryTokenValidator.ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId,
+			entryAuthToken);
+		objectRedisTemplate.opsForValue().set(EntryTokenValidator.ENTRY_EVENT_STORAGE_KEY_NAME + ":" + userId,
+			eventId);
 	}
 
 	private static HttpServer createStubServer() {
@@ -447,7 +469,7 @@ class PurchaseConfirmWorkerPgMockIntegrationTest {
 
 			if ("GET".equals(method) && path.matches("/internal/events/[^/]+/summary")) {
 				writeJson(exchange, 200,
-					"{\"eventId\":\"event-1\",\"seatLayoutId\":101,\"seatSelectable\":true,\"status\":\"OPEN\",\"version\":1,\"salesVersion\":1,\"title\":\"테스트 이벤트\"}");
+					"{\"code\":\"200\",\"message\":\"ok\",\"data\":{\"eventId\":\"event-1\",\"seatLayoutId\":101,\"seatSelectable\":true,\"status\":\"OPEN\",\"version\":1,\"salesVersion\":1,\"title\":\"테스트 이벤트\"}}");
 				return;
 			}
 

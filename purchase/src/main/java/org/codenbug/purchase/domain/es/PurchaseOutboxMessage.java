@@ -35,7 +35,7 @@ public class PurchaseOutboxMessage {
   private PaymentOutboxEventType eventType;
 
   @Lob
-  @Column(name = "payload_json", nullable = false)
+  @Column(name = "payload_json", nullable = false, columnDefinition = "LONGTEXT")
   private String payloadJson;
 
   @Column(name = "created_at", nullable = false)

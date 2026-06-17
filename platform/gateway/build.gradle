@@ -13,7 +13,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     
     // SpringDoc OpenAPI (Swagger) for WebFlux
-    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.2.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'

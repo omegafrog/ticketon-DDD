@@ -16,6 +16,63 @@ ECS EC2 launch type has no additional ECS charge, but the underlying resources c
 
 ## Build and Push Images
 
+### One-command backend deploy
+
+From the repository root:
+
+```bash
+./infra/aws-ecs-free-tier/deploy-backend.sh
+```
+
+The script:
+
+- initializes Terraform
+- creates/updates ECR repositories
+- builds backend runtime JARs
+- builds and pushes backend Docker images
+- applies Terraform with the ECS service enabled
+- forces a fresh ECS deployment
+- waits for ECS stability
+- seeds demo categories, events, seat layouts, and seats through SSM
+- prints the public Gateway URL
+- optionally dispatches the frontend GitHub deploy workflow with the Gateway URL
+
+Frontend workflow dispatch is disabled by default. Enable it with:
+
+```bash
+DEPLOY_FRONTEND=true \
+FRONTEND_DISPATCH_TOKEN=<github-token-with-actions-write> \
+FRONTEND_REPOSITORY=omegafrog/ticketon \
+FRONTEND_WORKFLOW=deploy.yml \
+FRONTEND_REF=main \
+./infra/aws-ecs-free-tier/deploy-backend.sh
+```
+
+The script dispatches the frontend workflow with:
+
+- `backend_main_url`
+- `backend_auth_url`
+- `backend_queue_url`
+
+Before first run, copy and edit `terraform.tfvars` or provide secret variables through the environment:
+
+```bash
+cp infra/aws-ecs-free-tier/terraform.tfvars.example infra/aws-ecs-free-tier/terraform.tfvars
+```
+
+Required secret values are `db_password`, `mysql_root_password`, and `rabbitmq_password`.
+If `terraform.tfvars` exists, replace placeholder values in that file; Terraform loads it before `TF_VAR_*` environment defaults.
+
+Optional script settings:
+
+```bash
+IMAGE_TAG=2026-06-17-1 AUTO_APPROVE=true WAIT_HTTP=true SEED_SAMPLE_DATA=true ./infra/aws-ecs-free-tier/deploy-backend.sh
+```
+
+Set `SEED_SAMPLE_DATA=false` to skip [sample-data.sql](sample-data.sql). Seeding uses AWS Systems Manager to run `mysql` inside the ECS host's MySQL container, so the EC2 instance role must keep `AmazonSSMManagedInstanceCore`.
+
+### Manual flow
+
 Create the infra once to get ECR URLs:
 
 ```bash
@@ -99,6 +156,30 @@ DEPLOY_ENV=dev
 ```
 
 The workflow `.github/workflows/aws-ecs-codedeploy.yml` builds the runtime images, pushes them to ECR, uploads the CodeDeploy bundle to S3, and creates a CodeDeploy deployment. The CodeDeploy hook on the EC2 instance forces the ECS service to redeploy and waits until it is stable.
+
+The same workflow runs on `main` push. During deployment it:
+
+- resolves the current Vercel production frontend origins and injects them into the Gateway ECS task through `GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS`
+- registers a fresh ECS task definition using the current commit SHA image tags
+- optionally dispatches the frontend deploy workflow with the resolved public Gateway URL, so the frontend build knows the backend domain/IP
+
+To enable frontend origin resolution, set these backend repository secrets/variables:
+
+```text
+VERCEL_TOKEN=<vercel-token>
+VERCEL_PROJECT_ID=<frontend-vercel-project-id>
+VERCEL_TEAM_ID=<optional-vercel-team-id>
+VERCEL_PROJECT_NAME=ticketon
+```
+
+To enable frontend workflow dispatch from backend deploy, set:
+
+```text
+FRONTEND_REPOSITORY=owner/ticketon
+FRONTEND_WORKFLOW=deploy.yml
+FRONTEND_REF=main
+FRONTEND_DISPATCH_TOKEN=<github-token-with-actions-write> # secret, optional if GITHUB_TOKEN can dispatch target workflow
+```
 
 Before the first workflow deployment, make sure the ECS service exists:
 

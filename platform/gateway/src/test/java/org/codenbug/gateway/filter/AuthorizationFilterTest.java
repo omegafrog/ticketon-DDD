@@ -90,6 +90,23 @@ class AuthorizationFilterTest {
     }
 
     @Test
+    void 좌석_조회는_이벤트_상세_화이트리스트와_별개로_인증_요구() {
+        whitelistProperties.getUrls()
+            .add(new WhitelistProperties.Urls("GET", "/api/v1/events/{id}"));
+        MockServerWebExchange exchange = MockServerWebExchange.from(
+            org.springframework.mock.http.server.reactive.MockServerHttpRequest
+                .get("/api/v1/events/event-k6-001/seats")
+                .build());
+        GatewayFilter gatewayFilter = authorizationFilter.apply(new AuthorizationFilter.Config());
+
+        StepVerifier.create(gatewayFilter.filter(exchange, chain))
+            .verifyComplete();
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exchange.getResponse().getStatusCode());
+        verify(chain, never()).filter(any(ServerWebExchange.class));
+    }
+
+    @Test
     void 기본_블랙리스트_체크_건너뛰고_체인_계속() {
         TokenInfo tokenInfo = generateTokenInfo();
         MockServerWebExchange exchange = exchangeForPolling(tokenInfo);

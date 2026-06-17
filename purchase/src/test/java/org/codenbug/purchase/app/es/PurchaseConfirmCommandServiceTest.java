@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
+import org.codenbug.infra.redis.EntryTokenValidator;
 import org.codenbug.purchase.app.command.es.PurchaseConfirmCommandService;
 import org.codenbug.purchase.app.event.PurchaseConfirmTransactionCommitted;
 import org.codenbug.purchase.domain.Purchase;
@@ -39,6 +40,8 @@ class PurchaseConfirmCommandServiceTest {
   private PurchaseConfirmStatusProjectionStore statusProjectionRepository;
   @Mock
   private ApplicationEventPublisher eventPublisher;
+  @Mock
+  private EntryTokenValidator entryTokenValidator;
 
   @InjectMocks
   private PurchaseConfirmCommandService service;
@@ -52,8 +55,11 @@ class PurchaseConfirmCommandServiceTest {
     when(outboxRepository.existsByPurchaseIdAndEventType(any(PurchaseId.class),
         eq(PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED))).thenReturn(true);
 
-    service.requestConfirm(req, "u1");
+    when(purchase.getEventId()).thenReturn("e1");
 
+    service.requestConfirm(req, "u1", "entry-token");
+
+    verify(entryTokenValidator).validate("u1", "entry-token", "e1");
     verify(outboxRepository, never()).save(any());
     verify(statusProjectionRepository, never()).save(any());
     verify(eventPublisher, never()).publishEvent(any(Object.class));
@@ -72,8 +78,9 @@ class PurchaseConfirmCommandServiceTest {
     when(statusProjectionRepository.findById(any(PurchaseId.class))).thenReturn(Optional.empty());
     when(outboxRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-    service.requestConfirm(req, "u1");
+    service.requestConfirm(req, "u1", "entry-token");
 
+    verify(entryTokenValidator).validate("u1", "entry-token", "e1");
     verify(statusProjectionRepository).save(any());
     ArgumentCaptor<PurchaseOutboxMessage> messageCaptor = ArgumentCaptor.forClass(PurchaseOutboxMessage.class);
     verify(outboxRepository).save(messageCaptor.capture());
@@ -96,8 +103,9 @@ class PurchaseConfirmCommandServiceTest {
         eq(PaymentOutboxEventType.PAYMENT_CONFIRM_REQUESTED))).thenReturn(false);
 
     org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class,
-        () -> service.requestConfirm(req, "u1"));
+        () -> service.requestConfirm(req, "u1", "entry-token"));
 
+    verify(entryTokenValidator).validate(eq("u1"), eq("entry-token"), any());
     verify(statusProjectionRepository, never()).save(any());
     verify(outboxRepository, never()).save(any());
   }
