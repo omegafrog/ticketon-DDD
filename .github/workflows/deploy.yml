@@ -515,7 +515,7 @@ jobs:
         if: vars.FRONTEND_REPOSITORY != ''
         shell: bash
         env:
-          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN }}
           FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
           FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
           FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
@@ -625,7 +625,7 @@ jobs:
         if: vars.FRONTEND_REPOSITORY != ''
         shell: bash
         env:
-          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN }}
           FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
           FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
           FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
