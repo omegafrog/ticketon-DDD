@@ -160,6 +160,12 @@ variable "service_environment" {
   default     = {}
 }
 
+variable "gateway_cors_allowed_origin_patterns" {
+  description = "Comma-separated CORS allowed origin patterns for the gateway."
+  type        = string
+  default     = ""
+}
+
 variable "github_repository" {
   description = "GitHub repository allowed to assume the deployment role, in owner/repo form. Leave null to skip creating the GitHub Actions OIDC role."
   type        = string

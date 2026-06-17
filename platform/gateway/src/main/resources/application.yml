@@ -143,6 +143,8 @@ management:
         enabled: true
 
 gateway:
+  cors:
+    allowed-origin-patterns: ${GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS:*}
   auth:
     check-refresh-blacklist-on-each-request: ${GATEWAY_AUTH_CHECK_REFRESH_BLACKLIST_ON_EACH_REQUEST:false}
   http-client:
