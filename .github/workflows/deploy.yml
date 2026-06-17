@@ -440,6 +440,9 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.selectServer == 'gateway' && !startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -459,8 +462,26 @@ jobs:
           "Name=tag:Name,Values=gateway" \
           "Name=instance-state-name,Values=running" \
           --query "Reservations[0].Instances[0].InstanceId" \
-          --output text) 
+          --output text)
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
+
+      - name: Resolve Vercel frontend origins
+        id: vercel_origins
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_PROJECT_NAME: ${{ vars.VERCEL_PROJECT_NAME || 'ticketon' }}
+        run: |
+          set -euo pipefail
+          origins="$(python3 .github/scripts/resolve-vercel-origins.py)"
+          echo "allowed_origins=$origins" >> "$GITHUB_OUTPUT"
+          if [[ -n "$origins" ]]; then
+            echo "Resolved Vercel frontend origins."
+          else
+            echo "Vercel frontend origins not resolved; gateway CORS keeps configured default."
+          fi
 
       - name: AWS SSM Send-Command
         uses: peterkimzz/aws-ssm-send-command@master
@@ -483,6 +504,7 @@ jobs:
             docker rm gateway 2>/dev/null || true && \
             docker run -d --name gateway \
             --restart unless-stopped \
+            -e GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS="${{ steps.vercel_origins.outputs.allowed_origins }}" \
             -v /config/application-prod.yml:/app/config/application-prod.yml \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
@@ -493,6 +515,9 @@ jobs:
     runs-on: ubuntu-latest
     if: inputs.selectServer == 'gateway' && startsWith(github.ref, 'refs/tags/')
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -512,10 +537,27 @@ jobs:
           "Name=tag:Name,Values=gateway" \
           "Name=instance-state-name,Values=running" \
           --query "Reservations[0].Instances[0].InstanceId" \
-          --output text) 
+          --output text)
           echo "instance_id=$INSTANCE_ID"
           echo "instance_id=$INSTANCE_ID" >> $GITHUB_OUTPUT
-      
+
+      - name: Resolve Vercel frontend origins
+        id: vercel_origins
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ vars.VERCEL_TEAM_ID }}
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_PROJECT_NAME: ${{ vars.VERCEL_PROJECT_NAME || 'ticketon' }}
+        run: |
+          set -euo pipefail
+          origins="$(python3 .github/scripts/resolve-vercel-origins.py)"
+          echo "allowed_origins=$origins" >> "$GITHUB_OUTPUT"
+          if [[ -n "$origins" ]]; then
+            echo "Resolved Vercel frontend origins."
+          else
+            echo "Vercel frontend origins not resolved; gateway CORS keeps configured default."
+          fi
 
       - name: AWS SSM Send-Command
         uses: peterkimzz/aws-ssm-send-command@master
@@ -537,6 +579,7 @@ jobs:
             docker rm gateway 2>/dev/null || true && \
             docker run -d --name gateway \
             --restart unless-stopped \
+            -e GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS="${{ steps.vercel_origins.outputs.allowed_origins }}" \
             -v /config/application.yml:/app/config/application.yml \
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8080:8080 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-gateway-deploy:${{ github.ref_name }} && \
@@ -639,4 +682,3 @@ jobs:
             -v /config/application-secret.yml:/app/config/application-secret.yml \
             -p 8761:8761 ghcr.io/${{ steps.export_owner.outputs.owner_lc }}/backend-eureka-deploy:${{ github.ref_name }}
             docker image prune -a -f || true          
-

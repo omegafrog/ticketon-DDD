@@ -2,6 +2,7 @@ package org.codenbug.gateway.config;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -48,11 +49,14 @@ public class GatewayConfig {
     @Value("${gateway.http-client.write-timeout:12s}")
     private Duration httpClientWriteTimeout;
 
+    @Value("${gateway.cors.allowed-origin-patterns:*}")
+    private String allowedOriginPatterns;
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration config = new CorsConfiguration();
         // 허용할 Origin
-        config.setAllowedOriginPatterns(Arrays.asList("*"));
+        config.setAllowedOriginPatterns(parseAllowedOriginPatterns());
         // 허용할 HTTP Method
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // 허용할 Header
@@ -67,6 +71,14 @@ public class GatewayConfig {
         source.registerCorsConfiguration("/**", config);
 
         return new CorsWebFilter(source);
+    }
+
+    private List<String> parseAllowedOriginPatterns() {
+        List<String> patterns = Arrays.stream(allowedOriginPatterns.split(","))
+                .map(String::trim)
+                .filter(pattern -> !pattern.isEmpty())
+                .toList();
+        return patterns.isEmpty() ? List.of("*") : patterns;
     }
 
     private ConnectionProvider connectionProvider;

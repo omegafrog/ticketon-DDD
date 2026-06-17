@@ -64,6 +64,10 @@ locals {
     service => [for name, value in env : { name = name, value = value }]
   }
 
+  gateway_cors_environment = var.gateway_cors_allowed_origin_patterns != "" ? [
+    { name = "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS", value = var.gateway_cors_allowed_origin_patterns },
+  ] : []
+
   container_definitions = [
     {
       name              = "mysql"
@@ -261,7 +265,7 @@ locals {
         { name = "EUREKA_CLIENT_HOST_NAME", value = "gateway" },
         { name = "EUREKA_HOST_NAME", value = "gateway" },
         { name = "EUREKA_INSTANCE_HOSTNAME", value = "gateway" },
-      ], lookup(local.service_extra_environment, "gateway", []))
+      ], local.gateway_cors_environment, lookup(local.service_extra_environment, "gateway", []))
       portMappings = [{ containerPort = 8080, hostPort = 8080, protocol = "tcp" }]
       links        = ["redis", "eureka", "app", "auth", "broker"]
       dependsOn = [
