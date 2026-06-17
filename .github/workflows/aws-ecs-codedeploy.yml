@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: read
   id-token: write
 
@@ -31,6 +32,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Run backend CI checks
+        run: |
+          chmod +x ./gradlew
+          ./gradlew architectureRules --no-daemon --console=plain
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -189,12 +195,55 @@ jobs:
               "runtimePlatform",
           }
           task = {key: value for key, value in task.items() if key in keep}
+          java_tool_options = {
+              "eureka": "-Xms32m -Xmx64m",
+              "gateway": "-Xms48m -Xmx128m",
+              "app": "-Xms64m -Xmx160m",
+              "auth": "-Xms48m -Xmx128m",
+              "broker": "-Xms32m -Xmx96m",
+              "dispatcher": "-Xms32m -Xmx96m",
+          }
+          memory_reservations = {
+              "redis": 16,
+              "rabbitmq": 96,
+              "eureka": 48,
+              "app": 96,
+              "auth": 64,
+              "broker": 48,
+              "dispatcher": 48,
+              "gateway": 64,
+          }
+          gateway_environment = {
+              "GATEWAY_SERVER_NETTY_MAX_CONNECTIONS": "256",
+              "GATEWAY_REACTOR_NETTY_POOL_MAX_CONNECTIONS": "128",
+              "GATEWAY_HTTPCLIENT_POOL_MAX_CONNECTIONS": "128",
+              "GATEWAY_REDIS_POOL_MAX_ACTIVE": "16",
+              "GATEWAY_REDIS_POOL_MAX_IDLE": "4",
+              "GATEWAY_REDIS_POOL_MIN_IDLE": "1",
+              "GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT_MILLIS": "2000",
+              "GATEWAY_HTTPCLIENT_POOL_ACQUIRE_TIMEOUT": "2s",
+          }
+
+          def set_environment(container, values):
+              env = {item["name"]: item["value"] for item in container.get("environment", [])}
+              env.update(values)
+              container["environment"] = [{"name": key, "value": value} for key, value in env.items()]
 
           for container in task["containerDefinitions"]:
               name = container["name"]
               if name in services:
                   container["image"] = f"{registry}/{project}-{deploy_env}/{name}:{sha}"
+              if name in memory_reservations:
+                  container["memoryReservation"] = memory_reservations[name]
+              if name in java_tool_options:
+                  set_environment(container, {"JAVA_TOOL_OPTIONS": java_tool_options[name]})
+              if name == "rabbitmq":
+                  container.pop("healthCheck", None)
+              for dependency in container.get("dependsOn", []):
+                  if dependency.get("containerName") == "rabbitmq" and dependency.get("condition") == "HEALTHY":
+                      dependency["condition"] = "START"
               if name == "gateway":
+                  set_environment(container, gateway_environment)
                   env = [item for item in container.get("environment", []) if item.get("name") != "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS"]
                   if origins:
                       env.append({"name": "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS", "value": origins})
@@ -218,18 +267,29 @@ jobs:
 
           echo "Updated ECS service with task definition: $task_def_arn"
 
-      - name: Dispatch frontend deploy
-        if: vars.FRONTEND_REPOSITORY != ''
+      - name: Run CodeDeploy deployment
+        id: codedeploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployment_id="$(aws deploy create-deployment \
+            --application-name "${{ steps.names.outputs.codedeploy_app }}" \
+            --deployment-group-name "${{ steps.names.outputs.codedeploy_group }}" \
+            --description "ticketon backend ${GITHUB_SHA}" \
+            --s3-location bucket="${{ steps.names.outputs.codedeploy_bucket }}",key="${{ steps.bundle.outputs.key }}",bundleType=zip \
+            --query deploymentId \
+            --output text)"
+          echo "deployment_id=$deployment_id" >> "$GITHUB_OUTPUT"
+          aws deploy wait deployment-successful --deployment-id "$deployment_id"
+          echo "CodeDeploy deployment succeeded: $deployment_id"
+
+      - name: Resolve backend gateway URL
+        id: gateway_url
         shell: bash
         env:
-          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
-          FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
-          FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
-          FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
           BACKEND_EC2_HOST: ${{ vars.BACKEND_EC2_HOST }}
         run: |
           set -euo pipefail
-          test -n "${FRONTEND_DISPATCH_TOKEN:-}"
 
           to_gateway_url() {
             local host="$1"
@@ -319,8 +379,24 @@ jobs:
             gateway_url="$(to_gateway_url "$public_host")"
           fi
           gateway_url="${gateway_url%/}"
+          echo "url=$gateway_url" >> "$GITHUB_OUTPUT"
+          echo "Resolved backend gateway URL: $gateway_url"
 
-          payload="$(python3 -c 'import json,sys; print(json.dumps({"ref": sys.argv[1], "inputs": {"backend_main_url": sys.argv[2], "backend_auth_url": sys.argv[2], "backend_queue_url": sys.argv[2]}}))' "$FRONTEND_REF" "$gateway_url")"
+      - name: Dispatch frontend deploy
+        shell: bash
+        env:
+          FRONTEND_DISPATCH_TOKEN: ${{ secrets.FRONTEND_DISPATCH_TOKEN || secrets.GITHUB_TOKEN }}
+          FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
+          FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
+          FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
+          GATEWAY_URL: ${{ steps.gateway_url.outputs.url }}
+        run: |
+          set -euo pipefail
+          test -n "${FRONTEND_DISPATCH_TOKEN:-}"
+          test -n "${FRONTEND_REPOSITORY:-}"
+          test -n "${GATEWAY_URL:-}"
+
+          payload="$(python3 -c 'import json,sys; print(json.dumps({"ref": sys.argv[1], "inputs": {"backend_main_url": sys.argv[2], "backend_auth_url": sys.argv[2], "backend_queue_url": sys.argv[2]}}))' "$FRONTEND_REF" "$GATEWAY_URL")"
 
           curl -fsS -X POST \
             -H "Accept: application/vnd.github+json" \
@@ -329,4 +405,4 @@ jobs:
             "https://api.github.com/repos/$FRONTEND_REPOSITORY/actions/workflows/$FRONTEND_WORKFLOW/dispatches" \
             -d "$payload" >/dev/null
 
-          echo "Dispatched frontend deploy with backend URL: $gateway_url"
+          echo "Dispatched frontend deploy with backend URL: $GATEWAY_URL"

@@ -92,10 +92,10 @@ class EventImageServiceTest {
 
 	private Event event(String thumbnailUrl) {
 		return new Event(new EventInformation("Title", thumbnailUrl, 0, null,
-			"description", LocalDateTime.of(2026, 5, 1, 0, 0),
-			LocalDateTime.of(2026, 5, 10, 0, 0),
-			LocalDateTime.of(2026, 5, 11, 0, 0),
-			LocalDateTime.of(2026, 5, 12, 0, 0),
+			"description", LocalDateTime.now().plusDays(1),
+			LocalDateTime.now().plusDays(10),
+			LocalDateTime.now().plusDays(11),
+			LocalDateTime.now().plusDays(12),
 			true, 1000, 2000, EventStatus.CLOSED, new EventCategoryId(1L)),
 			new ManagerId("manager-1"), 1L, new MetaData());
 	}
