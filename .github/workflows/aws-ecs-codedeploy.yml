@@ -226,47 +226,64 @@ jobs:
           FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
           FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
           FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
+          BACKEND_EC2_HOST: ${{ vars.BACKEND_EC2_HOST }}
         run: |
           set -euo pipefail
           test -n "${FRONTEND_DISPATCH_TOKEN:-}"
 
-          resolve_host_by_name() {
-            local name_filter="$1"
-            local host
-            host="$(aws ec2 describe-instances \
-              --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
-              --query 'Reservations[].Instances[].PublicDnsName | [0]' \
-              --output text)"
-            if [[ -z "$host" || "$host" == "None" ]]; then
-              host="$(aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
-                --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
-                --output text)"
-            fi
-            if [[ -n "$host" && "$host" != "None" ]]; then
-              echo "$host"
+          to_gateway_url() {
+            local host="$1"
+            if [[ "$host" =~ ^https?:// ]]; then
+              echo "${host%/}"
+            elif [[ "$host" == *:* ]]; then
+              echo "http://${host%/}"
+            else
+              echo "http://${host%/}:8080"
             fi
           }
 
-          public_host=""
-          for name_filter in \
-            "${{ steps.names.outputs.codedeploy_group }}-ecs" \
-            "${PROJECT_NAME}-${DEPLOY_ENV}-ecs" \
-            "*${PROJECT_NAME}*ecs*" \
-            "*${PROJECT_NAME}*${DEPLOY_ENV}*"; do
-            public_host="$(resolve_host_by_name "$name_filter")"
-            if [[ -n "$public_host" ]]; then
-              echo "Resolved backend EC2 host using tag Name=${name_filter}"
-              break
-            fi
-          done
+          if [[ -n "${BACKEND_EC2_HOST:-}" ]]; then
+            gateway_url="$(to_gateway_url "$BACKEND_EC2_HOST")"
+            echo "Using backend EC2 host from BACKEND_EC2_HOST."
+          else
 
-          if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-            aws ec2 describe-instances \
-              --filters "Name=instance-state-name,Values=running" \
-              --query 'Reservations[].Instances[].{id:InstanceId,name:Tags[?Key==`Name`]|[0].Value,dns:PublicDnsName,ip:PublicIpAddress}' \
-              --output json > running-instances.json
-            public_host="$(python3 - "$PROJECT_NAME" "$DEPLOY_ENV" running-instances.json <<'PY'
+            resolve_host_by_name() {
+              local name_filter="$1"
+              local host
+              host="$(aws ec2 describe-instances \
+                --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
+                --query 'Reservations[].Instances[].PublicDnsName | [0]' \
+                --output text)"
+              if [[ -z "$host" || "$host" == "None" ]]; then
+                host="$(aws ec2 describe-instances \
+                  --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
+                  --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
+                  --output text)"
+              fi
+              if [[ -n "$host" && "$host" != "None" ]]; then
+                echo "$host"
+              fi
+            }
+
+            public_host=""
+            for name_filter in \
+              "${{ steps.names.outputs.codedeploy_group }}-ecs" \
+              "${PROJECT_NAME}-${DEPLOY_ENV}-ecs" \
+              "*${PROJECT_NAME}*ecs*" \
+              "*${PROJECT_NAME}*${DEPLOY_ENV}*"; do
+              public_host="$(resolve_host_by_name "$name_filter")"
+              if [[ -n "$public_host" ]]; then
+                echo "Resolved backend EC2 host using tag Name=${name_filter}"
+                break
+              fi
+            done
+
+            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
+              aws ec2 describe-instances \
+                --filters "Name=instance-state-name,Values=running" \
+                --query 'Reservations[].Instances[].{id:InstanceId,name:Tags[?Key==`Name`]|[0].Value,dns:PublicDnsName,ip:PublicIpAddress}' \
+                --output json > running-instances.json
+              public_host="$(python3 - "$PROJECT_NAME" "$DEPLOY_ENV" running-instances.json <<'PY'
           import json
           import sys
 
@@ -292,14 +309,15 @@ jobs:
           if candidates:
               print(public_host(candidates[0]))
           PY
-          )"
+              )"
+            fi
+            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
+              echo "Backend public URL not resolved from running EC2 instances."
+              cat running-instances.json 2>/dev/null || true
+              exit 1
+            fi
+            gateway_url="$(to_gateway_url "$public_host")"
           fi
-          if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-            echo "Backend public URL not resolved from running EC2 instances."
-            cat running-instances.json 2>/dev/null || true
-            exit 1
-          fi
-          gateway_url="http://${public_host}:8080"
           gateway_url="${gateway_url%/}"
 
           payload="$(python3 -c 'import json,sys; print(json.dumps({"ref": sys.argv[1], "inputs": {"backend_main_url": sys.argv[2], "backend_auth_url": sys.argv[2], "backend_queue_url": sys.argv[2]}}))' "$FRONTEND_REF" "$gateway_url")"
