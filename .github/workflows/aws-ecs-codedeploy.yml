@@ -216,22 +216,7 @@ jobs:
             --task-definition "$task_def_arn" \
             --desired-count 1 >/dev/null
 
-          aws ecs wait services-stable \
-            --cluster "$cluster" \
-            --services "$service"
-
-      - name: Create CodeDeploy deployment
-        shell: bash
-        run: |
-          set -euo pipefail
-          deployment_id="$(aws deploy create-deployment \
-            --application-name "${{ steps.names.outputs.codedeploy_app }}" \
-            --deployment-group-name "${{ steps.names.outputs.codedeploy_group }}" \
-            --s3-location bucket=${{ steps.names.outputs.codedeploy_bucket }},key=${{ steps.bundle.outputs.key }},bundleType=zip \
-            --description "Deploy ${GITHUB_SHA} from GitHub Actions" \
-            --query deploymentId \
-            --output text)"
-          aws deploy wait deployment-successful --deployment-id "$deployment_id"
+          echo "Updated ECS service with task definition: $task_def_arn"
 
       - name: Dispatch frontend deploy
         if: vars.FRONTEND_REPOSITORY != ''
