@@ -138,9 +138,6 @@ jobs:
               --cluster "${{ steps.names.outputs.codedeploy_app }}" \
               --service "${{ steps.names.outputs.codedeploy_group }}" \
               --desired-count 1 >/dev/null
-            aws ecs wait services-stable \
-              --cluster "${{ steps.names.outputs.codedeploy_app }}" \
-              --services "${{ steps.names.outputs.codedeploy_group }}"
             exit 0
           fi
 
@@ -151,10 +148,6 @@ jobs:
             --desired-count 1 \
             --capacity-provider-strategy capacityProvider=${{ steps.names.outputs.codedeploy_group }}-ec2,weight=1 \
             --deployment-configuration minimumHealthyPercent=0,maximumPercent=100 >/dev/null
-
-          aws ecs wait services-stable \
-            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
-            --services "${{ steps.names.outputs.codedeploy_group }}"
 
       - name: Register task definition with frontend origins
         id: task_def
