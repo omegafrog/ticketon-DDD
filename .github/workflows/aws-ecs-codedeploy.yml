@@ -226,29 +226,25 @@ jobs:
           FRONTEND_REPOSITORY: ${{ vars.FRONTEND_REPOSITORY }}
           FRONTEND_WORKFLOW: ${{ vars.FRONTEND_WORKFLOW || 'deploy.yml' }}
           FRONTEND_REF: ${{ vars.FRONTEND_REF || 'main' }}
-          BACKEND_PUBLIC_URL: ${{ vars.BACKEND_PUBLIC_URL }}
         run: |
           set -euo pipefail
           test -n "${FRONTEND_DISPATCH_TOKEN:-}"
 
-          gateway_url="${BACKEND_PUBLIC_URL:-}"
-          if [[ -z "$gateway_url" ]]; then
+          public_host="$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=${{ steps.names.outputs.codedeploy_group }}-ecs" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].PublicDnsName | [0]' \
+            --output text 2>/dev/null || true)"
+          if [[ -z "$public_host" || "$public_host" == "None" ]]; then
             public_host="$(aws ec2 describe-instances \
               --filters "Name=tag:Name,Values=${{ steps.names.outputs.codedeploy_group }}-ecs" "Name=instance-state-name,Values=running" \
-              --query 'Reservations[].Instances[].PublicDnsName | [0]' \
+              --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
               --output text 2>/dev/null || true)"
-            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-              public_host="$(aws ec2 describe-instances \
-                --filters "Name=tag:Name,Values=${{ steps.names.outputs.codedeploy_group }}-ecs" "Name=instance-state-name,Values=running" \
-                --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
-                --output text 2>/dev/null || true)"
-            fi
-            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-              echo "Backend public URL not resolved; skipping frontend dispatch."
-              exit 0
-            fi
-            gateway_url="http://${public_host}:8080"
           fi
+          if [[ -z "$public_host" || "$public_host" == "None" ]]; then
+            echo "Backend public URL not resolved; skipping frontend dispatch."
+            exit 0
+          fi
+          gateway_url="http://${public_host}:8080"
           gateway_url="${gateway_url%/}"
 
           payload="$(python3 -c 'import json,sys; print(json.dumps({"ref": sys.argv[1], "inputs": {"backend_main_url": sys.argv[2], "backend_auth_url": sys.argv[2], "backend_queue_url": sys.argv[2]}}))' "$FRONTEND_REF" "$gateway_url")"
