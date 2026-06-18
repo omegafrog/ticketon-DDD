@@ -198,6 +198,11 @@ jobs:
               "gateway": 64,
           }
           gateway_environment = {
+              "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE": "http://eureka:8761/eureka/",
+              "EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE": "http://eureka:8761/eureka/",
+              "EUREKA_CLIENT_HOST_NAME": "gateway",
+              "EUREKA_HOST_NAME": "gateway",
+              "EUREKA_INSTANCE_HOSTNAME": "gateway",
               "GATEWAY_SERVER_NETTY_MAX_CONNECTIONS": "256",
               "GATEWAY_REACTOR_NETTY_POOL_MAX_CONNECTIONS": "128",
               "GATEWAY_HTTPCLIENT_POOL_MAX_CONNECTIONS": "128",
