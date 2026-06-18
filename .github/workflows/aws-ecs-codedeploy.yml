@@ -267,63 +267,21 @@ jobs:
 
           echo "Updated ECS service with task definition: $task_def_arn"
 
-      - name: Run CodeDeploy deployment
-        id: codedeploy
+      - name: Wait backend ECS deployment
         shell: bash
         run: |
           set -euo pipefail
-          deployment_id="$(aws deploy create-deployment \
-            --application-name "${{ steps.names.outputs.codedeploy_app }}" \
-            --deployment-group-name "${{ steps.names.outputs.codedeploy_group }}" \
-            --description "ticketon backend ${GITHUB_SHA}" \
-            --s3-location bucket="${{ steps.names.outputs.codedeploy_bucket }}",key="${{ steps.bundle.outputs.key }}",bundleType=zip \
-            --query deploymentId \
-            --output text)"
-          echo "deployment_id=$deployment_id" >> "$GITHUB_OUTPUT"
-          echo "Created CodeDeploy deployment: $deployment_id"
-          aws deploy wait deployment-successful --deployment-id "$deployment_id"
-          echo "CodeDeploy deployment succeeded: $deployment_id"
-
-      - name: Print backend deployment diagnostics
-        if: failure() && steps.codedeploy.outputs.deployment_id != ''
-        shell: bash
-        env:
-          DEPLOYMENT_ID: ${{ steps.codedeploy.outputs.deployment_id }}
-        run: |
-          set -euo pipefail
-          echo "CodeDeploy deployment:"
-          aws deploy get-deployment \
-            --deployment-id "$DEPLOYMENT_ID" \
-            --query 'deploymentInfo.{status:status,error:errorInformation,creator:creator,createTime:createTime,completeTime:completeTime,deploymentOverview:deploymentOverview}' \
-            --output json || true
-
-          echo "ECS service:"
-          aws ecs describe-services \
+          aws ecs wait services-stable \
             --cluster "${{ steps.names.outputs.codedeploy_app }}" \
-            --services "${{ steps.names.outputs.codedeploy_group }}" \
-            --query 'services[0].{status:status,desired:desiredCount,running:runningCount,pending:pendingCount,taskDefinition:taskDefinition,events:events[0:5]}' \
-            --output json || true
-
-          task_arns="$(aws ecs list-tasks \
-            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
-            --service-name "${{ steps.names.outputs.codedeploy_group }}" \
-            --query 'taskArns' \
-            --output text || true)"
-
-          if [[ -n "$task_arns" && "$task_arns" != "None" ]]; then
-            echo "ECS tasks:"
-            aws ecs describe-tasks \
-              --cluster "${{ steps.names.outputs.codedeploy_app }}" \
-              --tasks $task_arns \
-              --query 'tasks[].{lastStatus:lastStatus,desiredStatus:desiredStatus,healthStatus:healthStatus,stoppedReason:stoppedReason,containers:containers[].{name:name,lastStatus:lastStatus,exitCode:exitCode,reason:reason}}' \
-              --output json || true
-          fi
+            --services "${{ steps.names.outputs.codedeploy_group }}"
+          echo "Backend ECS service is stable."
 
       - name: Resolve backend gateway URL
         id: gateway_url
         shell: bash
         env:
           BACKEND_EC2_HOST: ${{ vars.BACKEND_EC2_HOST }}
+          BACKEND_PUBLIC_URL: ${{ vars.BACKEND_PUBLIC_URL }}
         run: |
           set -euo pipefail
 
@@ -338,48 +296,57 @@ jobs:
             fi
           }
 
-          if [[ -n "${BACKEND_EC2_HOST:-}" ]]; then
-            gateway_url="$(to_gateway_url "$BACKEND_EC2_HOST")"
-            echo "Using backend EC2 host from BACKEND_EC2_HOST."
-          else
+          is_reachable_gateway() {
+            local url="${1%/}"
+            curl -k -fsS --connect-timeout 5 --max-time 12 "$url/actuator/health" >/dev/null
+          }
 
-            resolve_host_by_name() {
-              local name_filter="$1"
-              local host
+          resolve_host_by_name() {
+            local name_filter="$1"
+            local host
+            host="$(aws ec2 describe-instances \
+              --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
+              --query 'Reservations[].Instances[].PublicDnsName | [0]' \
+              --output text)"
+            if [[ -z "$host" || "$host" == "None" ]]; then
               host="$(aws ec2 describe-instances \
                 --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
-                --query 'Reservations[].Instances[].PublicDnsName | [0]' \
+                --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
                 --output text)"
-              if [[ -z "$host" || "$host" == "None" ]]; then
-                host="$(aws ec2 describe-instances \
-                  --filters "Name=tag:Name,Values=${name_filter}" "Name=instance-state-name,Values=running" \
-                  --query 'Reservations[].Instances[].PublicIpAddress | [0]' \
-                  --output text)"
-              fi
-              if [[ -n "$host" && "$host" != "None" ]]; then
-                echo "$host"
-              fi
-            }
+            fi
+            if [[ -n "$host" && "$host" != "None" ]]; then
+              echo "$host"
+            fi
+          }
 
-            public_host=""
-            for name_filter in \
-              "${{ steps.names.outputs.codedeploy_group }}-ecs" \
-              "${PROJECT_NAME}-${DEPLOY_ENV}-ecs" \
-              "*${PROJECT_NAME}*ecs*" \
-              "*${PROJECT_NAME}*${DEPLOY_ENV}*"; do
-              public_host="$(resolve_host_by_name "$name_filter")"
-              if [[ -n "$public_host" ]]; then
-                echo "Resolved backend EC2 host using tag Name=${name_filter}"
-                break
-              fi
-            done
+          candidate_urls=()
+          if [[ -n "${BACKEND_EC2_HOST:-}" ]]; then
+            candidate_urls+=("$(to_gateway_url "$BACKEND_EC2_HOST")")
+          fi
+          if [[ -n "${BACKEND_PUBLIC_URL:-}" ]]; then
+            candidate_urls+=("$(to_gateway_url "$BACKEND_PUBLIC_URL")")
+          fi
 
-            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-              aws ec2 describe-instances \
-                --filters "Name=instance-state-name,Values=running" \
-                --query 'Reservations[].Instances[].{id:InstanceId,name:Tags[?Key==`Name`]|[0].Value,dns:PublicDnsName,ip:PublicIpAddress}' \
-                --output json > running-instances.json
-              public_host="$(python3 - "$PROJECT_NAME" "$DEPLOY_ENV" running-instances.json <<'PY'
+          public_host=""
+          for name_filter in \
+            "${{ steps.names.outputs.codedeploy_group }}-ecs" \
+            "${PROJECT_NAME}-${DEPLOY_ENV}-ecs" \
+            "*${PROJECT_NAME}*ecs*" \
+            "*${PROJECT_NAME}*${DEPLOY_ENV}*"; do
+            public_host="$(resolve_host_by_name "$name_filter")"
+            if [[ -n "$public_host" ]]; then
+              echo "Resolved backend EC2 host using tag Name=${name_filter}"
+              candidate_urls+=("$(to_gateway_url "$public_host")")
+              break
+            fi
+          done
+
+          if [[ -z "$public_host" || "$public_host" == "None" ]]; then
+            aws ec2 describe-instances \
+              --filters "Name=instance-state-name,Values=running" \
+              --query 'Reservations[].Instances[].{id:InstanceId,name:Tags[?Key==`Name`]|[0].Value,dns:PublicDnsName,ip:PublicIpAddress}' \
+              --output json > running-instances.json
+            public_host="$(python3 - "$PROJECT_NAME" "$DEPLOY_ENV" running-instances.json <<'PY'
           import json
           import sys
 
@@ -405,16 +372,30 @@ jobs:
           if candidates:
               print(public_host(candidates[0]))
           PY
-              )"
+            )"
+            if [[ -n "$public_host" && "$public_host" != "None" ]]; then
+              candidate_urls+=("$(to_gateway_url "$public_host")")
             fi
-            if [[ -z "$public_host" || "$public_host" == "None" ]]; then
-              echo "Backend public URL not resolved from running EC2 instances."
-              cat running-instances.json 2>/dev/null || true
-              exit 1
-            fi
-            gateway_url="$(to_gateway_url "$public_host")"
           fi
-          gateway_url="${gateway_url%/}"
+
+          gateway_url=""
+          for candidate in "${candidate_urls[@]}"; do
+            candidate="${candidate%/}"
+            if [[ -z "$candidate" ]]; then
+              continue
+            fi
+            if is_reachable_gateway "$candidate"; then
+              gateway_url="$candidate"
+              break
+            fi
+            echo "Backend candidate not reachable: $candidate"
+          done
+
+          if [[ -z "$gateway_url" ]]; then
+            echo "Backend public URL not reachable."
+            exit 1
+          fi
+
           echo "url=$gateway_url" >> "$GITHUB_OUTPUT"
           echo "Resolved backend gateway URL: $gateway_url"
 
