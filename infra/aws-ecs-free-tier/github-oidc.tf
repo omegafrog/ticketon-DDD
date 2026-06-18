@@ -87,6 +87,8 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
           "ecs:DescribeTaskDefinition",
           "ecs:RegisterTaskDefinition",
           "ecs:ListServices",
+          "ecs:ListTasks",
+          "ecs:DescribeTasks",
           "ec2:DescribeInstances",
           "codedeploy:CreateDeployment",
           "codedeploy:GetDeployment",
@@ -96,6 +98,18 @@ resource "aws_iam_role_policy" "github_actions_deploy" {
           "codedeploy:RegisterApplicationRevision"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:SendCommand",
+          "ssm:GetCommandInvocation",
+          "ssm:ListCommandInvocations"
+        ]
+        Resource = [
+          "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/*",
+          "arn:aws:ssm:${var.aws_region}::document/AWS-RunShellScript"
+        ]
       },
       {
         Effect = "Allow"
