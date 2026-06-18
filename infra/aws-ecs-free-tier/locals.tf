@@ -178,8 +178,8 @@ locals {
         { name = "REDIS_PORT", value = "6379" },
         { name = "EUREKA_INSTANCE_HOST_NAME", value = "app" },
         { name = "EUREKA_INSTANCE_HOSTNAME", value = "app" },
-        { name = "SERVICES_EVENT_BASE_URL", value = "http://app:9000" },
-        { name = "SERVICES_SEAT_BASE_URL", value = "http://app:9000" },
+        { name = "SERVICES_EVENT_BASE_URL", value = "http://localhost:9000" },
+        { name = "SERVICES_SEAT_BASE_URL", value = "http://localhost:9000" },
       ], lookup(local.service_extra_environment, "app", []))
       portMappings = [{ containerPort = 9000, protocol = "tcp" }]
       links        = ["redis", "rabbitmq", "eureka"]

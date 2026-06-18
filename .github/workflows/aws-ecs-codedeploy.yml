@@ -217,6 +217,10 @@ jobs:
               "TICKETON_DEMO_DATA_USER_EMAIL": "testuser@ticketon.local",
               "TICKETON_DEMO_DATA_USER_PASSWORD": "Ticketon123!",
           }
+          app_internal_environment = {
+              "SERVICES_EVENT_BASE_URL": "http://localhost:9000",
+              "SERVICES_SEAT_BASE_URL": "http://localhost:9000",
+          }
 
           def set_environment(container, values):
               env = {item["name"]: item["value"] for item in container.get("environment", [])}
@@ -233,6 +237,8 @@ jobs:
                   set_environment(container, {"JAVA_TOOL_OPTIONS": java_tool_options[name]})
               if name in {"app", "auth"}:
                   set_environment(container, demo_seed_environment)
+              if name == "app":
+                  set_environment(container, app_internal_environment)
               if name == "rabbitmq":
                   container.pop("healthCheck", None)
               for dependency in container.get("dependsOn", []):
