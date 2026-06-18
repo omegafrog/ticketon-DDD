@@ -1,63 +1,46 @@
-# Repo Context for Agents
+# Agent Context Map
+## Repository Purpose
 
-This file holds context that used to live in root `AGENTS.md`. Read this only when repository orientation is needed.
+As-is reverse-engineering baseline for Codex handoff. Documentation only; repository unchanged.
 
-## Architecture
+## Static Analysis
 
-Gradle multi-module Java 21 / Spring Boot ticket-booking system.
+- Description: Existing project reverse-engineered by harness bootstrap
+- Technologies: Java/Gradle
+- Manifests: `build.gradle`, `settings.gradle`
+- Source roots: `app`, `harness_codex`
+- Test roots: `tests`
+- Docs roots: `docs`, `README.md`, `AGENTS.md`
+- Config files: `.codex/config.toml`, `.codex/openai.yaml`, `.github`, `.gitignore`, `.harness/workflows`, `AGENTS.md`
+- Workflow docs: `docs/design`, `docs/changes`, `docs/use-cases`, `docs/maintenance`, `docs/plans`, `.harness/workflows`
+- Commands:
+  - List files: `rg --files`
+  - Search text: `rg -n "<pattern>"`
+  - Git status: `git status --porcelain=v1 -uno`
+  - Diff stat: `git diff --stat`
+  - Python tests: `./venv/bin/python3 -m pytest -q -s`
+  - Harness CLI help: `python3 -m harness_codex --help`
+  - Gradle tests: `./gradlew test`
 
-Modules:
-- `app`: orchestration app, config imports and wiring only.
-- `auth`: OAuth/JWT auth service.
-- `broker`: SSE and Redis waiting queue broker.
-- `dispatcher`: queue promotion worker.
-- `event`: event write/read/query service.
-- `notification`: notification service.
-- `purchase`: payment, purchase, refund service.
-- `seat`: seat layout and availability service.
-- `user`: user profile service.
-- `security-aop`: shared auth annotations/aspects.
-- `redislock`: Redis-based locking utilities.
-- `platform/common`: shared utilities.
-- `platform/message`: message/event contracts.
-- `platform/gateway`: Spring Cloud Gateway.
-- `platform/eureka`: service discovery.
-- `docker`: local MySQL, Redis, RabbitMQ.
-- `k6`: load tests.
+## Main Paths
 
-## Common Lookup Table
+- `AGENTS.md`: hot-path agent rules.
+- `docs/agent/`: cold-path agent context, commands, session state, and token reports.
+- `docs/design/`: canonical requirements and design documents when present.
+- `docs/changes/`: active and completed ChangeSet documents when present.
+- `docs/use-cases/`: executor-facing use-case slices when present.
+- `docs/maintenance/`: executor-facing maintenance slices when present.
+- `docs/plans/`: active and completed implementation plans when present.
+- Source and test paths: discover with `rg --files`, package manifests, and build config.
 
-| Task | Location |
-| --- | --- |
-| Gateway routes | `platform/gateway/src/main/resources/application*.yml` |
-| Gateway whitelist | `platform/gateway/src/main/resources/application-whitelist-*.yml` |
-| App wiring | `app/src/main/java/org/codenbug/app/config/` |
-| Service mains | `*/src/main/java/**/**Application.java` |
-| Local infra | `docker/docker-compose.yml` |
-| Endpoint docs | `docs/{usecase,flow,trouble,troubleshooting}/<module>/<controller>/<method>.md` |
-| Load test | `k6/sse-throughput-test.js` |
+## Context Loading Guidance
 
-## Ports
+Start with the nearest `AGENTS.md`, then read only the smallest relevant file from `docs/agent/`. Prefer targeted search and symbol tools. Avoid broad design-doc or source dumps unless needed for the current decision.
 
-| Service | Port |
-| --- | --- |
-| Gateway | 8080 |
-| Eureka | 8761 |
-| App | 9000 |
-| Auth | 9001 |
-| Broker | 9002 |
-| Purchase | 9003 |
-| User | 9004 |
-| Seat | 9005 |
-| MySQL master | 3306 |
-| MySQL replica | 3307 |
-| Redis default | 6379 |
+## Harness Workflow Guidance
 
-## Repo-Specific Traps
+When ChangeSet docs exist, use the active ChangeSet and selected work-item slice as the primary scope. Read canonical design docs only when the slice points there or shared design context is required.
 
-- `app/` must not contain service business logic.
-- `platform/message` changes are contract changes; check consumers.
-- `dispatcher` and `broker` changes are queue/concurrency sensitive.
-- `purchase` state transitions need explicit locking/version reasoning.
-- Some `bin/` and `build/` files exist; treat as generated unless under `src/`.
-- Secret variants are ignored; never print values from `application-secret.yml`.
+## LLM Context Guidance
+
+Start with docs/agent/context.md. Read nearest nested AGENTS.md before module work. Never expose application-secret.yml. Client traffic enters platform/gateway; app should remain composition-only. Use targeted rg/sed reads.

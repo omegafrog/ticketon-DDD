@@ -70,3 +70,25 @@ out/
 .opencode/
 .gradle-codex/
 .codex
+# harness-codex 운영 파일
+.harness/runs/
+.harness/sessions/
+.harness/state/
+.harness/checkpoints/
+.harness/cache/
+.harness/import-backups/
+.harness/skill-evaluations/
+.harness/ui/
+.harness/ui-server.log
+.harness/ui-server.pid
+.codex/harness-bootstrap-state.json
+# harness-codex 운영 파일
+.harness/
+.codex/
+harness_codex/
+completions/
+harness
+scripts/install-harness-codex.sh
+scripts/bump_runtime_version.py
+tests/runtime/
+venv/
