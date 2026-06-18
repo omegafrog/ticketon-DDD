@@ -178,6 +178,26 @@ http://<public-dns>:8080
 
 `db_password`, `rabbitmq_password`, JWT/password secrets, OAuth client secrets, and any values placed in `service_environment` are stored in Terraform state. For production, move secrets to AWS Secrets Manager or SSM Parameter Store and wire ECS `secrets` instead.
 
+## Pause and Resume
+
+To temporarily stop compute/database resources that are tracked in this Terraform state:
+
+```bash
+cd infra/aws-ecs-free-tier
+./stack-power.sh pause
+```
+
+To start them later:
+
+```bash
+cd infra/aws-ecs-free-tier
+./stack-power.sh resume
+```
+
+The script reads Terraform state and only targets managed ASG, ECS service, standalone EC2, RDS instance, and RDS cluster resources. It stores original desired counts/capacities in `.terraform/stack-power-state.json` before pausing. RDS stopped state lasts up to 7 days; AWS may restart it after that.
+
+This does not remove all cost. Non-stoppable resources such as ECR images, S3 buckets, VPC resources, EBS snapshots, Elastic IPs, NAT gateways, and load balancers can still bill. Use `terraform destroy` when the goal is full teardown.
+
 ## Teardown
 
 ```bash

@@ -23,6 +23,16 @@ output "gateway_port" {
   value       = 8080
 }
 
+output "gateway_elastic_ip" {
+  description = "Stable Elastic IP for the public gateway."
+  value       = aws_eip.gateway.public_ip
+}
+
+output "gateway_url" {
+  description = "Stable public gateway URL."
+  value       = "http://${aws_eip.gateway.public_ip}:8080"
+}
+
 output "next_steps" {
   description = "Short deployment reminder."
   value       = "Push images to the ECR repository URLs, then run terraform apply again or force a new ECS deployment."

@@ -53,6 +53,13 @@ resource "aws_iam_role_policy" "ecs_instance_deploy" {
           "ecs:UpdateService"
         ]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:AssociateAddress"
+        ]
+        Resource = "*"
       }
     ]
   })

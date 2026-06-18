@@ -16,6 +16,14 @@ resource "aws_internet_gateway" "this" {
   }
 }
 
+resource "aws_eip" "gateway" {
+  domain = "vpc"
+
+  tags = {
+    Name = "${local.name}-gateway"
+  }
+}
+
 resource "aws_subnet" "public" {
   vpc_id                  = aws_vpc.this.id
   cidr_block              = "10.42.1.0/24"
@@ -54,6 +62,22 @@ resource "aws_security_group" "ecs_instance" {
     description = "Gateway"
     from_port   = 8080
     to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_http_cidrs
+  }
+
+  ingress {
+    description = "HTTP for Let's Encrypt"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_http_cidrs
+  }
+
+  ingress {
+    description = "HTTPS gateway proxy"
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = var.allowed_http_cidrs
   }

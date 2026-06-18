@@ -29,10 +29,11 @@ resource "aws_launch_template" "ecs" {
   }
 
   user_data = base64encode(templatefile("${path.module}/templates/user-data.sh.tftpl", {
-    cluster_name = aws_ecs_cluster.this.name
-    service_name = local.name
-    aws_region   = data.aws_region.current.name
-    swap_size_gb = var.swap_size_gb
+    cluster_name      = aws_ecs_cluster.this.name
+    service_name      = local.name
+    aws_region        = data.aws_region.current.name
+    swap_size_gb      = var.swap_size_gb
+    eip_allocation_id = aws_eip.gateway.id
   }))
 
   tag_specifications {

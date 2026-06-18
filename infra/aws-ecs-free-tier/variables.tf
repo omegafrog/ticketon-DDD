@@ -208,12 +208,12 @@ variable "java_tool_options" {
   description = "Per-service JVM memory options tuned for a tiny EC2 instance."
   type        = map(string)
   default = {
-    eureka     = "-Xms48m -Xmx96m"
-    gateway    = "-Xms64m -Xmx160m"
-    app        = "-Xms96m -Xmx224m"
-    auth       = "-Xms64m -Xmx160m"
-    broker     = "-Xms48m -Xmx112m"
-    dispatcher = "-Xms48m -Xmx112m"
+    eureka     = "-Xms32m -Xmx64m"
+    gateway    = "-Xms48m -Xmx128m"
+    app        = "-Xms64m -Xmx160m"
+    auth       = "-Xms48m -Xmx128m"
+    broker     = "-Xms32m -Xmx96m"
+    dispatcher = "-Xms32m -Xmx96m"
   }
 }
 
@@ -224,12 +224,12 @@ variable "container_memory_reservation" {
     redis      = 16
     polling    = 16
     rabbitmq   = 96
-    eureka     = 64
-    app        = 128
-    auth       = 96
-    broker     = 64
-    dispatcher = 64
-    gateway    = 96
+    eureka     = 48
+    app        = 96
+    auth       = 64
+    broker     = 48
+    dispatcher = 48
+    gateway    = 64
   }
 }
 

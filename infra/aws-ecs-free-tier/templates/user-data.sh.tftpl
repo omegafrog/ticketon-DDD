@@ -30,6 +30,14 @@ else
   yum install -y awscli ruby wget
 fi
 
+TOKEN="$(curl -fsS -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")"
+INSTANCE_ID="$(curl -fsS -H "X-aws-ec2-metadata-token: $TOKEN" "http://169.254.169.254/latest/meta-data/instance-id")"
+aws ec2 associate-address \
+  --region "${aws_region}" \
+  --allocation-id "${eip_allocation_id}" \
+  --instance-id "$INSTANCE_ID" \
+  --allow-reassociation || true
+
 cd /tmp
 wget -q "https://aws-codedeploy-${aws_region}.s3.${aws_region}.amazonaws.com/latest/install" -O codedeploy-install
 chmod +x codedeploy-install
