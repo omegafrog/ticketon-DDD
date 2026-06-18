@@ -79,7 +79,7 @@ service:
 eureka:
   client:
     service-url:
-      defaultZone: http://127.0.0.1:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://127.0.0.1:8761/eureka/}
       hostname: ${EUREKA_CLIENT_HOST_NAME:localhost}
     register-with-eureka: true
     fetch-registry: true
