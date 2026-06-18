@@ -118,6 +118,26 @@ variable "rabbitmq_password" {
   sensitive   = true
 }
 
+variable "jwt_secret" {
+  description = "JWT signing secret for services that validate or issue tokens. This is stored in Terraform state."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "jwt_expiration" {
+  description = "JWT expiration in milliseconds."
+  type        = string
+  default     = "3600000"
+}
+
+variable "password_secret" {
+  description = "Password encoder secret for auth. This is stored in Terraform state."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "timezone" {
   description = "Container timezone."
   type        = string

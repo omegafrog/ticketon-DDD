@@ -68,6 +68,15 @@ locals {
     { name = "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS", value = var.gateway_cors_allowed_origin_patterns },
   ] : []
 
+  jwt_environment = var.jwt_secret != "" ? [
+    { name = "CUSTOM_JWT_SECRET", value = var.jwt_secret },
+    { name = "CUSTOM_JWT_EXPIRATION", value = var.jwt_expiration },
+  ] : []
+
+  auth_secret_environment = var.password_secret != "" ? [
+    { name = "CUSTOM_PASSWORD_SECRET", value = var.password_secret },
+  ] : []
+
   container_definitions = [
     {
       name              = "mysql"
@@ -166,7 +175,7 @@ locals {
       image             = local.images["app"]
       essential         = true
       memoryReservation = var.container_memory_reservation["app"]
-      environment = concat(local.base_java_environment, local.db_environment, [
+      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["app"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "REDIS_HOST", value = "redis" },
@@ -190,7 +199,7 @@ locals {
       image             = local.images["auth"]
       essential         = true
       memoryReservation = var.container_memory_reservation["auth"]
-      environment = concat(local.base_java_environment, local.db_environment, [
+      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.auth_secret_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["auth"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "REDIS_HOST", value = "redis" },
@@ -214,7 +223,7 @@ locals {
       image             = local.images["broker"]
       essential         = true
       memoryReservation = var.container_memory_reservation["broker"]
-      environment = concat(local.base_java_environment, [
+      environment = concat(local.base_java_environment, local.jwt_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["broker"] },
         { name = "SERVER_PORT", value = "9003" },
         { name = "REDIS_HOST", value = "polling" },
@@ -255,7 +264,7 @@ locals {
       image             = local.images["gateway"]
       essential         = true
       memoryReservation = var.container_memory_reservation["gateway"]
-      environment = concat([
+      environment = concat(local.jwt_environment, [
         { name = "TZ", value = var.timezone },
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["gateway"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
