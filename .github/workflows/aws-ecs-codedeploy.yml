@@ -280,8 +280,44 @@ jobs:
             --query deploymentId \
             --output text)"
           echo "deployment_id=$deployment_id" >> "$GITHUB_OUTPUT"
+          echo "Created CodeDeploy deployment: $deployment_id"
           aws deploy wait deployment-successful --deployment-id "$deployment_id"
           echo "CodeDeploy deployment succeeded: $deployment_id"
+
+      - name: Print backend deployment diagnostics
+        if: failure() && steps.codedeploy.outputs.deployment_id != ''
+        shell: bash
+        env:
+          DEPLOYMENT_ID: ${{ steps.codedeploy.outputs.deployment_id }}
+        run: |
+          set -euo pipefail
+          echo "CodeDeploy deployment:"
+          aws deploy get-deployment \
+            --deployment-id "$DEPLOYMENT_ID" \
+            --query 'deploymentInfo.{status:status,error:errorInformation,creator:creator,createTime:createTime,completeTime:completeTime,deploymentOverview:deploymentOverview}' \
+            --output json || true
+
+          echo "ECS service:"
+          aws ecs describe-services \
+            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+            --services "${{ steps.names.outputs.codedeploy_group }}" \
+            --query 'services[0].{status:status,desired:desiredCount,running:runningCount,pending:pendingCount,taskDefinition:taskDefinition,events:events[0:5]}' \
+            --output json || true
+
+          task_arns="$(aws ecs list-tasks \
+            --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+            --service-name "${{ steps.names.outputs.codedeploy_group }}" \
+            --query 'taskArns' \
+            --output text || true)"
+
+          if [[ -n "$task_arns" && "$task_arns" != "None" ]]; then
+            echo "ECS tasks:"
+            aws ecs describe-tasks \
+              --cluster "${{ steps.names.outputs.codedeploy_app }}" \
+              --tasks $task_arns \
+              --query 'tasks[].{lastStatus:lastStatus,desiredStatus:desiredStatus,healthStatus:healthStatus,stoppedReason:stoppedReason,containers:containers[].{name:name,lastStatus:lastStatus,exitCode:exitCode,reason:reason}}' \
+              --output json || true
+          fi
 
       - name: Resolve backend gateway URL
         id: gateway_url
