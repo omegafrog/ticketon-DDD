@@ -77,6 +77,18 @@ locals {
     { name = "CUSTOM_PASSWORD_SECRET", value = var.password_secret },
   ] : []
 
+  auth_oauth_environment = [
+    { name = "CUSTOM_COOKIE_DOMAIN", value = var.cookie_domain },
+    { name = "SNS_GOOGLE_URL", value = var.sns_google_url },
+    { name = "SNS_GOOGLE_CLIENT_ID", value = var.sns_google_client_id },
+    { name = "SNS_GOOGLE_CALLBACK_URL", value = var.sns_google_callback_url },
+    { name = "SNS_GOOGLE_CLIENT_SECRET", value = var.sns_google_client_secret },
+    { name = "SNS_GOOGLE_TOKEN_URL", value = var.sns_google_token_url },
+    { name = "SNS_KAKAO_CLIENT_ID", value = var.sns_kakao_client_id },
+    { name = "SNS_KAKAO_CALLBACK_URL", value = var.sns_kakao_callback_url },
+    { name = "SNS_KAKAO_TOKEN_URL", value = var.sns_kakao_token_url },
+  ]
+
   container_definitions = [
     {
       name              = "redis"
@@ -176,7 +188,7 @@ locals {
       image             = local.images["auth"]
       essential         = true
       memoryReservation = var.container_memory_reservation["auth"]
-      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.auth_secret_environment, [
+      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.auth_secret_environment, local.auth_oauth_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["auth"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "REDIS_HOST", value = "redis" },

@@ -61,6 +61,7 @@ cp infra/aws-ecs-free-tier/terraform.tfvars.example infra/aws-ecs-free-tier/terr
 ```
 
 Required values are `db_host`, `db_password`, and `rabbitmq_password`.
+Set the optional `sns_google_*`, `sns_kakao_*`, and `cookie_domain` values if social login must work in the deployed environment.
 If `terraform.tfvars` exists, replace placeholder values in that file; Terraform loads it before `TF_VAR_*` environment defaults.
 
 Optional script settings:
@@ -206,7 +207,7 @@ http://<public-dns>:8080
 
 ## Secrets
 
-`db_password`, `rabbitmq_password`, JWT/password secrets, and any values placed in `service_environment` are stored in Terraform state. For production, move secrets to AWS Secrets Manager or SSM Parameter Store and wire ECS `secrets` instead.
+`db_password`, `rabbitmq_password`, JWT/password secrets, OAuth client secrets, and any values placed in `service_environment` are stored in Terraform state. For production, move secrets to AWS Secrets Manager or SSM Parameter Store and wire ECS `secrets` instead.
 
 ## Teardown
 

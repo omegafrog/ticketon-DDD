@@ -143,6 +143,61 @@ variable "password_secret" {
   default     = ""
 }
 
+variable "cookie_domain" {
+  description = "Cookie domain used by auth responses. Leave empty for host-only cookies."
+  type        = string
+  default     = ""
+}
+
+variable "sns_google_url" {
+  description = "Google OAuth authorization endpoint."
+  type        = string
+  default     = "https://accounts.google.com/o/oauth2/v2/auth"
+}
+
+variable "sns_google_client_id" {
+  description = "Google OAuth client ID."
+  type        = string
+  default     = ""
+}
+
+variable "sns_google_callback_url" {
+  description = "Google OAuth callback URL."
+  type        = string
+  default     = ""
+}
+
+variable "sns_google_client_secret" {
+  description = "Google OAuth client secret. This is stored in Terraform state."
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "sns_google_token_url" {
+  description = "Google OAuth token endpoint."
+  type        = string
+  default     = "https://oauth2.googleapis.com/token"
+}
+
+variable "sns_kakao_client_id" {
+  description = "Kakao OAuth client ID."
+  type        = string
+  default     = ""
+}
+
+variable "sns_kakao_callback_url" {
+  description = "Kakao OAuth callback URL."
+  type        = string
+  default     = ""
+}
+
+variable "sns_kakao_token_url" {
+  description = "Kakao OAuth token endpoint."
+  type        = string
+  default     = "https://kauth.kakao.com/oauth/token"
+}
+
 variable "timezone" {
   description = "Container timezone."
   type        = string

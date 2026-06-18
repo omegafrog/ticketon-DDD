@@ -18,6 +18,14 @@ db_port            = 3306
 db_password        = "replace-with-a-strong-password"
 rabbitmq_password  = "replace-with-a-strong-rabbitmq-password"
 
+# Optional auth runtime values. OAuth client values can stay empty unless social login is used.
+cookie_domain            = ""
+sns_google_client_id     = ""
+sns_google_callback_url  = ""
+sns_google_client_secret = ""
+sns_kakao_client_id      = ""
+sns_kakao_callback_url   = ""
+
 # Use this for non-secret runtime values. Secrets here are stored in Terraform state.
 service_environment = {
   gateway = {}
