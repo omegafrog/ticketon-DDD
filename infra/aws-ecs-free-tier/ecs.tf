@@ -98,11 +98,6 @@ resource "aws_ecs_task_definition" "ticketon" {
   container_definitions    = jsonencode(local.container_definitions)
 
   volume {
-    name      = "mysql-data"
-    host_path = "/ecs/ticketon/mysql"
-  }
-
-  volume {
     name      = "redis-data"
     host_path = "/ecs/ticketon/redis"
   }

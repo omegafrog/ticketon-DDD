@@ -7,7 +7,7 @@ TERRAFORM_DIR="$ROOT_DIR/infra/aws-ecs-free-tier"
 IMAGE_TAG="${IMAGE_TAG:-${TF_VAR_image_tag:-latest}}"
 AUTO_APPROVE="${AUTO_APPROVE:-true}"
 WAIT_HTTP="${WAIT_HTTP:-true}"
-SEED_SAMPLE_DATA="${SEED_SAMPLE_DATA:-true}"
+SEED_SAMPLE_DATA="${SEED_SAMPLE_DATA:-false}"
 SAMPLE_DATA_SQL="$TERRAFORM_DIR/sample-data.sql"
 DEPLOY_FRONTEND="${DEPLOY_FRONTEND:-false}"
 
@@ -85,21 +85,21 @@ check_terraform_vars() {
   local tfvars="$TERRAFORM_DIR/terraform.tfvars"
 
   if [[ ! -f "$tfvars" ]]; then
-    if [[ -n "${TF_VAR_db_password:-}" && -n "${TF_VAR_mysql_root_password:-}" && -n "${TF_VAR_rabbitmq_password:-}" ]]; then
+    if [[ -n "${TF_VAR_db_host:-}" && -n "${TF_VAR_db_password:-}" && -n "${TF_VAR_rabbitmq_password:-}" ]]; then
       return 0
     fi
 
     cp "$TERRAFORM_DIR/terraform.tfvars.example" "$tfvars"
-    die "created infra/aws-ecs-free-tier/terraform.tfvars. Replace passwords or export TF_VAR_db_password, TF_VAR_mysql_root_password, TF_VAR_rabbitmq_password, then rerun."
+    die "created infra/aws-ecs-free-tier/terraform.tfvars. Replace db_host and passwords or export TF_VAR_db_host, TF_VAR_db_password, TF_VAR_rabbitmq_password, then rerun."
   fi
 
   local missing=()
 
+  if grep -q 'replace-with-rds-endpoint' "$tfvars"; then
+    missing+=("db_host")
+  fi
   if grep -q 'replace-with-a-strong-password' "$tfvars"; then
     missing+=("db_password")
-  fi
-  if grep -q 'replace-with-a-strong-root-password' "$tfvars"; then
-    missing+=("mysql_root_password")
   fi
   if grep -q 'replace-with-a-strong-rabbitmq-password' "$tfvars"; then
     missing+=("rabbitmq_password")
@@ -306,69 +306,7 @@ PY
 
 seed_sample_data() {
   [[ "$SEED_SAMPLE_DATA" == "true" ]] || return 0
-  [[ -f "$SAMPLE_DATA_SQL" ]] || die "missing sample data SQL: $SAMPLE_DATA_SQL"
-  [[ -n "${INSTANCE_ID:-}" ]] || die "instance ID not resolved"
-
-  local sql_b64 remote_command command_id status output params_file
-  sql_b64="$(base64 -w 0 "$SAMPLE_DATA_SQL")"
-
-  remote_command="$(cat <<REMOTE
-set -euo pipefail
-SQL_FILE=/tmp/ticketon-sample-data.sql
-printf '%s' '$sql_b64' | base64 -d > "\$SQL_FILE"
-MYSQL_CONTAINER="\$(docker ps --filter 'name=mysql' --format '{{.ID}}' | head -n 1)"
-test -n "\$MYSQL_CONTAINER"
-docker exec -i "\$MYSQL_CONTAINER" sh -lc 'mysql -uroot -p"\$MYSQL_ROOT_PASSWORD" "\$MYSQL_DATABASE"' < "\$SQL_FILE"
-rm -f "\$SQL_FILE"
-REMOTE
-)"
-
-  params_file="$(mktemp)"
-  python3 - "$remote_command" "$params_file" <<'PY'
-import json
-import sys
-
-command = sys.argv[1]
-path = sys.argv[2]
-
-with open(path, "w", encoding="utf-8") as f:
-    json.dump({"commands": [command]}, f)
-PY
-
-  log "seed sample data through SSM"
-  command_id="$(
-    aws ssm send-command \
-      --instance-ids "$INSTANCE_ID" \
-      --document-name "AWS-RunShellScript" \
-      --comment "ticketon sample data seed" \
-      --parameters "file://$params_file" \
-      --query 'Command.CommandId' \
-      --output text
-  )"
-  rm -f "$params_file"
-
-  aws ssm wait command-executed \
-    --command-id "$command_id" \
-    --instance-id "$INSTANCE_ID" || true
-
-  status="$(
-    aws ssm get-command-invocation \
-      --command-id "$command_id" \
-      --instance-id "$INSTANCE_ID" \
-      --query 'Status' \
-      --output text
-  )"
-
-  if [[ "$status" != "Success" ]]; then
-    output="$(
-      aws ssm get-command-invocation \
-        --command-id "$command_id" \
-        --instance-id "$INSTANCE_ID" \
-        --query 'StandardErrorContent' \
-        --output text
-    )"
-    die "sample data seed failed: $output"
-  fi
+  die "SEED_SAMPLE_DATA=true is not supported in the RDS-backed ECS stack. Seed RDS directly with a MySQL client."
 }
 
 main() {

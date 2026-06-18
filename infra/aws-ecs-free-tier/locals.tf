@@ -35,7 +35,7 @@ locals {
     service => "${aws_ecr_repository.service[service].repository_url}:${local.image_tags[service]}"
   }
 
-  mysql_jdbc_url = "jdbc:mysql://mysql:3306/${var.db_name}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+  rds_jdbc_url = "jdbc:mysql://${var.db_host}:${var.db_port}/${var.db_name}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 
   base_java_environment = [
     { name = "TZ", value = var.timezone },
@@ -47,13 +47,13 @@ locals {
   ]
 
   db_environment = [
-    { name = "SPRING_DATASOURCE_PRIMARY_URL", value = local.mysql_jdbc_url },
-    { name = "SPRING_DATASOURCE_PRIMARY_JDBC_URL", value = local.mysql_jdbc_url },
+    { name = "SPRING_DATASOURCE_PRIMARY_URL", value = local.rds_jdbc_url },
+    { name = "SPRING_DATASOURCE_PRIMARY_JDBC_URL", value = local.rds_jdbc_url },
     { name = "SPRING_DATASOURCE_PRIMARY_USERNAME", value = var.db_username },
     { name = "SPRING_DATASOURCE_PRIMARY_PASSWORD", value = var.db_password },
     { name = "SPRING_DATASOURCE_PRIMARY_DRIVER_CLASS_NAME", value = "com.mysql.cj.jdbc.Driver" },
-    { name = "SPRING_DATASOURCE_READONLY_URL", value = local.mysql_jdbc_url },
-    { name = "SPRING_DATASOURCE_READONLY_JDBC_URL", value = local.mysql_jdbc_url },
+    { name = "SPRING_DATASOURCE_READONLY_URL", value = local.rds_jdbc_url },
+    { name = "SPRING_DATASOURCE_READONLY_JDBC_URL", value = local.rds_jdbc_url },
     { name = "SPRING_DATASOURCE_READONLY_USERNAME", value = var.db_username },
     { name = "SPRING_DATASOURCE_READONLY_PASSWORD", value = var.db_password },
     { name = "SPRING_DATASOURCE_READONLY_DRIVER_CLASS_NAME", value = "com.mysql.cj.jdbc.Driver" },
@@ -78,27 +78,6 @@ locals {
   ] : []
 
   container_definitions = [
-    {
-      name              = "mysql"
-      image             = "mysql:lts"
-      essential         = true
-      memoryReservation = var.container_memory_reservation["mysql"]
-      environment = [
-        { name = "MYSQL_DATABASE", value = var.db_name },
-        { name = "MYSQL_USER", value = var.db_username },
-        { name = "MYSQL_PASSWORD", value = var.db_password },
-        { name = "MYSQL_ROOT_PASSWORD", value = var.mysql_root_password },
-      ]
-      portMappings = [{ containerPort = 3306, protocol = "tcp" }]
-      mountPoints  = [{ sourceVolume = "mysql-data", containerPath = "/var/lib/mysql", readOnly = false }]
-      healthCheck = {
-        command     = ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 10
-        startPeriod = 60
-      }
-    },
     {
       name              = "redis"
       image             = "redis:alpine"
@@ -163,9 +142,8 @@ locals {
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["eureka"] },
       ], lookup(local.service_extra_environment, "eureka", []))
       portMappings = [{ containerPort = 8761, protocol = "tcp" }]
-      links        = ["mysql", "redis", "rabbitmq"]
+      links        = ["redis", "rabbitmq"]
       dependsOn = [
-        { containerName = "mysql", condition = "HEALTHY" },
         { containerName = "redis", condition = "HEALTHY" },
         { containerName = "rabbitmq", condition = "HEALTHY" },
       ]
@@ -186,9 +164,8 @@ locals {
         { name = "SERVICES_SEAT_BASE_URL", value = "http://app:9000" },
       ], lookup(local.service_extra_environment, "app", []))
       portMappings = [{ containerPort = 9000, protocol = "tcp" }]
-      links        = ["mysql", "redis", "rabbitmq", "eureka"]
+      links        = ["redis", "rabbitmq", "eureka"]
       dependsOn = [
-        { containerName = "mysql", condition = "HEALTHY" },
         { containerName = "redis", condition = "HEALTHY" },
         { containerName = "rabbitmq", condition = "HEALTHY" },
         { containerName = "eureka", condition = "START" },
@@ -209,9 +186,8 @@ locals {
         { name = "SERVICE_USER_BASE_URL", value = "http://app:9000" },
       ], lookup(local.service_extra_environment, "auth", []))
       portMappings = [{ containerPort = 9001, protocol = "tcp" }]
-      links        = ["mysql", "redis", "rabbitmq", "eureka", "app"]
+      links        = ["redis", "rabbitmq", "eureka", "app"]
       dependsOn = [
-        { containerName = "mysql", condition = "HEALTHY" },
         { containerName = "redis", condition = "HEALTHY" },
         { containerName = "rabbitmq", condition = "HEALTHY" },
         { containerName = "eureka", condition = "START" },

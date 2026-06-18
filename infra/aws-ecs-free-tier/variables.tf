@@ -88,6 +88,17 @@ variable "db_name" {
   default     = "ticketon"
 }
 
+variable "db_host" {
+  description = "RDS MySQL endpoint hostname used by application services."
+  type        = string
+}
+
+variable "db_port" {
+  description = "RDS MySQL port."
+  type        = number
+  default     = 3306
+}
+
 variable "db_username" {
   description = "MySQL application user."
   type        = string
@@ -96,12 +107,6 @@ variable "db_username" {
 
 variable "db_password" {
   description = "MySQL application user password. This is stored in Terraform state."
-  type        = string
-  sensitive   = true
-}
-
-variable "mysql_root_password" {
-  description = "MySQL root password. This is stored in Terraform state."
   type        = string
   sensitive   = true
 }
@@ -161,7 +166,6 @@ variable "container_memory_reservation" {
   description = "Soft memory reservations in MiB. Keep the total low for t2.micro/t3.micro scheduling."
   type        = map(number)
   default = {
-    mysql      = 128
     redis      = 16
     polling    = 16
     rabbitmq   = 96

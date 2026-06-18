@@ -6,7 +6,7 @@ ECS_CLUSTER=${cluster_name}
 ECS_ENABLE_CONTAINER_METADATA=true
 EOF
 
-mkdir -p /ecs/ticketon/mysql /ecs/ticketon/redis /ecs/ticketon/polling /ecs/ticketon/rabbitmq
+mkdir -p /ecs/ticketon/redis /ecs/ticketon/polling /ecs/ticketon/rabbitmq
 
 if [ "${swap_size_gb}" -gt 0 ] && [ ! -f /swapfile ]; then
   fallocate -l ${swap_size_gb}G /swapfile || dd if=/dev/zero of=/swapfile bs=1M count=$(( ${swap_size_gb} * 1024 ))

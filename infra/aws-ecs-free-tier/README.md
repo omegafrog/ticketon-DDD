@@ -4,9 +4,10 @@ This Terraform stack deploys Ticketon on one ECS-on-EC2 container instance:
 
 - one free-tier-sized EC2 instance in a public subnet
 - one ECS task with Gateway, Eureka, App, Auth, Broker, Dispatcher
-- MySQL, Redis, polling Redis, and RabbitMQ as sidecar containers on the same instance
+- Redis, polling Redis, and RabbitMQ as sidecar containers on the same instance
+- external RDS MySQL reached through `db_host` and `db_port`
 - ECR repositories for application images
-- no ALB, NAT Gateway, RDS, or ElastiCache
+- no ALB, NAT Gateway, or ElastiCache
 
 The cost-saving tradeoff is intentional: this is a small demo deployment shape, not production HA. A single micro instance may be tight for all Java services, so increase `instance_type` if containers stop with OOM errors.
 
@@ -33,7 +34,6 @@ The script:
 - applies Terraform with the ECS service enabled
 - forces a fresh ECS deployment
 - waits for ECS stability
-- seeds demo categories, events, seat layouts, and seats through SSM
 - prints the public Gateway URL
 - optionally dispatches the frontend GitHub deploy workflow with the Gateway URL
 
@@ -60,16 +60,16 @@ Before first run, copy and edit `terraform.tfvars` or provide secret variables t
 cp infra/aws-ecs-free-tier/terraform.tfvars.example infra/aws-ecs-free-tier/terraform.tfvars
 ```
 
-Required secret values are `db_password`, `mysql_root_password`, and `rabbitmq_password`.
+Required values are `db_host`, `db_password`, and `rabbitmq_password`.
 If `terraform.tfvars` exists, replace placeholder values in that file; Terraform loads it before `TF_VAR_*` environment defaults.
 
 Optional script settings:
 
 ```bash
-IMAGE_TAG=2026-06-17-1 AUTO_APPROVE=true WAIT_HTTP=true SEED_SAMPLE_DATA=true ./infra/aws-ecs-free-tier/deploy-backend.sh
+IMAGE_TAG=2026-06-17-1 AUTO_APPROVE=true WAIT_HTTP=true ./infra/aws-ecs-free-tier/deploy-backend.sh
 ```
 
-Set `SEED_SAMPLE_DATA=false` to skip [sample-data.sql](sample-data.sql). Seeding uses AWS Systems Manager to run `mysql` inside the ECS host's MySQL container, so the EC2 instance role must keep `AmazonSSMManagedInstanceCore`.
+`SEED_SAMPLE_DATA` defaults to `false`. The ECS stack does not create a MySQL container, so seed [sample-data.sql](sample-data.sql) directly into RDS with a MySQL client if sample data is needed.
 
 ### Manual flow
 
@@ -206,7 +206,7 @@ http://<public-dns>:8080
 
 ## Secrets
 
-`db_password`, `mysql_root_password`, `rabbitmq_password`, and any values placed in `service_environment` are stored in Terraform state. For production, move secrets to AWS Secrets Manager or SSM Parameter Store and wire ECS `secrets` instead.
+`db_password`, `rabbitmq_password`, JWT/password secrets, and any values placed in `service_environment` are stored in Terraform state. For production, move secrets to AWS Secrets Manager or SSM Parameter Store and wire ECS `secrets` instead.
 
 ## Teardown
 

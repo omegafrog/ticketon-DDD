@@ -13,9 +13,10 @@ allowed_http_cidrs = ["0.0.0.0/0"]
 allowed_ssh_cidrs  = []
 key_name           = null
 
-db_password         = "replace-with-a-strong-password"
-mysql_root_password = "replace-with-a-strong-root-password"
-rabbitmq_password   = "replace-with-a-strong-rabbitmq-password"
+db_host            = "replace-with-rds-endpoint"
+db_port            = 3306
+db_password        = "replace-with-a-strong-password"
+rabbitmq_password  = "replace-with-a-strong-rabbitmq-password"
 
 # Use this for non-secret runtime values. Secrets here are stored in Terraform state.
 service_environment = {
