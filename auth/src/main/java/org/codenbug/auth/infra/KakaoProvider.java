@@ -24,6 +24,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -131,22 +132,41 @@ public class KakaoProvider implements SocialProvider {
 
 	@Override
 	public UserInfo parseUserInfo(String userInfo, SocialLoginType socialLoginType) {
-		String socialId = "";
-		String name = "";
-		String email = "";
-		int age = 0;
-		String sex = "";
 		try {
-			socialId = objectMapper.readTree(userInfo).get("id").asText();
-			name = objectMapper.readTree(userInfo).get("properties").get("nickname").asText();
-			email = objectMapper.readTree(userInfo).get("kakao_account").get("email").asText();
-			age = Integer.parseInt(
-				objectMapper.readTree(userInfo).get("kakao_account").get("age_range").asText().split("~")[0]);
-			sex = objectMapper.readTree(userInfo).get("kakao_account").get("gender").asText().toUpperCase();
+			JsonNode root = objectMapper.readTree(userInfo);
+			JsonNode account = root.path("kakao_account");
+
+			String socialId = root.path("id").asText();
+			String name = root.path("properties").path("nickname").asText("");
+			String email = account.path("email").asText();
+			int age = parseAge(account.path("age_range").asText(""));
+			String sex = parseSex(account.path("gender").asText(""));
+
+			return new UserInfo(socialId, name, socialLoginType.getName(), email, Role.USER.toString(), age, sex);
 		}catch (JsonProcessingException e) {
 			throw new RuntimeException(e);
 		}
-		return new UserInfo(socialId, name, socialLoginType.getName(), email, Role.USER.toString(), age, sex);
+	}
+
+	private int parseAge(String ageRange) {
+		if (ageRange == null || ageRange.isBlank()) {
+			return 0;
+		}
+		try {
+			return Integer.parseInt(ageRange.split("~")[0]);
+		} catch (NumberFormatException e) {
+			return 0;
+		}
+	}
+
+	private String parseSex(String gender) {
+		if ("male".equalsIgnoreCase(gender)) {
+			return "MALE";
+		}
+		if ("female".equalsIgnoreCase(gender)) {
+			return "FEMALE";
+		}
+		return "ETC";
 	}
 
 	/**
