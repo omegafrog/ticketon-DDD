@@ -1,6 +1,5 @@
 package org.codenbug.purchase.infra.config;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,8 +25,8 @@ import org.codenbug.redislock.RedisLockService;
 public class PurchaseConfig {
 
   @Bean("purchaseRestTemplate")
-  public RestTemplate restTemplate(@Qualifier("appRestTemplate") RestTemplate restTemplate) {
-    return restTemplate;
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
   @Bean("purchaseExternalRestTemplate")
