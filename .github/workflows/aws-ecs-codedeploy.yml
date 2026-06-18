@@ -244,6 +244,7 @@ jobs:
                       dependency["condition"] = "START"
               if name == "gateway":
                   set_environment(container, gateway_environment)
+                  container["portMappings"] = [{"containerPort": 8080, "hostPort": 8080, "protocol": "tcp"}]
                   env = [item for item in container.get("environment", []) if item.get("name") != "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS"]
                   if origins:
                       env.append({"name": "GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS", "value": origins})
