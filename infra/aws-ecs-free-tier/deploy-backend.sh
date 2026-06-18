@@ -9,7 +9,6 @@ AUTO_APPROVE="${AUTO_APPROVE:-true}"
 WAIT_HTTP="${WAIT_HTTP:-true}"
 SEED_SAMPLE_DATA="${SEED_SAMPLE_DATA:-false}"
 SAMPLE_DATA_SQL="$TERRAFORM_DIR/sample-data.sql"
-DEPLOY_FRONTEND="${DEPLOY_FRONTEND:-false}"
 
 SERVICES=(eureka gateway app auth broker dispatcher)
 declare -A GRADLE_TASKS=(
@@ -40,21 +39,6 @@ die() {
 
 require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "missing command: $1"
-}
-
-require_env() {
-  [[ -n "${!1:-}" ]] || die "missing env: $1"
-}
-
-resolve_vercel_origins() {
-  local origins
-  origins="$(python3 "$ROOT_DIR/.github/scripts/resolve-vercel-origins.py")"
-  if [[ -n "$origins" ]]; then
-    export TF_VAR_gateway_cors_allowed_origin_patterns="$origins"
-    log "resolved Vercel frontend origins: $origins"
-  else
-    log "Vercel frontend origins not resolved; gateway CORS keeps configured default"
-  fi
 }
 
 tf_apply_args() {
@@ -266,44 +250,6 @@ wait_gateway_http() {
   die "gateway did not answer within 10 minutes: $GATEWAY_URL"
 }
 
-dispatch_frontend_deploy() {
-  if [[ "$DEPLOY_FRONTEND" != "true" ]]; then
-    return 0
-  fi
-
-  require_cmd curl
-  require_env FRONTEND_DISPATCH_TOKEN
-  require_env FRONTEND_REPOSITORY
-
-  local frontend_workflow="${FRONTEND_WORKFLOW:-deploy.yml}"
-  local frontend_ref="${FRONTEND_REF:-main}"
-  local payload
-
-  payload="$(python3 - "$frontend_ref" "$GATEWAY_URL" <<'PY'
-import json
-import sys
-
-ref, gateway_url = sys.argv[1:3]
-print(json.dumps({
-    "ref": ref,
-    "inputs": {
-        "backend_main_url": gateway_url,
-        "backend_auth_url": gateway_url,
-        "backend_queue_url": gateway_url,
-    },
-}))
-PY
-)"
-
-  log "dispatch frontend deploy: $FRONTEND_REPOSITORY/$frontend_workflow -> $GATEWAY_URL"
-  curl -fsS -X POST \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer $FRONTEND_DISPATCH_TOKEN" \
-    -H "X-GitHub-Api-Version: 2022-11-28" \
-    "https://api.github.com/repos/$FRONTEND_REPOSITORY/actions/workflows/$frontend_workflow/dispatches" \
-    -d "$payload" >/dev/null
-}
-
 seed_sample_data() {
   [[ "$SEED_SAMPLE_DATA" == "true" ]] || return 0
   die "SEED_SAMPLE_DATA=true is not supported in the RDS-backed ECS stack. Seed RDS directly with a MySQL client."
@@ -312,7 +258,6 @@ seed_sample_data() {
 main() {
   check_prereqs
   check_terraform_vars
-  resolve_vercel_origins
   terraform_init
   ensure_ecr
   read_ecr_repositories
@@ -324,11 +269,9 @@ main() {
   resolve_gateway_url
   wait_gateway_http
   seed_sample_data
-  dispatch_frontend_deploy
 
   printf '\nBackend deployed.\n'
   printf 'Gateway URL: %s\n' "$GATEWAY_URL"
-  printf 'Frontend workflow dispatch: %s\n' "$([[ "$DEPLOY_FRONTEND" == "true" ]] && echo handled || echo skipped)"
 }
 
 main "$@"

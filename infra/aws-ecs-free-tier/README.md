@@ -35,24 +35,6 @@ The script:
 - forces a fresh ECS deployment
 - waits for ECS stability
 - prints the public Gateway URL
-- optionally dispatches the frontend GitHub deploy workflow with the Gateway URL
-
-Frontend workflow dispatch is disabled by default. Enable it with:
-
-```bash
-DEPLOY_FRONTEND=true \
-FRONTEND_DISPATCH_TOKEN=<github-token-with-actions-write> \
-FRONTEND_REPOSITORY=omegafrog/ticketon \
-FRONTEND_WORKFLOW=deploy.yml \
-FRONTEND_REF=main \
-./infra/aws-ecs-free-tier/deploy-backend.sh
-```
-
-The script dispatches the frontend workflow with:
-
-- `backend_main_url`
-- `backend_auth_url`
-- `backend_queue_url`
 
 Before first run, copy and edit `terraform.tfvars` or provide secret variables through the environment:
 
@@ -160,26 +142,13 @@ The workflow `.github/workflows/aws-ecs-codedeploy.yml` builds the runtime image
 
 The same workflow runs on `main` push. During deployment it:
 
-- resolves the current Vercel production frontend origins and injects them into the Gateway ECS task through `GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS`
 - registers a fresh ECS task definition using the current commit SHA image tags
-- optionally dispatches the frontend deploy workflow with the resolved public Gateway URL, so the frontend build knows the backend domain/IP
+- optionally injects `GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS` from a backend repository variable
 
-To enable frontend origin resolution, set these backend repository secrets/variables:
-
-```text
-VERCEL_TOKEN=<vercel-token>
-VERCEL_PROJECT_ID=<frontend-vercel-project-id>
-VERCEL_TEAM_ID=<optional-vercel-team-id>
-VERCEL_PROJECT_NAME=ticketon
-```
-
-To enable frontend workflow dispatch from backend deploy, set:
+Set `GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS` in the backend repository variables if the gateway should restrict CORS to known frontend origins. Frontend CI/CD runs from the frontend repository and should read the backend URL from that repository's own variables.
 
 ```text
-FRONTEND_REPOSITORY=owner/ticketon
-FRONTEND_WORKFLOW=deploy.yml
-FRONTEND_REF=main
-FRONTEND_DISPATCH_TOKEN=<github-token-with-actions-write> # secret, optional if GITHUB_TOKEN can dispatch target workflow
+GATEWAY_CORS_ALLOWED_ORIGIN_PATTERNS=https://ticketon.example.com,https://*.vercel.app
 ```
 
 Before the first workflow deployment, make sure the ECS service exists:
