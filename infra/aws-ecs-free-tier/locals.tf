@@ -89,6 +89,12 @@ locals {
     { name = "SNS_KAKAO_TOKEN_URL", value = var.sns_kakao_token_url },
   ]
 
+  demo_seed_environment = [
+    { name = "TICKETON_DEMO_DATA_ENABLED", value = "true" },
+    { name = "TICKETON_DEMO_DATA_USER_EMAIL", value = "testuser@ticketon.local" },
+    { name = "TICKETON_DEMO_DATA_USER_PASSWORD", value = "Ticketon123!" },
+  ]
+
   container_definitions = [
     {
       name              = "redis"
@@ -165,7 +171,7 @@ locals {
       image             = local.images["app"]
       essential         = true
       memoryReservation = var.container_memory_reservation["app"]
-      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, [
+      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.demo_seed_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["app"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "REDIS_HOST", value = "redis" },
@@ -188,7 +194,7 @@ locals {
       image             = local.images["auth"]
       essential         = true
       memoryReservation = var.container_memory_reservation["auth"]
-      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.auth_secret_environment, local.auth_oauth_environment, [
+      environment = concat(local.base_java_environment, local.db_environment, local.jwt_environment, local.auth_secret_environment, local.auth_oauth_environment, local.demo_seed_environment, [
         { name = "JAVA_TOOL_OPTIONS", value = var.java_tool_options["auth"] },
         { name = "SPRING_PROFILES_ACTIVE", value = "prod" },
         { name = "REDIS_HOST", value = "redis" },

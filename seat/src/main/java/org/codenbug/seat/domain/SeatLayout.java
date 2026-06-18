@@ -63,11 +63,17 @@ public class SeatLayout {
 	private String convertLayout(List<List<String>> layout) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("[\n");
-		for (List<String> row : layout) {
+		for (int i = 0; i < layout.size(); i++) {
+			List<String> row = layout.get(i);
 			builder.append("[");
-			builder.append(row.stream().collect(Collectors.joining(", ")));
+			builder.append(row.stream()
+				.map(value -> value == null ? "null" : "\"" + value.replace("\"", "\\\"") + "\"")
+				.collect(Collectors.joining(", ")));
 			builder.append("]");
-			builder.append(",\n");
+			if (i < layout.size() - 1) {
+				builder.append(",");
+			}
+			builder.append("\n");
 		}
 		builder.append("]");
 		return builder.toString();

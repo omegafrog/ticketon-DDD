@@ -30,4 +30,18 @@ public class RegisterRequest {
 
 	@NotBlank
 	private String location;
+
+	public RegisterRequest() {
+	}
+
+	public RegisterRequest(String email, String password, String name, Integer age, String sex, String phoneNum,
+		String location) {
+		this.email = email;
+		this.password = password;
+		this.name = name;
+		this.age = age;
+		this.sex = sex;
+		this.phoneNum = phoneNum;
+		this.location = location;
+	}
 }

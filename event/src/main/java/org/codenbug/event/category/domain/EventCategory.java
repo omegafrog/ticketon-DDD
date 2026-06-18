@@ -11,4 +11,13 @@ public class EventCategory {
 	private CategoryId id;
 	private String name;
 	private String thumbnailUrl;
+
+	protected EventCategory() {
+	}
+
+	public EventCategory(CategoryId id, String name, String thumbnailUrl) {
+		this.id = id;
+		this.name = name;
+		this.thumbnailUrl = thumbnailUrl;
+	}
 }
