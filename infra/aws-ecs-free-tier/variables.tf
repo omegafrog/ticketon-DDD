@@ -189,7 +189,7 @@ variable "sns_kakao_client_id" {
 variable "sns_kakao_callback_url" {
   description = "Kakao OAuth callback URL."
   type        = string
-  default     = ""
+  default     = "https://ticketon.vercel.app/auth-api/api/v1/auth/social/kakao/callback"
 }
 
 variable "sns_kakao_token_url" {

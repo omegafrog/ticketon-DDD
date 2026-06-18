@@ -221,6 +221,9 @@ jobs:
               "SERVICES_EVENT_BASE_URL": "http://localhost:9000",
               "SERVICES_SEAT_BASE_URL": "http://localhost:9000",
           }
+          auth_oauth_environment = {
+              "SNS_KAKAO_CALLBACK_URL": "https://ticketon.vercel.app/auth-api/api/v1/auth/social/kakao/callback",
+          }
 
           def set_environment(container, values):
               env = {item["name"]: item["value"] for item in container.get("environment", [])}
@@ -237,6 +240,8 @@ jobs:
                   set_environment(container, {"JAVA_TOOL_OPTIONS": java_tool_options[name]})
               if name in {"app", "auth"}:
                   set_environment(container, demo_seed_environment)
+              if name == "auth":
+                  set_environment(container, auth_oauth_environment)
               if name == "app":
                   set_environment(container, app_internal_environment)
               if name == "rabbitmq":
