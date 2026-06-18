@@ -8,6 +8,7 @@ import org.codenbug.auth.app.AuthService;
 import org.codenbug.auth.app.OAuthService;
 import org.codenbug.auth.domain.RefreshTokenBlackList;
 import org.codenbug.auth.domain.SecurityUserId;
+import org.codenbug.auth.global.SocialLoginType;
 import org.codenbug.common.AccessToken;
 import org.codenbug.common.RefreshToken;
 import org.codenbug.common.Role;
@@ -25,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -84,6 +86,28 @@ class SecurityControllerTest {
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(0, response.getCookie("refreshToken").getMaxAge());
         verify(blackList).add(eq("user-1"), any(Cookie.class));
+    }
+
+    @Test
+    @DisplayName("성공: 소셜 로그인 요청은 소문자 provider 경로를 허용하고 로그인 URL을 반환한다")
+    void 소셜_로그인_요청_소문자_provider_허용() {
+        when(authService.request(SocialLoginType.KAKAO)).thenReturn("https://kauth.kakao.com/oauth/authorize");
+
+        ResponseEntity<RsData<String>> result = securityController.request("kakao");
+
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals("https://kauth.kakao.com/oauth/authorize", result.getBody().getData());
+        verify(authService).request(SocialLoginType.KAKAO);
+    }
+
+    @Test
+    @DisplayName("실패: 지원하지 않는 소셜 로그인 provider는 400으로 거절한다")
+    void 소셜_로그인_요청_미지원_provider_400() {
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class,
+                () -> securityController.request("naver"));
+
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
+        verify(authService, never()).request(any());
     }
 
     @Nested

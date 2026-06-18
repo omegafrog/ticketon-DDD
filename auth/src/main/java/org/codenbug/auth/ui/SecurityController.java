@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -160,9 +161,9 @@ public class SecurityController {
       @ApiResponse(responseCode = "400", description = "지원하지 않는 소셜 로그인 타입") })
   @GetMapping(value = "/social/{socialLoginType}")
   public ResponseEntity<RsData<String>> request(
-      @Parameter(description = "소셜 로그인 타입 (google, kakao)", required = true) @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
+      @Parameter(description = "소셜 로그인 타입 (google, kakao)", required = true) @PathVariable(name = "socialLoginType") String socialLoginType) {
 
-    String redirectURL = authService.request(socialLoginType);
+    String redirectURL = authService.request(parseSocialLoginType(socialLoginType));
 
     return ResponseEntity.ok(new RsData<>(String.valueOf(HttpStatus.OK.value()), "소셜 로그인 URL 조회 성공", redirectURL));
   }
@@ -173,7 +174,7 @@ public class SecurityController {
       @ApiResponse(responseCode = "500", description = "소셜 로그인 처리 중 오류") })
   @GetMapping(value = "/social/{socialLoginType}/callback")
   public ResponseEntity<RsData<String>> callback(
-      @Parameter(description = "소셜 로그인 타입", required = true) @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType,
+      @Parameter(description = "소셜 로그인 타입", required = true) @PathVariable(name = "socialLoginType") String socialLoginType,
       @Parameter(description = "소셜 로그인 인증 코드", required = true) @RequestParam(name = "code") @NotBlank String code,
       @Parameter(description = "리다이렉션 URL", required = false) @RequestParam(name = "redirectUrl", required = false) String redirectUrl,
       HttpServletResponse response) {
@@ -181,11 +182,13 @@ public class SecurityController {
     log.debug(">> 소셜 로그인 API 서버로부터 받은 code :: {}", code);
     log.debug(">> 콜백 시 사용된 리다이렉트 URL: {}", redirectUrl);
 
+    SocialLoginType parsedSocialLoginType = parseSocialLoginType(socialLoginType);
+
     try {
 
       String decodedCode = URLDecoder.decode(code, StandardCharsets.UTF_8);
       // 액세스 토큰을 통해 사용자 정보를 받아오고 JWT 토큰 생성 (리다이렉트 URL 전달)
-      SocialLoginResponse userResponse = oAuthService.requestAccessTokenAndSaveUser(socialLoginType, decodedCode);
+      SocialLoginResponse userResponse = oAuthService.requestAccessTokenAndSaveUser(parsedSocialLoginType, decodedCode);
 
       // 쿠키에 토큰 저장 (UserController.login 메서드와 유사하게)
       AccessToken accessToken = userResponse.tokenInfo().getAccessToken();
@@ -202,6 +205,14 @@ public class SecurityController {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body(
               new RsData<>(String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR.value()), "소셜 로그인 처리 중 오류가 발생했습니다.", null));
+    }
+  }
+
+  private SocialLoginType parseSocialLoginType(String socialLoginType) {
+    try {
+      return SocialLoginType.fromPathValue(socialLoginType);
+    } catch (IllegalArgumentException e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
     }
   }
 

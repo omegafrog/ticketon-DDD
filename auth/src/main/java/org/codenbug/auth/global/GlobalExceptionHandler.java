@@ -14,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -95,6 +96,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserValidationException.class)
     public ResponseEntity<RsData<?>> handleUserValidationException(UserValidationException e) {
         return ResponseEntity.status(e.getStatus()).body(e.getRsData());
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<RsData<Void>> handleResponseStatusException(ResponseStatusException e) {
+        return ResponseEntity.status(e.getStatusCode())
+                .body(new RsData<Void>(String.valueOf(e.getStatusCode().value()),
+                        e.getReason(),
+                        null));
     }
 
     @ExceptionHandler(Exception.class)
