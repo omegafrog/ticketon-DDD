@@ -195,6 +195,8 @@ jobs:
               "runtimePlatform",
           }
           task = {key: value for key, value in task.items() if key in keep}
+          task["networkMode"] = "bridge"
+          task["requiresCompatibilities"] = ["EC2"]
           java_tool_options = {
               "eureka": "-Xms32m -Xmx64m",
               "gateway": "-Xms48m -Xmx128m",
