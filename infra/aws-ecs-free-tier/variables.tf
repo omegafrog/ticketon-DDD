@@ -17,9 +17,9 @@ variable "environment" {
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for the ECS container instance. t2.micro is free-tier eligible for many new accounts; check the selected region/account."
+  description = "EC2 instance type for the ECS container instance. t3.small is the practical minimum for this multi-container Java demo shape."
   type        = string
-  default     = "t2.micro"
+  default     = "t3.small"
 }
 
 variable "ecs_optimized_ami_ssm_path" {
