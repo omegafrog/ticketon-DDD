@@ -283,7 +283,9 @@ jobs:
 
           is_reachable_gateway() {
             local url="${1%/}"
-            curl -k -fsS --connect-timeout 5 --max-time 12 "$url/actuator/health" >/dev/null
+            local code
+            code="$(curl -k -sS -o /dev/null -w '%{http_code}' --connect-timeout 5 --max-time 12 "$url" || true)"
+            [[ "$code" != "000" ]]
           }
 
           resolve_host_by_name() {
@@ -364,20 +366,23 @@ jobs:
           fi
 
           gateway_url=""
-          for candidate in "${candidate_urls[@]}"; do
-            candidate="${candidate%/}"
-            if [[ -z "$candidate" ]]; then
-              continue
-            fi
-            if is_reachable_gateway "$candidate"; then
-              gateway_url="$candidate"
-              break
-            fi
-            echo "Backend candidate not reachable: $candidate"
+          for _ in {1..60}; do
+            for candidate in "${candidate_urls[@]}"; do
+              candidate="${candidate%/}"
+              if [[ -z "$candidate" ]]; then
+                continue
+              fi
+              if is_reachable_gateway "$candidate"; then
+                gateway_url="$candidate"
+                break 2
+              fi
+              echo "Backend candidate not reachable yet: $candidate"
+            done
+            sleep 10
           done
 
           if [[ -z "$gateway_url" ]]; then
-            echo "Backend public URL not reachable."
+            echo "Backend public URL not reachable within 10 minutes."
             exit 1
           fi
 
