@@ -1,0 +1,86 @@
+name: aws-ecs-diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'ap-northeast-2' }}
+  PROJECT_NAME: ${{ vars.PROJECT_NAME || 'ticketon' }}
+  DEPLOY_ENV: ${{ vars.DEPLOY_ENV || 'dev' }}
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Inspect ECS and EC2 gateway exposure
+        shell: bash
+        run: |
+          set -euo pipefail
+          name="${PROJECT_NAME}-${DEPLOY_ENV}"
+
+          echo "ECS service summary"
+          aws ecs describe-services \
+            --cluster "$name" \
+            --services "$name" \
+            --query 'services[0].{status:status,desired:desiredCount,running:runningCount,pending:pendingCount,taskDefinition:taskDefinition,events:events[0:8]}' \
+            --output json
+
+          task_def="$(aws ecs describe-services \
+            --cluster "$name" \
+            --services "$name" \
+            --query 'services[0].taskDefinition' \
+            --output text)"
+
+          echo "Task definition gateway settings"
+          aws ecs describe-task-definition \
+            --task-definition "$task_def" \
+            --query 'taskDefinition.{family:family,revision:revision,networkMode:networkMode,requiresCompatibilities:requiresCompatibilities,gateway:containerDefinitions[?name==`gateway`]|[0].{image:image,portMappings:portMappings,environment:environment[?starts_with(name, `SERVER_`) || starts_with(name, `SPRING_`) || starts_with(name, `EUREKA_`) || starts_with(name, `GATEWAY_`)]}}' \
+            --output json
+
+          echo "EC2 instance summary"
+          aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=${name}-ecs" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].{id:InstanceId,publicDns:PublicDnsName,publicIp:PublicIpAddress,privateIp:PrivateIpAddress,securityGroups:SecurityGroups[].GroupId,subnet:SubnetId,vpc:VpcId}' \
+            --output json
+
+          instance_id="$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=${name}-ecs" "Name=instance-state-name,Values=running" \
+            --query 'Reservations[].Instances[].InstanceId | [0]' \
+            --output text)"
+
+          echo "Trying SSM command on instance: $instance_id"
+          command_id="$(aws ssm send-command \
+            --instance-ids "$instance_id" \
+            --document-name "AWS-RunShellScript" \
+            --comment "ticketon gateway diagnostics" \
+            --parameters 'commands=["set -euo pipefail","echo docker-ps","docker ps --format '\''table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'\''","echo listeners","ss -ltnp || netstat -ltnp || true","echo gateway-local-health","curl -fsS --connect-timeout 3 --max-time 8 http://127.0.0.1:8080/actuator/health || true"]' \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$instance_id" || true
+
+          echo "SSM stdout"
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$instance_id" \
+            --query 'StandardOutputContent' \
+            --output text
+
+          echo "SSM stderr"
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$instance_id" \
+            --query 'StandardErrorContent' \
+            --output text
