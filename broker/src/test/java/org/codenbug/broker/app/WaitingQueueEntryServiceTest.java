@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.codenbug.broker.config.InstanceConfig;
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.infra.EventStatusInitializer;
 import org.codenbug.broker.infra.WaitingQueueRedisRepository;
 import org.codenbug.broker.service.SseEmitterService;
@@ -38,7 +39,7 @@ class WaitingQueueEntryServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         service = new WaitingQueueEntryService(sseEmitterService, waitingQueueRedisRepository, eventClient,
-            eventStatusInitializer, instanceConfig);
+            eventStatusInitializer, instanceConfig, new QueueProperties());
     }
 
     @Test

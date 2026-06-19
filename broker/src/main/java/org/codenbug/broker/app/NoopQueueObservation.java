@@ -10,4 +10,16 @@ enum NoopQueueObservation implements QueueObservation {
 	@Override
 	public void recordQueueState(String eventId, Long waitingUsers, Long entrySlots) {
 	}
+
+	@Override
+	public void recordEntryTokenIssued(String eventId) {
+	}
+
+	@Override
+	public void recordEntryTokenExpired(String eventId) {
+	}
+
+	@Override
+	public void recordSlotReleased(String eventId, boolean released) {
+	}
 }

@@ -1,6 +1,7 @@
 package org.codenbug.broker.app;
 
 import org.codenbug.broker.config.InstanceConfig;
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.service.SseEmitterService;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +21,18 @@ public class WaitingQueueEntryService {
   private final EventClient eventClient;
   private final EventStatusInitializationPort eventStatusInitializer;
   private final InstanceConfig instanceConfig;
+  private final QueueProperties queueProperties;
 
   public WaitingQueueEntryService(SseEmitterService sseEmitterService,
       WaitingQueueStore waitingQueueRepository, EventClient eventClient,
       EventStatusInitializationPort eventStatusInitializer,
-      InstanceConfig instanceConfig) {
+      InstanceConfig instanceConfig, QueueProperties queueProperties) {
     this.sseEmitterService = sseEmitterService;
     this.waitingQueueRepository = waitingQueueRepository;
     this.eventClient = eventClient;
     this.eventStatusInitializer = eventStatusInitializer;
     this.instanceConfig = instanceConfig;
+    this.queueProperties = queueProperties;
   }
 
   public SseEmitter entry(String eventId) throws JsonProcessingException {
@@ -66,7 +69,7 @@ public class WaitingQueueEntryService {
 
     if (!waitingQueueRepository.entryQueueCountExists(eventId)) {
       int seatCount = eventClient.getSeatCount(eventId);
-      waitingQueueRepository.updateEntryQueueCount(eventId, seatCount);
+      waitingQueueRepository.initializeEntryAdmissionSlots(eventId, queueProperties.getMaxActiveShoppers(), seatCount);
     }
 
     eventStatusInitializer.ensureInitialized(eventId);

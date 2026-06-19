@@ -8,7 +8,9 @@ public interface WaitingQueueStore {
 
 	void updateEntryQueueCount(String eventId, int slotCount);
 
-	void incrementEntryQueueCount(String eventId);
+	void initializeEntryAdmissionSlots(String eventId, int maxActiveShoppers, int remainingSeatCount);
+
+	boolean releaseEntryAdmissionSlot(String eventId, int maxActiveShoppers);
 
 	boolean recordWaitingUserIfAbsent(String eventId, String userId);
 

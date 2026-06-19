@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.infra.WaitingQueueRedisRepository;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +17,9 @@ class MicrometerQueueObservationTest {
 		SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
 		WaitingQueueRedisRepository repository = mock(WaitingQueueRedisRepository.class);
 		when(repository.countActiveEntryTokens()).thenReturn(3L);
-		MicrometerQueueObservation observation = new MicrometerQueueObservation(meterRegistry, repository);
+		QueueProperties queueProperties = new QueueProperties();
+		MicrometerQueueObservation observation = new MicrometerQueueObservation(meterRegistry, repository,
+			queueProperties);
 
 		observation.recordPollingRequest("event-1", "WAITING", 5000L);
 		observation.recordQueueState("event-1", 120L, 8L);
@@ -32,6 +35,10 @@ class MicrometerQueueObservationTest {
 			.gauge().value()).isEqualTo(120.0);
 		assertThat(meterRegistry.get("ticketon.queue.entry_slots").tag("eventId", "event-1")
 			.gauge().value()).isEqualTo(8.0);
+		assertThat(meterRegistry.get("queue.active_shoppers.current").tag("eventId", "event-1")
+			.gauge().value()).isEqualTo(492.0);
+		assertThat(meterRegistry.get("queue.active_shoppers.limit").tag("eventId", "event-1")
+			.gauge().value()).isEqualTo(500.0);
 		assertThat(meterRegistry.get("ticketon.queue.active_tokens").gauge().value()).isEqualTo(3.0);
 	}
 }

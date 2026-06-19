@@ -3,6 +3,7 @@ package org.codenbug.broker.app;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.codenbug.broker.config.QueueProperties;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -14,14 +15,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PollingEntryDispatchService implements EntryDispatcherService {
   private static final String ENTRY_TOKEN_STORAGE_KEY_NAME = "ENTRY_TOKEN";
-  private static final long ENTRY_TOKEN_TTL_MINUTES = 60;
 
   private final EntryAuthService entryAuthService;
   private final StringRedisTemplate redisTemplate;
+  private final QueueProperties queueProperties;
+  private final QueueObservation queueObservation;
 
-  public PollingEntryDispatchService(EntryAuthService entryAuthService, StringRedisTemplate redisTemplate) {
+  public PollingEntryDispatchService(EntryAuthService entryAuthService, StringRedisTemplate redisTemplate,
+      QueueProperties queueProperties, QueueObservation queueObservation) {
     this.entryAuthService = entryAuthService;
     this.redisTemplate = redisTemplate;
+    this.queueProperties = queueProperties;
+    this.queueObservation = queueObservation;
   }
 
   public SSEEntryDispatchService.DispatchResult handle(String userId, String eventId) {
@@ -34,11 +39,15 @@ public class PollingEntryDispatchService implements EntryDispatcherService {
 
     String token = entryAuthService
         .generateEntryAuthToken(Map.of("eventId", eventId, "userId", userId), "entryAuthToken");
-    storeEntryToken(userId, token);
+    storeEntryToken(userId, eventId, token);
   }
 
-  private void storeEntryToken(String userId, String token) {
-    redisTemplate.opsForValue().set(buildEntryTokenKey(userId), token, ENTRY_TOKEN_TTL_MINUTES, TimeUnit.MINUTES);
+  private void storeEntryToken(String userId, String eventId, String token) {
+    redisTemplate.opsForValue().set(buildEntryTokenKey(userId), token,
+        queueProperties.getEntryTokenTtlMinutes(), TimeUnit.MINUTES);
+    redisTemplate.opsForValue().set("ENTRY_EVENT:" + userId, eventId,
+        queueProperties.getEntryTokenTtlMinutes(), TimeUnit.MINUTES);
+    queueObservation.recordEntryTokenIssued(eventId);
   }
 
   private String buildEntryTokenKey(String userId) {
