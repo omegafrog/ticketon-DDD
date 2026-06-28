@@ -14,6 +14,7 @@ import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.service.NotificationDomainService;
 import org.codenbug.notification.infrastructure.NotificationStoreAdapter;
 import org.codenbug.notification.infrastructure.NotificationRepository;
+import org.codenbug.notification.ui.repository.NotificationViewRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -60,6 +61,7 @@ class NotificationApplicationServicePortTest {
         .createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
     store.notificationById = notification;
     NotificationQueryService service = new NotificationQueryService(store,
+        org.mockito.Mockito.mock(NotificationViewRepository.class),
         new NotificationDomainService());
 
     service.getNotificationById(1L, "user-1");
@@ -86,6 +88,11 @@ class NotificationApplicationServicePortTest {
     @Override
     public Optional<Notification> findById(Long notificationId) {
       return Optional.ofNullable(notificationById);
+    }
+
+    @Override
+    public boolean existsBySourceKey(String sourceKey) {
+      return false;
     }
 
     @Override

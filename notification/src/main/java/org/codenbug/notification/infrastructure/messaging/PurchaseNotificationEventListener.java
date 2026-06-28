@@ -4,6 +4,7 @@ import org.codenbug.notification.application.service.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,6 +30,8 @@ public class PurchaseNotificationEventListener {
         try {
             RefundCompletedEventDto event =
                     objectMapper.readValue(message, RefundCompletedEventDto.class);
+            String sourceKey = requireSourceKey("notification.refund.completed",
+                    event.getUserId(), event.getPurchaseId(), event.getRefundedAt());
 
             String title = "[티켓온] 환불 완료";
             String content = String.format(
@@ -38,14 +41,21 @@ public class PurchaseNotificationEventListener {
                     String.format("%,d", event.getRefundAmount()), event.getRefundReason());
             String targetUrl = "/my-account/refund-history";
 
-            notificationApplicationService.createNotification(event.getUserId(),
-                    NotificationType.PAYMENT, title, content, targetUrl);
+            if (notificationApplicationService.createNotificationIfAbsent(event.getUserId(),
+                    NotificationType.PAYMENT, title, content, targetUrl, sourceKey).isPresent()) {
+                log.info("notification event persisted: queue=notification.refund.completed, eventType=refund.completed, userId={}, purchaseId={}",
+                        event.getUserId(), event.getPurchaseId());
+            } else {
+                log.info("notification duplicate skipped: queue=notification.refund.completed, eventType=refund.completed, sourceKey={}",
+                        sourceKey);
+            }
 
-            log.info("환불 완료 이벤트 처리 및 알림 생성 완료: userId={}, purchaseId={}, refundAmount={}",
-                    event.getUserId(), event.getPurchaseId(), event.getRefundAmount());
-
+        } catch (IllegalArgumentException e) {
+            log.warn("notification event skipped: queue=notification.refund.completed, eventType=refund.completed, reason={}",
+                    e.getMessage());
         } catch (Exception e) {
-            log.error("환불 완료 이벤트 처리 실패: message={}", message, e);
+            log.error("notification event failed: queue=notification.refund.completed, eventType=refund.completed, reason={}",
+                    e.getMessage(), e);
         }
     }
 
@@ -57,6 +67,7 @@ public class PurchaseNotificationEventListener {
         try {
             ManagerRefundCompletedEventDto event =
                     objectMapper.readValue(message, ManagerRefundCompletedEventDto.class);
+            String sourceKey = requireManagerSourceKey(event);
 
             String title = "[티켓온] 매니저 환불 처리";
             String content = String.format(
@@ -67,15 +78,42 @@ public class PurchaseNotificationEventListener {
                     event.getManagerName());
             String targetUrl = "/my-account/refund-history";
 
-            notificationApplicationService.createNotification(event.getUserId(),
-                    NotificationType.PAYMENT, title, content, targetUrl);
+            if (notificationApplicationService.createNotificationIfAbsent(event.getUserId(),
+                    NotificationType.PAYMENT, title, content, targetUrl, sourceKey).isPresent()) {
+                log.info("notification event persisted: queue=notification.manager.refund.completed, eventType=manager.refund.completed, userId={}, purchaseId={}, managerName={}",
+                        event.getUserId(), event.getPurchaseId(), event.getManagerName());
+            } else {
+                log.info("notification duplicate skipped: queue=notification.manager.refund.completed, eventType=manager.refund.completed, sourceKey={}",
+                        sourceKey);
+            }
 
-            log.info("매니저 환불 완료 이벤트 처리 및 알림 생성 완료: userId={}, purchaseId={}, managerName={}",
-                    event.getUserId(), event.getPurchaseId(), event.getManagerName());
-
+        } catch (IllegalArgumentException e) {
+            log.warn("notification event skipped: queue=notification.manager.refund.completed, eventType=manager.refund.completed, reason={}",
+                    e.getMessage());
         } catch (Exception e) {
-            log.error("매니저 환불 완료 이벤트 처리 실패: message={}", message, e);
+            log.error("notification event failed: queue=notification.manager.refund.completed, eventType=manager.refund.completed, reason={}",
+                    e.getMessage(), e);
         }
+    }
+
+    private String requireSourceKey(String queueName, String userId, String purchaseId,
+            String refundedAt) {
+        if (!StringUtils.hasText(userId) || !StringUtils.hasText(purchaseId)
+                || !StringUtils.hasText(refundedAt)) {
+            throw new IllegalArgumentException(
+                    String.format("missing stable key fields for queue=%s", queueName));
+        }
+        return String.format("%s:%s:%s:%s", queueName, userId.trim(), purchaseId.trim(),
+                refundedAt.trim());
+    }
+
+    private String requireManagerSourceKey(ManagerRefundCompletedEventDto event) {
+        if (!StringUtils.hasText(event.getManagerName())) {
+            throw new IllegalArgumentException(
+                    "missing stable key fields for queue=notification.manager.refund.completed");
+        }
+        return requireSourceKey("notification.manager.refund.completed", event.getUserId(),
+                event.getPurchaseId(), event.getRefundedAt()) + ":" + event.getManagerName().trim();
     }
 
     /**

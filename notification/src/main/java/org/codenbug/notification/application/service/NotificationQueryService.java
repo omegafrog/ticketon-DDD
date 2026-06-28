@@ -6,6 +6,8 @@ import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.service.NotificationDomainService;
 import org.codenbug.notification.dto.NotificationDto;
+import org.codenbug.notification.ui.projection.NotificationListProjection;
+import org.codenbug.notification.ui.repository.NotificationViewRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,13 +19,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationQueryService {
 
 	private final NotificationStore notificationStore;
+	private final NotificationViewRepository notificationViewRepository;
 	private final NotificationDomainService domainService;
 
-	public Page<NotificationDto> getNotifications(String userId, Pageable pageable) {
-		UserId userIdVO = new UserId(userId);
-		Page<Notification> notifications =
-			notificationStore.findByUserIdOrderBySentAtDesc(userIdVO, pageable);
-		return notifications.map(NotificationDto::from);
+	public Page<NotificationListProjection> getNotifications(String userId, Pageable pageable) {
+		return notificationViewRepository.findUserNotificationList(userId, pageable);
 	}
 
 	@Transactional
@@ -41,11 +41,8 @@ public class NotificationQueryService {
 		return NotificationDto.from(notification);
 	}
 
-	public Page<NotificationDto> getUnreadNotifications(String userId, Pageable pageable) {
-		UserId userIdVO = new UserId(userId);
-		return notificationStore
-			.findByUserIdAndIsReadFalseOrderBySentAtDesc(userIdVO, pageable)
-			.map(NotificationDto::from);
+	public Page<NotificationListProjection> getUnreadNotifications(String userId, Pageable pageable) {
+		return notificationViewRepository.findUserUnreadNotificationList(userId, pageable);
 	}
 
 	public long getUnreadCount(String userId) {

@@ -1,11 +1,12 @@
 # Agent Context Map
+
 ## Repository Purpose
 
-As-is reverse-engineering baseline for Codex handoff. Documentation only; repository unchanged.
+Make existing persisted notification features operational
 
 ## Static Analysis
 
-- Description: Existing project reverse-engineered by harness bootstrap
+- Description: Make existing persisted notification features operational
 - Technologies: Java/Gradle
 - Manifests: `build.gradle`, `settings.gradle`
 - Source roots: `app`, `harness_codex`
@@ -40,7 +41,3 @@ Start with the nearest `AGENTS.md`, then read only the smallest relevant file fr
 ## Harness Workflow Guidance
 
 When ChangeSet docs exist, use the active ChangeSet and selected work-item slice as the primary scope. Read canonical design docs only when the slice points there or shared design context is required.
-
-## LLM Context Guidance
-
-Start with docs/agent/context.md. Read nearest nested AGENTS.md before module work. Never expose application-secret.yml. Client traffic enters platform/gateway; app should remain composition-only. Use targeted rg/sed reads.

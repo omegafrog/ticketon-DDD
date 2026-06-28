@@ -17,6 +17,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
+    boolean existsBySourceKey(String sourceKey);
+
     /**
      * 특정 사용자의 알림 목록을 페이징하여 조회
      *

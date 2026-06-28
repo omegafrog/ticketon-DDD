@@ -7,11 +7,11 @@ import org.codenbug.notification.application.service.NotificationQueryService;
 import org.codenbug.notification.dto.NotificationDto;
 import org.codenbug.notification.service.NotificationEmitterService;
 import org.codenbug.notification.ui.projection.NotificationListProjection;
-import org.codenbug.notification.ui.repository.NotificationViewRepository;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -29,22 +29,25 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 public class NotificationQueryController {
 
+	private static final int MAX_INBOX_PAGE_SIZE = 100;
+
 	private final NotificationQueryService notificationQueryService;
 	private final NotificationEmitterService emitterService;
-	private final NotificationViewRepository notificationViewRepository;
 
 	@GetMapping
 	@AuthNeeded
 	@RoleRequired({Role.USER})
 	public RsData<Page<NotificationListProjection>> getNotifications(
-			@PageableDefault(size = 10, sort = "sentAt") Pageable pageable) {
+			@PageableDefault(size = 10, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		String userId = LoggedInUserContext.get().getUserId();
 		Page<NotificationListProjection> notifications =
-			notificationViewRepository.findUserNotificationList(userId, pageable);
+			notificationQueryService.getNotifications(userId, normalizeInboxPageable(pageable, 10));
 		return new RsData<>("200", "알림 목록 조회 성공", notifications);
 	}
 
 	@GetMapping("/{id}")
+	@AuthNeeded
+	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<NotificationDto>> getNotificationDetail(@PathVariable Long id) {
 		String userId = LoggedInUserContext.get().getUserId();
 		NotificationDto notification = notificationQueryService.getNotificationById(id, userId);
@@ -58,7 +61,7 @@ public class NotificationQueryController {
 			@PageableDefault(size = 20, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		String userId = LoggedInUserContext.get().getUserId();
 		Page<NotificationListProjection> unreadPage =
-			notificationViewRepository.findUserUnreadNotificationList(userId, pageable);
+			notificationQueryService.getUnreadNotifications(userId, normalizeInboxPageable(pageable, 20));
 		return new RsData<>("200", "미읽은 알림 조회 성공", unreadPage);
 	}
 
@@ -76,7 +79,13 @@ public class NotificationQueryController {
 	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<Long>> getUnreadCount() {
 		String userId = LoggedInUserContext.get().getUserId();
-		long count = notificationViewRepository.countUnreadNotifications(userId);
+		long count = notificationQueryService.getUnreadCount(userId);
 		return ResponseEntity.ok(new RsData<>("200", "미읽은 알림 개수 조회 성공", count));
+	}
+
+	private Pageable normalizeInboxPageable(Pageable pageable, int defaultPageSize) {
+		int pageSize = pageable.getPageSize() > 0 ? pageable.getPageSize() : defaultPageSize;
+		return PageRequest.of(pageable.getPageNumber(), Math.min(pageSize, MAX_INBOX_PAGE_SIZE),
+			Sort.by(Sort.Direction.DESC, "sentAt"));
 	}
 }

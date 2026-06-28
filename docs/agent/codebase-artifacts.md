@@ -2,7 +2,7 @@
 
 ## Repository Inventory
 
-- Description: Existing project reverse-engineered by harness bootstrap
+- Description: Make existing persisted notification features operational
 - Technologies: Java/Gradle
 - Manifests: `build.gradle`, `settings.gradle`
 - Source roots: `app`, `harness_codex`
@@ -21,7 +21,7 @@
 
 ## Reverse-Engineered Implementation
 
-Semantic implementation artifacts were not generated because the LLM analysis did not complete (status: completed). Run `harness init` with LLM analysis enabled to reverse-engineer code-level behavior.
+Semantic implementation artifacts were not generated because the LLM analysis did not complete (status: skipped (disabled)). Run `harness init` with LLM analysis enabled to reverse-engineer code-level behavior.
 
 ## Evidence Policy
 
