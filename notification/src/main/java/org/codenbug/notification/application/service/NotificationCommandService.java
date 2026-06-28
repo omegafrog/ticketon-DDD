@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -43,6 +44,26 @@ public class NotificationCommandService {
 	public NotificationDto createNotification(String userId, NotificationType type, String title,
 			String content) {
 		return createNotification(userId, type, title, content, null);
+	}
+
+	public Optional<NotificationDto> createNotificationIfAbsent(String userId, NotificationType type,
+			String title, String content, String targetUrl, String sourceKey) {
+		if (notificationStore.existsBySourceKey(sourceKey)) {
+			return Optional.empty();
+		}
+
+		log.debug("알림 생성 시작: userId={}, type={}, sourceKey={}", userId, type, sourceKey);
+		Notification notification =
+			domainService.createNotification(userId, type, title, content, targetUrl, sourceKey);
+		Notification savedNotification = notificationStore.save(notification);
+
+		NotificationDto notificationDto = NotificationDto.from(savedNotification);
+		NotificationEventDto eventDto = NotificationEventDto.from(savedNotification);
+		eventPublisher.publishEvent(eventDto);
+
+		log.debug("멱등 알림 이벤트 발행 완료: notificationId={}, sourceKey={}",
+			savedNotification.getId(), sourceKey);
+		return Optional.of(notificationDto);
 	}
 
 	public NotificationDto createLegacyNotification(String userId, NotificationType type, String content) {

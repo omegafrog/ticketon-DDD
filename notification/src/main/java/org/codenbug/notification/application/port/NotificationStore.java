@@ -14,6 +14,8 @@ public interface NotificationStore {
 
     Optional<Notification> findById(Long notificationId);
 
+    boolean existsBySourceKey(String sourceKey);
+
     Page<Notification> findByUserIdOrderBySentAtDesc(UserId userId, Pageable pageable);
 
     List<Notification> findByUserIdOrderBySentAtDesc(UserId userId);

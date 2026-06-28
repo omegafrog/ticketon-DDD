@@ -187,6 +187,12 @@ cd infra/aws-ecs-free-tier
 ./stack-power.sh pause
 ```
 
+`stop` is supported as an alias for `pause`:
+
+```bash
+./stack-power.sh stop
+```
+
 To start them later:
 
 ```bash
@@ -194,7 +200,7 @@ cd infra/aws-ecs-free-tier
 ./stack-power.sh resume
 ```
 
-The script reads Terraform state and only targets managed ASG, ECS service, standalone EC2, RDS instance, and RDS cluster resources. It stores original desired counts/capacities in `.terraform/stack-power-state.json` before pausing. RDS stopped state lasts up to 7 days; AWS may restart it after that.
+The script reads Terraform state and also discovers this stack's conventionally named live ASG and ECS service when local state is incomplete. It stores original desired counts/capacities and ASG instance IDs in `.terraform/stack-power-state.json` before pausing. Pause suspends ASG processes and stops its EC2 instances without terminating them. Resume starts the same instances, resumes ASG processes, waits for EC2 to register with ECS, and waits for the service to become stable. RDS stopped state lasts up to 7 days; AWS may restart it after that.
 
 This does not remove all cost. Non-stoppable resources such as ECR images, S3 buckets, VPC resources, EBS snapshots, Elastic IPs, NAT gateways, and load balancers can still bill. Use `terraform destroy` when the goal is full teardown.
 

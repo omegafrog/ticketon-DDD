@@ -1,18 +1,23 @@
-<!-- harness-reverse-engineered:v1 -->
-# Ubiquitous Language
+# Project Context
 
-| Term | Meaning | Evidence |
-|---|---|---|
-| Security User | Authentication account, role, status, credentials | auth/domain/SecurityUser.java |
-| User | Customer profile linked to security identity | user/domain/User.java |
-| Event | Ticketed performance and booking policy | event/domain/Event.java |
-| Seat Layout | Event seating arrangement and seat availability | seat/domain/SeatLayout.java |
-| Queue Entry | Redis waiting registration for one user/event | broker/infra/WaitingQueueRedisRepository.java |
-| Entry Token | Time-limited permission to proceed toward purchase | broker/app/PollingEntryDispatchService.java |
-| Purchase | Payment-bearing reservation record | purchase/domain/Purchase.java |
-| Ticket | Issued item for a confirmed purchase | purchase/domain/Ticket.java |
-| Refund | Full-payment reversal request and result | purchase/domain/Refund.java |
-| Notification | User-addressed persisted message | notification/domain/entity/Notification.java |
-| Manager | Role permitted to operate owned events | platform/common/src/main/java/org/codenbug/common/Role.java |
-| Administrator | Role permitted to operate backoffice accounts | auth/ui/AdminBackofficeController.java |
-| Payment Provider | External PG implementation, currently Toss adapter | purchase/infra/TossPaymentPgApiService.java |
+## 1. Ubiquitous Language
+
+| Canonical Term | Korean | English | Type | Definition | Aliases | Forbidden Terms | Source |
+|---|---|---|---|---|---|---|---|
+| User | 사용자 | User | Actor | Primary external actor confirmed through harvest. | - | - | grill-me |
+
+## 2. Naming Rules
+
+- Documents must use `Canonical Term`.
+- Code class, method, package, command, event, and policy identifiers must use `English`.
+- User-facing text should use `Korean`.
+- `Forbidden Terms` must not be used in new documents, plans, tests, or code identifiers.
+- Aliases are recorded only for migration/search context and must not be introduced as new canonical language.
+
+## 3. Blocking Open Language Questions
+
+- None.
+
+## 4. Deferred Language Questions
+
+- None.

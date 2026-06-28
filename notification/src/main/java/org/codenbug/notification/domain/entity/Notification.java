@@ -61,12 +61,21 @@ public class Notification {
     @Column(nullable = false)
     private NotificationStatus status;
 
+    @Column(name = "source_key", unique = true, length = 255)
+    private String sourceKey;
+
     public Notification(UserId userId, NotificationType type, NotificationContent content) {
+        this(userId, type, content, null);
+    }
+
+    public Notification(UserId userId, NotificationType type, NotificationContent content,
+            String sourceKey) {
         this.userId = Objects.requireNonNull(userId, "사용자 ID는 필수입니다.");
         this.type = Objects.requireNonNull(type, "알림 유형은 필수입니다.");
         this.notificationContent = Objects.requireNonNull(content, "알림 내용은 필수입니다.");
         this.isRead = false;
         this.status = NotificationStatus.PENDING;
+        this.sourceKey = sourceKey;
     }
 
     public static Notification createFromLegacy(String userId, NotificationType type,

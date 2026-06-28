@@ -28,6 +28,11 @@ public class NotificationStoreAdapter implements NotificationStore {
     }
 
     @Override
+    public boolean existsBySourceKey(String sourceKey) {
+        return notificationRepository.existsBySourceKey(sourceKey);
+    }
+
+    @Override
     public Page<Notification> findByUserIdOrderBySentAtDesc(UserId userId, Pageable pageable) {
         return notificationRepository.findByUserIdOrderBySentAtDesc(userId, pageable);
     }
