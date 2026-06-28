@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
-import org.codenbug.notification.domain.service.NotificationDomainService;
+import org.codenbug.notification.domain.NotificationDomainService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
