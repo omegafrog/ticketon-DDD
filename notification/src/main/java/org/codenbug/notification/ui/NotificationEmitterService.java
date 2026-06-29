@@ -1,4 +1,4 @@
-package org.codenbug.notification.application;
+package org.codenbug.notification.ui;
 
 import java.io.IOException;
 import java.util.List;

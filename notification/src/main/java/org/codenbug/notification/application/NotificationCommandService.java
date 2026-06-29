@@ -46,6 +46,11 @@ public class NotificationCommandService {
 		return createNotification(userId, type, title, content, null);
 	}
 
+	public void createNotificationWithoutResult(String userId, NotificationType type, String title,
+			String content, String targetUrl) {
+		createNotification(userId, type, title, content, targetUrl);
+	}
+
 	public Optional<NotificationDto> createNotificationIfAbsent(String userId, NotificationType type,
 			String title, String content, String targetUrl, String sourceKey) {
 		if (notificationStore.existsBySourceKey(sourceKey)) {

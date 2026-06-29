@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import org.codenbug.notification.application.service.NotificationCommandService;
+import org.codenbug.notification.application.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.springframework.stereotype.Service;
 

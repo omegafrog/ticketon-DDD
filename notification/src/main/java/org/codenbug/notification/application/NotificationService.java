@@ -2,6 +2,7 @@ package org.codenbug.notification.application;
 
 import java.util.List;
 
+import org.codenbug.notification.application.port.NotificationStore;
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationStatus;
 import org.codenbug.notification.domain.entity.NotificationType;
@@ -9,7 +10,6 @@ import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.ui.dto.NotificationDto;
 import org.codenbug.notification.ui.dto.NotificationEventDto;
-import org.codenbug.notification.infra.NotificationRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final NotificationRepository notificationRepository;
+    private final NotificationStore notificationStore;
     private final NotificationDomainService domainService;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -42,7 +42,7 @@ public class NotificationService {
     public Page<NotificationDto> getNotifications(String userId, Pageable pageable) {
         UserId userIdVO = new UserId(userId);
         Page<Notification> notifications =
-                notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO, pageable);
+                notificationStore.findByUserIdOrderBySentAtDesc(userIdVO, pageable);
         return notifications.map(NotificationDto::from);
     }
 
@@ -57,18 +57,15 @@ public class NotificationService {
     @Transactional
     public NotificationDto getNotificationById(Long notificationId, String userId) {
         // 알림 조회
-        Notification notification = notificationRepository.findById(notificationId)
+        Notification notification = notificationStore.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
 
-        // 권한 확인 (본인의 알림인지)
-        if (!notification.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("해당 알림에 접근할 권한이 없습니다.");
-        }
+        domainService.validateUserOwnership(notification, userId);
 
         // 읽음 상태 업데이트
         if (!notification.isRead()) {
             notification.markAsRead();
-            // 트랜잭션 내에서 자동 저장됨
+            notificationStore.save(notification);
         }
 
         return NotificationDto.from(notification);
@@ -95,7 +92,7 @@ public class NotificationService {
                 domainService.createNotification(userId, type, title, content, targetUrl);
 
         // 저장
-        Notification savedNotification = notificationRepository.save(notification);
+        Notification savedNotification = notificationStore.save(notification);
         log.debug("알림 저장 완료: notificationId={}", savedNotification.getId());
 
         // DTO로 변환
@@ -127,7 +124,7 @@ public class NotificationService {
         Notification notification = domainService.createLegacyNotification(userId, type, content);
 
         // 저장
-        Notification savedNotification = notificationRepository.save(notification);
+        Notification savedNotification = notificationStore.save(notification);
         log.debug("레거시 알림 저장 완료: notificationId={}", savedNotification.getId());
 
         // DTO로 변환
@@ -152,7 +149,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public Page<NotificationDto> getUnreadNotifications(String userId, Pageable pageable) {
         UserId userIdVO = new UserId(userId);
-        return notificationRepository
+        return notificationStore
                 .findByUserIdAndIsReadFalseOrderBySentAtDesc(userIdVO, pageable)
                 .map(NotificationDto::from);
     }
@@ -166,7 +163,7 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public long getUnreadCount(String userId) {
         UserId userIdVO = new UserId(userId);
-        return notificationRepository.countByUserIdAndIsReadFalse(userIdVO);
+        return notificationStore.countByUserIdAndIsReadFalse(userIdVO);
     }
 
     /**
@@ -177,7 +174,7 @@ public class NotificationService {
      */
     @Transactional
     public boolean retryFailedNotification(Long notificationId) {
-        Notification notification = notificationRepository.findById(notificationId).orElse(null);
+        Notification notification = notificationStore.findById(notificationId).orElse(null);
 
         if (notification == null || notification.getStatus() != NotificationStatus.FAILED) {
             return false;
@@ -185,7 +182,7 @@ public class NotificationService {
 
         // 상태를 PENDING으로 변경
         notification.updateStatus(NotificationStatus.PENDING);
-        notificationRepository.save(notification);
+        notificationStore.save(notification);
 
         // 이벤트 재발행
         NotificationEventDto eventDto = NotificationEventDto.from(notification);
@@ -203,15 +200,12 @@ public class NotificationService {
      */
     @Transactional
     public void deleteNotification(Long notificationId, String userId) {
-        Notification notification = notificationRepository.findById(notificationId)
+        Notification notification = notificationStore.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
 
-        // 권한 확인 (본인의 알림인지)
-        if (!notification.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("해당 알림에 접근할 권한이 없습니다.");
-        }
+        domainService.validateUserOwnership(notification, userId);
 
-        notificationRepository.delete(notification);
+        notificationStore.delete(notification);
         log.debug("알림 삭제 완료: notificationId={}, userId={}", notificationId, userId);
     }
 
@@ -226,7 +220,7 @@ public class NotificationService {
         // 사용자의 알림 중 요청된 ID 목록에 해당하는 알림만 조회
         UserId userIdVO = new UserId(userId);
         List<Notification> notifications =
-                notificationRepository.findAllByUserIdAndIdIn(userIdVO, notificationIds);
+                notificationStore.findAllByUserIdAndIdIn(userIdVO, notificationIds);
 
         // 찾은 알림 개수와 요청 개수의 차이 로깅
         if (notifications.size() < notificationIds.size()) {
@@ -235,7 +229,7 @@ public class NotificationService {
         }
 
         // 존재하는 알림만 삭제
-        notificationRepository.deleteAll(notifications);
+        notificationStore.deleteAll(notifications);
         log.debug("다건 알림 삭제 완료: count={}, userId={}", notifications.size(), userId);
     }
 
@@ -248,8 +242,8 @@ public class NotificationService {
     public void deleteAllNotifications(String userId) {
         UserId userIdVO = new UserId(userId);
         List<Notification> notifications =
-                notificationRepository.findByUserIdOrderBySentAtDesc(userIdVO);
-        notificationRepository.deleteAll(notifications);
+                notificationStore.findByUserIdOrderBySentAtDesc(userIdVO);
+        notificationStore.deleteAll(notifications);
         log.debug("모든 알림 삭제 완료: count={}, userId={}", notifications.size(), userId);
     }
 }
