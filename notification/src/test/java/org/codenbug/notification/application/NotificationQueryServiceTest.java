@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.codenbug.notification.application.port.NotificationInboxViewReader;
 import org.codenbug.notification.application.port.NotificationStore;
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.ui.projection.NotificationListProjection;
-import org.codenbug.notification.ui.repository.NotificationViewRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -28,27 +28,27 @@ class NotificationQueryServiceTest {
     @Test
     void 목록_조회는_저장없이_리시피언트_범위로만_조회한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         PageRequest pageable = PageRequest.of(0, 10);
-        viewRepository.notificationsPage = new PageImpl<>(List.of(
+        viewReader.notificationsPage = new PageImpl<>(List.of(
                 projection(1L, "user-1", false, LocalDateTime.now())), pageable, 1);
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         Page<NotificationListProjection> result = service.getNotifications("user-1", pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        assertThat(viewRepository.lastNotificationUserId).isEqualTo("user-1");
+        assertThat(viewReader.lastNotificationUserId).isEqualTo("user-1");
         assertThat(store.savedNotifications).isEmpty();
     }
 
     @Test
     void 미읽음_개수는_저장없이_리시피언트_범위만_반영한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         store.unreadCount = 3L;
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         long count = service.getUnreadCount("user-1");
 
@@ -60,29 +60,29 @@ class NotificationQueryServiceTest {
     @Test
     void 미읽음_목록_조회는_저장없이_리시피언트_범위로만_조회한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         PageRequest pageable = PageRequest.of(0, 20);
-        viewRepository.unreadPage = new PageImpl<>(List.of(
+        viewReader.unreadPage = new PageImpl<>(List.of(
                 projection(2L, "user-1", false, LocalDateTime.now())), pageable, 1);
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         Page<NotificationListProjection> result = service.getUnreadNotifications("user-1", pageable);
 
         assertThat(result.getContent()).hasSize(1);
-        assertThat(viewRepository.lastUnreadUserId).isEqualTo("user-1");
+        assertThat(viewReader.lastUnreadUserId).isEqualTo("user-1");
         assertThat(store.savedNotifications).isEmpty();
     }
 
     @Test
     void 상세_조회는_소유한_알림만_읽음처리한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         Notification notification =
                 domainService.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
         store.notificationById = notification;
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         service.getNotificationById(1L, "user-1");
 
@@ -93,13 +93,13 @@ class NotificationQueryServiceTest {
     @Test
     void 이미_읽은_상세_재조회는_추가_저장을_만들지_않는다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         Notification notification =
                 domainService.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
         notification.markAsRead();
         store.notificationById = notification;
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         service.getNotificationById(1L, "user-1");
 
@@ -110,12 +110,12 @@ class NotificationQueryServiceTest {
     @Test
     void 타인_알림_상세_조회는_읽음변경없이_실패한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         Notification notification =
                 domainService.createNotification("user-2", NotificationType.SYSTEM, "제목", "내용", null);
         store.notificationById = notification;
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         assertThatThrownBy(() -> service.getNotificationById(1L, "user-1"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -127,9 +127,9 @@ class NotificationQueryServiceTest {
     @Test
     void 없는_알림_상세_조회는_저장없이_실패한다() {
         FakeNotificationStore store = new FakeNotificationStore();
-        FakeNotificationViewRepository viewRepository = new FakeNotificationViewRepository();
+        FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         NotificationQueryService service =
-                new NotificationQueryService(store, viewRepository, domainService);
+                new NotificationQueryService(store, viewReader, domainService);
 
         assertThatThrownBy(() -> service.getNotificationById(99L, "user-1"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -203,7 +203,7 @@ class NotificationQueryServiceTest {
         }
     }
 
-    private static class FakeNotificationViewRepository implements NotificationViewRepository {
+    private static class FakeNotificationInboxViewReader implements NotificationInboxViewReader {
 
         private Page<NotificationListProjection> notificationsPage = Page.empty();
         private Page<NotificationListProjection> unreadPage = Page.empty();
@@ -224,21 +224,5 @@ class NotificationQueryServiceTest {
             return unreadPage;
         }
 
-        @Override
-        public Page<NotificationListProjection> findUserNotificationListByType(String userId,
-                String type, Pageable pageable) {
-            return Page.empty();
-        }
-
-        @Override
-        public List<NotificationListProjection> findUserNotificationListWithCursor(String userId,
-                Long cursor, int size) {
-            return List.of();
-        }
-
-        @Override
-        public long countUnreadNotifications(String userId) {
-            return 0;
-        }
     }
 }
