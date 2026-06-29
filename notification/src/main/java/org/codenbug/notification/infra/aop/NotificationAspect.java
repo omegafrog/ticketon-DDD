@@ -3,7 +3,7 @@ package org.codenbug.notification.infra.aop;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.codenbug.notification.application.NotificationService;
+import org.codenbug.notification.application.NotificationCommandService;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
@@ -20,21 +20,39 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotificationAspect {
 
-    private final NotificationService notificationService;
+    private final NotificationCommandService notificationCommandService;
     private final ExpressionParser parser = new SpelExpressionParser();
 
     @Pointcut("@annotation(notifyUser)")
     public void notificationPointcut(NotifyUser notifyUser) {}
 
+    @Pointcut("@annotation(notifyUser)")
+    public void legacyNotificationPointcut(org.codenbug.notification.aop.NotifyUser notifyUser) {}
+
     @AfterReturning(pointcut = "notificationPointcut(notifyUser)", returning = "result")
     public void sendNotification(NotifyUser notifyUser, Object result) {
+        sendNotification(notifyUser.type(), notifyUser.title(), notifyUser.content(),
+                notifyUser.targetUrl(), notifyUser.userIdExpression(), notifyUser.defaultUserId(),
+                result);
+    }
+
+    @AfterReturning(pointcut = "legacyNotificationPointcut(notifyUser)", returning = "result")
+    public void sendLegacyNotification(org.codenbug.notification.aop.NotifyUser notifyUser,
+            Object result) {
+        sendNotification(notifyUser.type(), notifyUser.title(), notifyUser.content(),
+                notifyUser.targetUrl(), notifyUser.userIdExpression(), notifyUser.defaultUserId(),
+                result);
+    }
+
+    private void sendNotification(org.codenbug.notification.domain.entity.NotificationType type,
+            String title, String content, String targetUrl, String userIdExpression,
+            String defaultUserId, Object result) {
         try {
-            String userId = extractUserId(result, notifyUser);
+            String userId = extractUserId(result, userIdExpression, defaultUserId);
             if (userId != null && !userId.trim().isEmpty()) {
-                notificationService.createNotification(userId, notifyUser.type(),
-                        notifyUser.title(), notifyUser.content(),
-                        notifyUser.targetUrl().isEmpty() ? null : notifyUser.targetUrl());
-                log.debug("알림 생성 완료: userId={}, type={}", userId, notifyUser.type());
+                notificationCommandService.createNotificationWithoutResult(userId, type, title, content,
+                        targetUrl.isEmpty() ? null : targetUrl);
+                log.debug("알림 생성 완료: userId={}, type={}", userId, type);
             } else {
                 log.debug("유효하지 않은 userId로 인해 알림 생성 건너뜀: {}", userId);
             }
@@ -43,10 +61,9 @@ public class NotificationAspect {
         }
     }
 
-    private String extractUserId(Object result, NotifyUser notifyUser) {
+    private String extractUserId(Object result, String userIdExpression, String defaultUserId) {
         try {
-            // SpEL 표현식으로 사용자 ID 추출
-            Expression expression = parser.parseExpression(notifyUser.userIdExpression());
+            Expression expression = parser.parseExpression(userIdExpression);
             EvaluationContext context = new StandardEvaluationContext();
             context.setVariable("result", result);
 
@@ -55,11 +72,9 @@ public class NotificationAspect {
                 return userId.toString();
             }
         } catch (Exception e) {
-            log.debug("SpEL 표현식으로 userId 추출 실패: {}, 기본값 사용", notifyUser.userIdExpression());
+            log.debug("SpEL 표현식으로 userId 추출 실패: {}, 기본값 사용", userIdExpression);
         }
 
-        // 기본값 사용
-        String defaultUserId = notifyUser.defaultUserId();
         return (defaultUserId != null && !defaultUserId.trim().isEmpty()) ? defaultUserId : null;
     }
 }

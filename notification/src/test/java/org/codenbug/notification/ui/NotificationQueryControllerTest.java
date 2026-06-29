@@ -10,7 +10,6 @@ import java.util.List;
 
 import org.codenbug.common.Role;
 import org.codenbug.notification.application.NotificationQueryService;
-import org.codenbug.notification.application.NotificationEmitterService;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
 import org.codenbug.securityaop.aop.RoleRequired;

@@ -5,7 +5,6 @@ import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.notification.application.NotificationQueryService;
 import org.codenbug.notification.ui.dto.NotificationDto;
-import org.codenbug.notification.application.NotificationEmitterService;
 import org.codenbug.notification.ui.projection.NotificationListProjection;
 import org.codenbug.securityaop.aop.AuthNeeded;
 import org.codenbug.securityaop.aop.LoggedInUserContext;
