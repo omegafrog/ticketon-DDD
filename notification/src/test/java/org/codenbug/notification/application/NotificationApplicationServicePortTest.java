@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.codenbug.notification.application.port.NotificationInboxViewReader;
 import org.codenbug.notification.application.port.NotificationStore;
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
@@ -14,7 +15,6 @@ import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.infra.NotificationStoreAdapter;
 import org.codenbug.notification.infra.NotificationRepository;
-import org.codenbug.notification.ui.repository.NotificationViewRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -35,7 +35,7 @@ class NotificationApplicationServicePortTest {
   void 쿼리_서비스는_인프라_리포지토리가_아닌_저장소_포트에_의존한다() {
     assertThat(fieldTypes(NotificationQueryService.class))
         .doesNotContain(NotificationRepository.class)
-        .contains(NotificationStore.class);
+        .contains(NotificationStore.class, NotificationInboxViewReader.class);
     assertThat(NotificationStore.class).isAssignableFrom(NotificationStoreAdapter.class);
   }
 
@@ -61,7 +61,7 @@ class NotificationApplicationServicePortTest {
         .createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
     store.notificationById = notification;
     NotificationQueryService service = new NotificationQueryService(store,
-        org.mockito.Mockito.mock(NotificationViewRepository.class),
+        org.mockito.Mockito.mock(NotificationInboxViewReader.class),
         new NotificationDomainService());
 
     service.getNotificationById(1L, "user-1");
