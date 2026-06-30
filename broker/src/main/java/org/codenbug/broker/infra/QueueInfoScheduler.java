@@ -14,8 +14,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -132,7 +132,7 @@ public class QueueInfoScheduler {
             .data(Map.of("status", sseConnection.getStatus(), QUEUE_MESSAGE_USER_ID_KEY_NAME,
                 userId, QUEUE_MESSAGE_EVENT_ID_KEY_NAME, eventId, "order", rank + 1)));
       } catch (Exception e) {
-        SseEmitterService.closeConn(userId, eventId, objectRedisTemplate);
+        emitterService.closeConn(userId, eventId);
         // throw new RuntimeException(e);
       }
     }
@@ -151,7 +151,7 @@ public class QueueInfoScheduler {
         emitter.send(SseEmitter.event().comment("heartBeat"));
       } catch (Exception e) {
         log.info("heartbeat error");
-        SseEmitterService.closeConn(conn.getUserId(), conn.getEventId(), objectRedisTemplate);
+        emitterService.closeConn(conn.getUserId(), conn.getEventId());
       }
     }
   }
@@ -195,4 +195,3 @@ public class QueueInfoScheduler {
   // }
   // }
 }
-

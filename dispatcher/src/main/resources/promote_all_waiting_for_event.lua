@@ -1,4 +1,6 @@
 local eventId = string.gsub(ARGV[1], '"', '')
+local promotionBatchSize = tonumber(ARGV[2])
+local rateBudget = tonumber(ARGV[3])
 
 local rawCount = redis.call("HGET", KEYS[1], eventId)
 if (not rawCount) or (tonumber(rawCount) < 1) then
@@ -6,6 +8,12 @@ if (not rawCount) or (tonumber(rawCount) < 1) then
 end
 
 local capacity = tonumber(rawCount)
+if (promotionBatchSize ~= nil) and (promotionBatchSize < capacity) then
+    capacity = promotionBatchSize
+end
+if (rateBudget ~= nil) and (rateBudget < capacity) then
+    capacity = rateBudget
+end
 
 local waitingItems = redis.call("ZRANGE", KEYS[3], 0, capacity - 1)
 if (#waitingItems == 0) then

@@ -45,6 +45,15 @@ services:
   event:
     base-url: ${EVENT_SERVICE_BASE_URL:http://app}
 
+queue:
+  max-active-shoppers: ${QUEUE_MAX_ACTIVE_SHOPPERS:500}
+  new-users-per-minute: ${QUEUE_NEW_USERS_PER_MINUTE:3000}
+  promotion-batch-size: ${QUEUE_PROMOTION_BATCH_SIZE:50}
+  promotion-interval-ms: ${QUEUE_PROMOTION_INTERVAL_MS:1000}
+  entry-token-ttl-minutes: ${QUEUE_ENTRY_TOKEN_TTL_MINUTES:10}
+  polling-interval-seconds: ${QUEUE_POLLING_INTERVAL_SECONDS:5}
+  max-polling-interval-seconds: ${QUEUE_MAX_POLLING_INTERVAL_SECONDS:15}
+
 server:
   port: 0
   tomcat:

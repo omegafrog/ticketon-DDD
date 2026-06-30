@@ -9,6 +9,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Component;
 
 import org.codenbug.broker.app.WaitingQueueStore;
@@ -35,8 +36,37 @@ public class WaitingQueueRedisRepository implements WaitingQueueStore {
   public void updateEntryQueueCount(String eventId, int slotCount) {
 	  redisTemplate.opsForHash().put(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, String.valueOf(slotCount));
   }
-  public void incrementEntryQueueCount(String eventId) {
-    redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, 1);
+
+  public void initializeEntryAdmissionSlots(String eventId, int maxActiveShoppers, int remainingSeatCount) {
+    int effectiveCapacity = Math.min(maxActiveShoppers, Math.max(0, remainingSeatCount));
+    redisTemplate.opsForHash().putIfAbsent(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, String.valueOf(effectiveCapacity));
+  }
+
+  public boolean releaseEntryAdmissionSlot(String eventId, int maxActiveShoppers) {
+    DefaultRedisScript<Long> releaseScript = new DefaultRedisScript<>("""
+        local current = redis.call("HGET", KEYS[1], ARGV[1])
+        local max = tonumber(ARGV[2])
+        if max == nil or max < 0 then
+          return 0
+        end
+        if current == false then
+          redis.call("HSET", KEYS[1], ARGV[1], max)
+          return 1
+        end
+        local currentNumber = tonumber(current)
+        if currentNumber == nil then
+          redis.call("HSET", KEYS[1], ARGV[1], max)
+          return 1
+        end
+        if currentNumber >= max then
+          return 0
+        end
+        redis.call("HINCRBY", KEYS[1], ARGV[1], 1)
+        return 1
+        """, Long.class);
+    Long released = redisTemplate.execute(releaseScript, List.of(ENTRY_QUEUE_SLOTS_KEY_NAME), eventId,
+        String.valueOf(maxActiveShoppers));
+    return released != null && released > 0;
   }
 
   public boolean recordWaitingUserIfAbsent(String eventId, String userId) {

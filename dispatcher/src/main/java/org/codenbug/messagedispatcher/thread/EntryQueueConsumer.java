@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+import org.codenbug.messagedispatcher.config.QueueProperties;
 import org.codenbug.messagedispatcher.redis.RedisConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,15 +22,16 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class EntryQueueConsumer {
 	private static final Logger log = LoggerFactory.getLogger(EntryQueueConsumer.class);
-	private static final Duration ENTRY_TOKEN_TTL = Duration.ofHours(1);
 
 	private final StreamMessageListenerContainer<String, MapRecord<String, String, String>> container;
 	private final StringRedisTemplate redisTemplate;
+	private final QueueProperties queueProperties;
 
 	public EntryQueueConsumer(StreamMessageListenerContainer<String, MapRecord<String, String, String>> container,
-		StringRedisTemplate redisTemplate) {
+		StringRedisTemplate redisTemplate, QueueProperties queueProperties) {
 		this.container = container;
 		this.redisTemplate = redisTemplate;
+		this.queueProperties = queueProperties;
 	}
 
 
@@ -64,12 +66,13 @@ public class EntryQueueConsumer {
 		String token = UUID.randomUUID().toString();
 		try {
 			Boolean created = redisTemplate.opsForValue()
-				.setIfAbsent(tokenKey, token, ENTRY_TOKEN_TTL);
+				.setIfAbsent(tokenKey, token, Duration.ofMinutes(queueProperties.getEntryTokenTtlMinutes()));
 			if (created == null) {
 				log.error("Failed to persist entry token for userId: {}", userId);
 				return;
 			}
-			redisTemplate.opsForValue().set(eventKey, eventId, ENTRY_TOKEN_TTL);
+			redisTemplate.opsForValue().set(eventKey, eventId,
+				Duration.ofMinutes(queueProperties.getEntryTokenTtlMinutes()));
 			redisTemplate.opsForZSet().add(lastSeenKey, userId, System.currentTimeMillis());
 
 			String dispatchStreamKey = RedisConfig.DISPATCH_QUEUE_CHANNEL_PREFIX + instanceId;

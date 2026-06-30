@@ -2,6 +2,53 @@
 
 The Dispatcher service is the queue promotion engine that efficiently moves users from waiting queues to entry queues using sophisticated multithreaded processing and atomic Redis operations.
 
+## Admission Control
+
+Dispatcher promotes waiting users into active shopper slots, not seat inventory. Seat count remains business inventory. Active shopper slots protect purchase/payment resources such as Tomcat threads, DB connections, Redis locks, payment preparation, and payment approval.
+
+`ENTRY_QUEUE_SLOTS` remains for compatibility. Its meaning is available active shopper admission capacity per event.
+
+Promotion per tick is bounded by all limits:
+
+```text
+effectivePromotionCount = min(availableSlots, promotionBatchSize, configuredRateBudgetForThisTick)
+configuredRateBudgetForThisTick = newUsersPerMinute * promotionIntervalMs / 60000
+```
+
+Recommended defaults:
+
+```yaml
+queue:
+  max-active-shoppers: 500
+  new-users-per-minute: 3000
+  promotion-batch-size: 50
+  promotion-interval-ms: 1000
+  entry-token-ttl-minutes: 10
+  polling-interval-seconds: 5
+  max-polling-interval-seconds: 15
+```
+
+Load reduction:
+
+```text
+loadReduction = 1 - maxActiveShoppers / concurrentUsers
+1 - 500 / 5000 = 0.9
+```
+
+For 5,000 concurrent users and `maxActiveShoppers = 500`, purchase-flow direct load is reduced by 90%, roughly 10x isolation.
+
+Load test guidance:
+
+```bash
+QUEUE_MAX_ACTIVE_SHOPPERS=500 \
+QUEUE_PROMOTION_BATCH_SIZE=50 \
+QUEUE_NEW_USERS_PER_MINUTE=3000 \
+EVENT_ID=<event-id> \
+k6 run k6/admission-control-5000.js
+```
+
+Validate active shoppers never exceed 500, promotion rate is about 50/sec, purchase service request volume is about 90% lower than no admission control, and p95 purchase/payment API latency improves against baseline.
+
 ## 🎯 Purpose
 
 - **Queue Promotion Engine**: Automated user promotion from waiting to entry queues

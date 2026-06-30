@@ -5,6 +5,8 @@ import static org.codenbug.broker.infra.RedisConfig.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.codenbug.broker.app.QueueObservation;
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.domain.Status;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -23,9 +25,14 @@ public class SseEmitterService {
   }
 
   private final RedisTemplate<String, Object> redisTemplate;
+  private final QueueProperties queueProperties;
+  private final QueueObservation queueObservation;
 
-  public SseEmitterService(RedisTemplate<String, Object> redisTemplate) {
+  public SseEmitterService(RedisTemplate<String, Object> redisTemplate, QueueProperties queueProperties,
+      QueueObservation queueObservation) {
     this.redisTemplate = redisTemplate;
+    this.queueProperties = queueProperties;
+    this.queueObservation = queueObservation;
   }
 
   public SseEmitter add(String userId, String eventId) {
@@ -38,14 +45,14 @@ public class SseEmitterService {
     SseEmitter emitter = new SseEmitter(0L);
     // emitter연결이 끊어질 때 만약 entry상태라면 entry count를 1 증가
     emitter.onCompletion(() -> {
-      closeConn(userId, eventId, redisTemplate);
+      closeConn(userId, eventId);
     });
     emitter.onError((e) -> {
-      closeConn(userId, eventId, redisTemplate);
+      closeConn(userId, eventId);
 
     });
     emitter.onTimeout(() -> {
-      closeConn(userId, eventId, redisTemplate);
+      closeConn(userId, eventId);
 
     });
 
@@ -53,7 +60,7 @@ public class SseEmitterService {
     try {
       emitter.send(SseEmitter.event().data("sse 연결 성공. userId:" + userId));
     } catch (Exception e) {
-      closeConn(userId, eventId, redisTemplate);
+      closeConn(userId, eventId);
 
     }
 
@@ -63,8 +70,7 @@ public class SseEmitterService {
     return emitter;
   }
 
-  public static void closeConn(String userId, String eventId,
-      RedisTemplate<String, Object> redisTemplate) {
+  public void closeConn(String userId, String eventId) {
     // 커넥션 정보 얻기
 
     SseConnection sseConnection = emitterMap.remove(userId);
@@ -82,7 +88,8 @@ public class SseEmitterService {
     // entry_queue_count를 1 감소시킨 것을 다시 증가
     if (status.equals(Status.IN_PROGRESS)) {
       log.info("count incremented");
-      redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, parsedEventId, 1);
+      boolean released = releaseSlot(parsedEventId);
+      queueObservation.recordSlotReleased(parsedEventId, released);
       redisTemplate.delete(buildEntryTokenKey(userId));
     } else if (status.equals(Status.IN_ENTRY)) {
 
@@ -102,10 +109,29 @@ public class SseEmitterService {
    * @param eventId 이벤트 ID
    */
   public void closeConnection(String userId, String eventId) {
-    closeConn(userId, eventId, redisTemplate);
+    closeConn(userId, eventId);
   }
 
   private static String buildEntryTokenKey(String userId) {
     return ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId;
+  }
+
+  private boolean releaseSlot(String eventId) {
+    Long released = redisTemplate.execute(new org.springframework.data.redis.core.script.DefaultRedisScript<>("""
+        local current = redis.call("HGET", KEYS[1], ARGV[1])
+        local max = tonumber(ARGV[2])
+        if current == false then
+          redis.call("HSET", KEYS[1], ARGV[1], max)
+          return 1
+        end
+        local currentNumber = tonumber(current)
+        if currentNumber == nil or currentNumber >= max then
+          return 0
+        end
+        redis.call("HINCRBY", KEYS[1], ARGV[1], 1)
+        return 1
+        """, Long.class), java.util.List.of(ENTRY_QUEUE_SLOTS_KEY_NAME), eventId,
+        String.valueOf(queueProperties.getMaxActiveShoppers()));
+    return released != null && released > 0;
   }
 }

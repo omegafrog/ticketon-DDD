@@ -1,12 +1,11 @@
 package org.codenbug.broker.app;
 
-import static org.codenbug.broker.service.SseEmitterService.*;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.codenbug.broker.domain.Status;
+import org.codenbug.broker.config.QueueProperties;
 import org.codenbug.broker.service.SseConnection;
 import org.codenbug.broker.service.SseEmitterService;
 import org.springframework.context.annotation.Profile;
@@ -31,12 +30,17 @@ public class SSEEntryDispatchService implements EntryDispatcherService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final SseEmitterService sseEmitterService;
   private final EntryAuthService entryAuthService;
+  private final QueueProperties queueProperties;
+  private final QueueObservation queueObservation;
 
   public SSEEntryDispatchService(RedisTemplate<String, Object> redisTemplate,
-      SseEmitterService sseEmitterService, EntryAuthService entryAuthService) {
+      SseEmitterService sseEmitterService, EntryAuthService entryAuthService,
+      QueueProperties queueProperties, QueueObservation queueObservation) {
     this.redisTemplate = redisTemplate;
     this.sseEmitterService = sseEmitterService;
     this.entryAuthService = entryAuthService;
+    this.queueProperties = queueProperties;
+    this.queueObservation = queueObservation;
   }
 
   @Override
@@ -57,7 +61,7 @@ public class SSEEntryDispatchService implements EntryDispatcherService {
 
   private void handleDisconnectedUser(String eventId, String userId) {
     log.info("count incremented");
-    redisTemplate.opsForHash().increment(ENTRY_QUEUE_SLOTS_KEY_NAME, eventId, 1);
+    releaseSlot(eventId);
     redisTemplate.delete(buildEntryTokenKey(userId));
   }
 
@@ -67,23 +71,46 @@ public class SSEEntryDispatchService implements EntryDispatcherService {
 
     String token = entryAuthService
         .generateEntryAuthToken(Map.of("eventId", eventId, "userId", userId), "entryAuthToken");
-    storeEntryToken(userId, token);
+    storeEntryToken(userId, eventId, token);
 
     try {
       emitter.send(SseEmitter.event().data(Map.of("eventId", eventId, "userId", userId, "status",
           sseConnection.getStatus(), "token", token)));
     } catch (IOException e) {
-      closeConn(userId, eventId, redisTemplate);
+      sseEmitterService.closeConnection(userId, eventId);
     } catch (Exception e) {
-      closeConn(userId, eventId, redisTemplate);
+      sseEmitterService.closeConnection(userId, eventId);
     }
   }
 
-  private void storeEntryToken(String userId, String token) {
-    redisTemplate.opsForValue().set(buildEntryTokenKey(userId), token, 5, TimeUnit.MINUTES);
+  private void storeEntryToken(String userId, String eventId, String token) {
+    redisTemplate.opsForValue().set(buildEntryTokenKey(userId), token,
+        queueProperties.getEntryTokenTtlMinutes(), TimeUnit.MINUTES);
+    redisTemplate.opsForValue().set("ENTRY_EVENT:" + userId, eventId,
+        queueProperties.getEntryTokenTtlMinutes(), TimeUnit.MINUTES);
+    queueObservation.recordEntryTokenIssued(eventId);
   }
 
   private String buildEntryTokenKey(String userId) {
     return ENTRY_TOKEN_STORAGE_KEY_NAME + ":" + userId;
+  }
+
+  private void releaseSlot(String eventId) {
+    Long released = redisTemplate.execute(new org.springframework.data.redis.core.script.DefaultRedisScript<>("""
+        local current = redis.call("HGET", KEYS[1], ARGV[1])
+        local max = tonumber(ARGV[2])
+        if current == false then
+          redis.call("HSET", KEYS[1], ARGV[1], max)
+          return 1
+        end
+        local currentNumber = tonumber(current)
+        if currentNumber == nil or currentNumber >= max then
+          return 0
+        end
+        redis.call("HINCRBY", KEYS[1], ARGV[1], 1)
+        return 1
+        """, Long.class), java.util.List.of(ENTRY_QUEUE_SLOTS_KEY_NAME), eventId,
+        String.valueOf(queueProperties.getMaxActiveShoppers()));
+    queueObservation.recordSlotReleased(eventId, released != null && released > 0);
   }
 }
