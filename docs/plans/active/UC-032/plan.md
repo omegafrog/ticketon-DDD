@@ -202,29 +202,29 @@ work_item_id: UC-032
 
 ## 작업 체크리스트
 이 섹션의 기존 `- [x]` 표시는 이전 실행 시도의 보존 이력이다. scope repair 이후 executor는 notification 경계 안의 코드/테스트만 다루고, 검증 재실행도 `VERIFY-001`, `VERIFY-002`, `VERIFY-003`, `VERIFY-007` 범위로 제한한다.
-- [ ] TASK-001 `notification/src/main/java/org/codenbug/notification/ui/NotificationCommandController.java`, `notification/src/main/java/org/codenbug/notification/ui/TestNotificationController.java`: `POST /api/v1/notifications`가 `@AuthNeeded`, `@RoleRequired({Role.ADMIN, Role.MANAGER})`, `@Valid`, `201` 응답을 유지하고 수동 테스트용 endpoint가 정본 create 보안/검증 계약을 우회하지 않도록 정리한다.
-- [ ] TASK-002 `notification/src/main/java/org/codenbug/notification/ui/dto/NotificationCreateRequestDto.java`: `userId`, `type`, `title`, `content` required와 `targetUrl` optional 계약을 annotation과 메시지로 고정한다.
-- [ ] TASK-003 `notification/src/main/java/org/codenbug/notification/domain/entity/NotificationContent.java`: `content` null/blank 금지와 길이 제한을 추가해 title/content validation을 VO에 집중시킨다.
-- [ ] TASK-004 `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`, `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`: 기존 aggregate root 파일을 제자리 수정해 unread 초기화, recipient/value object 조립, null-safe aggregate 생성 규칙을 정리하고 invalid path가 persistence 전에 실패하도록 만든다.
-- [ ] TASK-005 `notification/src/main/java/org/codenbug/notification/application/NotificationCommandService.java`: create 경로가 save 1회, DTO 반환, local event publish 1회만 수행하고 invalid input에서는 save 0회임을 보장한다.
-- [ ] TASK-006 `notification/src/main/java/org/codenbug/notification/infra/NotificationStoreAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationRepository.java`: save 후 recipient-scoped inbox/unread query에서 created notification이 최신순으로 관찰되는 기존 query 계약을 유지한다.
-- [ ] TASK-007 `notification/src/main/java/org/codenbug/notification/infra/event/PurchaseEventListener.java`, `notification/src/main/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListener.java`: stricter `NotificationContent` 규칙과 충돌하는 payload가 있으면 canonical create 규칙을 깨지 않는 최소 compatibility 보완만 한다.
-- [ ] TEST-001 `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`: blank recipient ID, blank title, blank content, optional `targetUrl`, unread 초기 상태를 검증한다.
-- [ ] TEST-002 `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`: application이 `NotificationStore` port만 사용하고 valid create에서 save/event 각 1회, invalid create에서 save 0회임을 검증한다.
-- [ ] TEST-003 `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`: create 후 persisted notification이 recipient inbox/unread query에서 최신순으로 관찰되는지 검증한다.
-- [ ] TEST-004 `notification/src/test/java/org/codenbug/notification/ui/NotificationCommandControllerTest.java`: `ADMIN`/`MANAGER` 성공, `USER` 거절, 비인증 거절, request validation 실패를 controller/security 경계에서 검증한다.
-- [ ] TEST-005 `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`, `notification/src/test/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListenerTest.java`: stricter content rule 이후 기존 listener 기반 생성 경로가 깨지지 않는지 회귀를 추가한다.
-- [ ] TASK-008 scope repair: `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh`, repo root `architectureRules` 수정/실행은 이번 executor 경계에서 제외한다. gateway `8080` 수동 스모크와 cross-module ArchUnit 태스크는 후속 범위 확장 세션 전용으로 남기고, 현재 work item 증명은 notification 모듈 테스트, query adapter 검증, notification-targeted Semgrep 결과로 닫는다.
+- [x] TASK-001 `notification/src/main/java/org/codenbug/notification/ui/NotificationCommandController.java`, `notification/src/main/java/org/codenbug/notification/ui/TestNotificationController.java`: `POST /api/v1/notifications`가 `@AuthNeeded`, `@RoleRequired({Role.ADMIN, Role.MANAGER})`, `@Valid`, `201` 응답을 유지하고 수동 테스트용 endpoint가 정본 create 보안/검증 계약을 우회하지 않도록 정리한다.
+- [x] TASK-002 `notification/src/main/java/org/codenbug/notification/ui/dto/NotificationCreateRequestDto.java`: `userId`, `type`, `title`, `content` required와 `targetUrl` optional 계약을 annotation과 메시지로 고정한다.
+- [x] TASK-003 `notification/src/main/java/org/codenbug/notification/domain/entity/NotificationContent.java`: `content` null/blank 금지와 길이 제한을 추가해 title/content validation을 VO에 집중시킨다.
+- [x] TASK-004 `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`, `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`: 기존 aggregate root 파일을 제자리 수정해 unread 초기화, recipient/value object 조립, null-safe aggregate 생성 규칙을 정리하고 invalid path가 persistence 전에 실패하도록 만든다.
+- [x] TASK-005 `notification/src/main/java/org/codenbug/notification/application/NotificationCommandService.java`: create 경로가 save 1회, DTO 반환, local event publish 1회만 수행하고 invalid input에서는 save 0회임을 보장한다.
+- [x] TASK-006 `notification/src/main/java/org/codenbug/notification/infra/NotificationStoreAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationRepository.java`: save 후 recipient-scoped inbox/unread query에서 created notification이 최신순으로 관찰되는 기존 query 계약을 유지한다.
+- [x] TASK-007 `notification/src/main/java/org/codenbug/notification/infra/event/PurchaseEventListener.java`, `notification/src/main/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListener.java`: stricter `NotificationContent` 규칙과 충돌하는 payload가 있으면 canonical create 규칙을 깨지 않는 최소 compatibility 보완만 한다.
+- [x] TEST-001 `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`: blank recipient ID, blank title, blank content, optional `targetUrl`, unread 초기 상태를 검증한다.
+- [x] TEST-002 `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`: application이 `NotificationStore` port만 사용하고 valid create에서 save/event 각 1회, invalid create에서 save 0회임을 검증한다.
+- [x] TEST-003 `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`: create 후 persisted notification이 recipient inbox/unread query에서 최신순으로 관찰되는지 검증한다.
+- [x] TEST-004 `notification/src/test/java/org/codenbug/notification/ui/NotificationCommandControllerTest.java`: `ADMIN`/`MANAGER` 성공, `USER` 거절, 비인증 거절, request validation 실패를 controller/security 경계에서 검증한다.
+- [x] TEST-005 `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`, `notification/src/test/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListenerTest.java`: stricter content rule 이후 기존 listener 기반 생성 경로가 깨지지 않는지 회귀를 추가한다.
+- [x] TASK-008 scope repair: `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh`, repo root `architectureRules` 수정/실행은 이번 executor 경계에서 제외한다. gateway `8080` 수동 스모크와 cross-module ArchUnit 태스크는 후속 범위 확장 세션 전용으로 남기고, 현재 work item 증명은 notification 모듈 테스트, query adapter 검증, notification-targeted Semgrep 결과로 닫는다.
 
 ## 집중 검증
 scope repair 이후 executor가 재실행할 검증은 notification-local 명령만 허용한다. runtime 런처 검증은 직전 시도에서 `platform/gateway/build/**`와 build resource mirror를 생성해 `scope_conflict`를 일으켰으므로 완료 게이트에서 제외한다.
-- [ ] VERIFY-001 Build: `./gradlew :notification:build --no-daemon --console=plain` -> `notification` 모듈 compile/package 성공, 변경 범위 compile error 0건.
-- [ ] VERIFY-002 Focused tests: `./gradlew :notification:test --no-daemon --console=plain` -> `notification` 집중 테스트 통과, 새 create/validation/visibility 회귀 포함.
-- [ ] VERIFY-003 Architecture test: 현재 executor 경계에서는 N/A. repo root `./gradlew architectureRules --no-daemon --console=plain`는 `:app:architectureRules`로 위임돼 `app/build/**`, `event/build/**`, `platform/gateway/build/**` 산출물을 만들므로 재실행 금지다. 현재 architecture evidence는 `VERIFY-007`의 `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과로 대체하며, 기대 결과는 notification 범위 blocking finding 0건이다.
+- [x] VERIFY-001 Build: `./gradlew :notification:build --no-daemon --console=plain` -> `notification` 모듈 compile/package 성공, 변경 범위 compile error 0건.
+- [x] VERIFY-002 Focused tests: `./gradlew :notification:test --no-daemon --console=plain` -> `notification` 집중 테스트 통과, 새 create/validation/visibility 회귀 포함.
+- [x] VERIFY-003 Architecture test: 현재 executor 경계에서는 N/A. repo root `./gradlew architectureRules --no-daemon --console=plain`는 `:app:architectureRules`로 위임돼 `app/build/**`, `event/build/**`, `platform/gateway/build/**` 산출물을 만들므로 재실행 금지다. 현재 architecture evidence는 `VERIFY-007`의 `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과로 대체하며, 기대 결과는 notification 범위 blocking finding 0건이다.
 - [ ] VERIFY-004 E2E 또는 maintenance verification: `.harness/runs/run-51e3f91efbf4/work-items/UC-032/steps/execute-work-item/evidence/e2e.txt` -> 인증된 `ADMIN`/`MANAGER` create 성공, 실패 경로 저장 없음, recipient-scoped inbox 가시성 증거가 기록돼 있어야 한다.
-- [ ] VERIFY-005 Test gate: `.codex/test-gate.yaml`의 `required: []` 확인 -> 추가 강제 stage 없이 현재 검증 묶음으로 gate 충족 기록.
-- [ ] VERIFY-006 Runtime server verification: N/A - `python3 -m harness_codex run app status`, `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh` 재실행은 `platform/gateway/build/**`, `application-secret.yml` build mirror를 생성해 current execution boundary를 벗어나므로 완료 게이트에서 제외한다.
-- [ ] VERIFY-007 Static analysis: `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` -> blocking architecture finding 0건.
+- [x] VERIFY-005 Test gate: `.codex/test-gate.yaml`의 `required: []` 확인 -> 추가 강제 stage 없이 현재 검증 묶음으로 gate 충족 기록.
+- [x] VERIFY-006 Runtime server verification: N/A - `python3 -m harness_codex run app status`, `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh` 재실행은 `platform/gateway/build/**`, `application-secret.yml` build mirror를 생성해 current execution boundary를 벗어나므로 완료 게이트에서 제외한다.
+- [x] VERIFY-007 Static analysis: `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` -> blocking architecture finding 0건.
 
 ### 현재 실행 순서
 - 1차: `./gradlew :notification:build --no-daemon --console=plain`
@@ -253,11 +253,11 @@ scope repair 이후 executor가 재실행할 검증은 notification-local 명령
 - active -> completed 전이는 `complete-work-item-plan`만 수행한다.
 
 ## 11. 검증 결과
-- Build: pending
-- Focused tests: pending
-- Architecture test: pending
+- Build: passed - `./gradlew :notification:build --no-daemon --console=plain` 성공.
+- Focused tests: passed - `./gradlew :notification:test --no-daemon --console=plain` 성공.
+- Architecture test: N/A - repo root architectureRules는 현재 executor 경계 밖 산출물을 생성하므로 재실행하지 않고 `VERIFY-007`로 대체.
 - E2E 또는 maintenance verification: pending
-- Test gate: pending
-- Runtime server verification: pending
-- Static analysis: pending
+- Test gate: passed - `.codex/test-gate.yaml`의 `required: []` 확인.
+- Runtime server verification: N/A - gateway/runtime launcher 부작용 때문에 현재 executor 경계에서 제외.
+- Static analysis: passed - `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과 blocking finding 0건.
 - 선택 수동 스모크: 불필요. 현재 executor 경계는 토큰 획득과 gateway launcher 부작용을 제외하므로 notification-local 테스트가 완료 증거다.

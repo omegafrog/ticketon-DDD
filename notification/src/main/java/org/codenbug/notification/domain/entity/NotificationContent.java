@@ -15,8 +15,8 @@ public class NotificationContent {
 
     public NotificationContent(String title, String content, String targetUrl) {
         this.title = validateAndNormalizeTitle(title);
-        this.content = validateContent(content);
-        this.targetUrl = targetUrl;
+        this.content = validateAndNormalizeContent(content);
+        this.targetUrl = normalizeTargetUrl(targetUrl);
     }
 
     public NotificationContent(String title, String content) {
@@ -39,11 +39,23 @@ public class NotificationContent {
         return trimmed;
     }
 
-    private String validateContent(String content) {
-        if (content != null && content.length() > 500) {
+    private String validateAndNormalizeContent(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("알림 내용은 필수입니다.");
+        }
+        String trimmed = content.trim();
+        if (trimmed.length() > 500) {
             throw new IllegalArgumentException("알림 내용은 500자를 초과할 수 없습니다.");
         }
-        return content;
+        return trimmed;
+    }
+
+    private String normalizeTargetUrl(String targetUrl) {
+        if (targetUrl == null) {
+            return null;
+        }
+        String trimmed = targetUrl.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     private static String extractTitleFromContent(String content) {

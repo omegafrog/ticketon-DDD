@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -72,16 +71,5 @@ public class NotificationCommandController {
 		String userId = LoggedInUserContext.get().getUserId();
 		notificationCommandService.deleteAllNotifications(userId);
 		return ResponseEntity.ok(new RsData<>("200", "모든 알림 삭제 성공", null));
-	}
-
-	@PostMapping("/test")
-	public ResponseEntity<RsData<NotificationDto>> createTestNotification(
-			@RequestParam String userId,
-			@RequestParam(defaultValue = "SYSTEM") NotificationType type,
-			@RequestParam(defaultValue = "테스트 알림") String title,
-			@RequestParam(defaultValue = "테스트 알림 내용입니다.") String content) {
-		NotificationDto notification =
-			notificationCommandService.createNotification(userId, type, title, content);
-		return ResponseEntity.ok(new RsData<>("200", "테스트 알림 생성 성공", notification));
 	}
 }

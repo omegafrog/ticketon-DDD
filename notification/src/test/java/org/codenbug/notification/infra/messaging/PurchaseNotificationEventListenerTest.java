@@ -2,6 +2,7 @@ package org.codenbug.notification.infra.messaging;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,5 +74,25 @@ class PurchaseNotificationEventListenerTest {
                 eq("notification.manager.refund.completed:user-1:purchase-1:2026-06-19T10:15:30:manager-1"));
         org.assertj.core.api.Assertions.assertThat(contentCaptor.getValue()).contains("처리자: manager-1",
                 "환불 금액: 1,000원", "환불 사유: reason");
+    }
+
+    @Test
+    void managerName이_없으면_저장하지_않고_건너뛴다() {
+        listener.handleManagerRefundCompletedEvent("""
+                {
+                  "userId": "user-1",
+                  "purchaseId": "purchase-1",
+                  "orderId": "order-1",
+                  "orderName": "Concert",
+                  "eventName": "Concert",
+                  "refundAmount": 1000,
+                  "refundReason": "reason",
+                  "refundedAt": "2026-06-19T10:15:30",
+                  "managerName": "   "
+                }
+                """);
+
+        verify(notificationCommandService, never()).createNotificationIfAbsent(any(), any(), any(),
+                any(), any(), any());
     }
 }

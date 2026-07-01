@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDateTime;
 
 import org.codenbug.notification.application.port.NotificationInboxViewReader;
+import org.codenbug.notification.application.port.NotificationStore;
 import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
@@ -30,7 +31,7 @@ import jakarta.persistence.EntityManager;
 @DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @ContextConfiguration(classes = NotificationInboxViewReaderAdapterTest.TestJpaApplication.class)
-@Import({NotificationInboxViewReaderAdapter.class,
+@Import({NotificationInboxViewReaderAdapter.class, NotificationStoreAdapter.class,
         NotificationInboxViewReaderAdapterTest.QuerydslTestConfig.class})
 @EntityScan(basePackages = "org.codenbug.notification.domain.entity")
 class NotificationInboxViewReaderAdapterTest {
@@ -40,6 +41,9 @@ class NotificationInboxViewReaderAdapterTest {
 
     @Resource
     private NotificationInboxViewReader notificationInboxViewReader;
+
+    @Resource
+    private NotificationStore notificationStore;
 
     private final NotificationDomainService domainService = new NotificationDomainService();
 
@@ -82,6 +86,30 @@ class NotificationInboxViewReaderAdapterTest {
         assertThat(notificationTitles(secondPage)).containsExactly("title-2");
         assertThat(firstPage.getTotalElements()).isEqualTo(3);
         assertThat(secondPage.getTotalElements()).isEqualTo(3);
+    }
+
+    @Test
+    void 저장후_리시피언트_inbox와_unread_조회에서_최신순으로_보인다() {
+        Notification older = domainService.createNotification("user-3", NotificationType.SYSTEM,
+                "old-title", "old-content", "/target/old");
+        ReflectionTestUtils.setField(older, "sentAt", LocalDateTime.of(2026, 6, 19, 14, 0));
+        notificationStore.save(older);
+
+        Notification newer = domainService.createNotification("user-3", NotificationType.SYSTEM,
+                "new-title", "new-content", "/target/new");
+        ReflectionTestUtils.setField(newer, "sentAt", LocalDateTime.of(2026, 6, 19, 15, 0));
+        notificationStore.save(newer);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<NotificationListProjection> inboxPage = notificationInboxViewReader
+                .findUserNotificationList("user-3", PageRequest.of(0, 10));
+        Page<NotificationListProjection> unreadPage = notificationInboxViewReader
+                .findUserUnreadNotificationList("user-3", PageRequest.of(0, 10));
+
+        assertThat(notificationTitles(inboxPage)).containsExactly("new-title", "old-title");
+        assertThat(notificationTitles(unreadPage)).containsExactly("new-title", "old-title");
     }
 
     private void persistNotification(Long id, String userId, LocalDateTime sentAt, boolean isRead) {
