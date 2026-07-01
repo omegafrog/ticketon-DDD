@@ -10,7 +10,6 @@ source_docs:
   - docs/use-cases/UC-030/ddd-design.md
   - docs/use-cases/UC-030/technical-decisions.md
   - docs/use-cases/UC-030/e2e-goal.md
-  - docs/use-cases/UC-030/affected-files.md
   - docs/changes/active/CHG-20260625-001.ddd-integration.md
   - ARCHITECTURE.md
   - .codex/repository-settings.md
@@ -36,7 +35,6 @@ work_item_id: UC-030
 ## 실행 경계
 - 대상 bounded context/module: `notification`
 - 대상 aggregate root: `org.codenbug.notification.domain.entity.Notification`
-- 범위 판정 기준: `docs/use-cases/UC-030/affected-files.md`의 legacy taxonomy는 현재 repo 실경로에 다음처럼 대응시킨다. `controller` -> `ui`, `application/service` -> `application`, `domain/service` -> `domain`, `infrastructure` -> `infra`.
 - scope repair: 현재 work item은 `notification/**` 수정과 notification-local 검증만 허용한다. `scripts/run-app-*.sh` 실행과 repo root `architectureRules` 재실행은 `app/build/**`, `event/build/**`, `platform/gateway/build/**` 같은 범위 밖 산출물을 만들 수 있으므로 완료 게이트에서 제외한다.
 ### 수정 허용 경로
 - `notification/src/main/java/org/codenbug/notification/ui/**`
@@ -166,27 +164,27 @@ work_item_id: UC-030
 - 런타임 smoke 계약 확인이 필요할 때만 -> `scripts/run-app-server.sh`
 
 ## 작업 체크리스트
-- [ ] TASK-001 `notification/src/main/java/org/codenbug/notification/application/NotificationQueryService.java`: `NotificationStore`와 `NotificationInboxViewReader`만 사용해 목록, unread 목록, unread count, detail 흐름을 구성하고, detail 성공 경로만 단건 저장하게 만든다.
-- [ ] TASK-002 `notification/src/main/java/org/codenbug/notification/ui/NotificationQueryController.java`: `Role.USER` 보호, authenticated `userId` 전달, size clamp, `sentAt DESC` 정규화를 inbox/unread 경로에 일관 적용한다.
-- [ ] TASK-003 `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`, `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`: 타인 소유 거절, unread 판정, idempotent read transition을 명확히 하고 shared aggregate 생성 계약을 깨지 않게 유지한다.
-- [ ] TASK-004 `notification/src/main/java/org/codenbug/notification/application/port/NotificationStore.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationStoreAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationRepository.java`: unread count와 aggregate load/save 계약을 유지하고 조회 책임이 command adapter로 새지 않게 정리한다.
-- [ ] TASK-005 `notification/src/main/java/org/codenbug/notification/application/port/NotificationInboxViewReader.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapter.java`: recipient-scoped 목록, unread 필터, latest-first pagination을 side effect 없이 읽는 read adapter 계약을 고정한다.
-- [ ] TEST-001 `notification/src/test/java/org/codenbug/notification/application/NotificationQueryServiceTest.java`: 목록/unread/count는 상태를 바꾸지 않고, missing/foreign-owned detail은 저장하지 않으며, unread detail만 1회 저장되고 repeated detail이 idempotent함을 검증한다.
-- [ ] TEST-002 `notification/src/test/java/org/codenbug/notification/ui/NotificationQueryControllerTest.java`: unauthenticated/unauthorized 차단, authenticated `userId` 전달, page size clamp, latest-first sort normalization을 검증한다.
-- [ ] TEST-003 `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`: cross-recipient no-leak, unread filter, latest-first pagination을 검증한다.
-- [ ] TEST-004 `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`: application layer가 `NotificationRepository`나 `ui` query 구현이 아니라 `application.port`에만 의존함을 검증한다.
-- [ ] TEST-005 `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`: ownership helper, unread/read 전이, `createNotification(...)`, `createLegacyNotification(...)` 회귀를 검증한다.
-- [ ] TEST-006 `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`, `notification/src/test/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListenerTest.java`: shared aggregate 변경이 listener 경로에 회귀를 만들지 않는 최소 범위 검증을 추가한다.
+- [x] TASK-001 `notification/src/main/java/org/codenbug/notification/application/NotificationQueryService.java`: `NotificationStore`와 `NotificationInboxViewReader`만 사용해 목록, unread 목록, unread count, detail 흐름을 구성하고, detail 성공 경로만 단건 저장하게 만든다.
+- [x] TASK-002 `notification/src/main/java/org/codenbug/notification/ui/NotificationQueryController.java`: `Role.USER` 보호, authenticated `userId` 전달, size clamp, `sentAt DESC` 정규화를 inbox/unread 경로에 일관 적용한다.
+- [x] TASK-003 `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`, `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`: 타인 소유 거절, unread 판정, idempotent read transition을 명확히 하고 shared aggregate 생성 계약을 깨지 않게 유지한다.
+- [x] TASK-004 `notification/src/main/java/org/codenbug/notification/application/port/NotificationStore.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationStoreAdapter.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationRepository.java`: unread count와 aggregate load/save 계약을 유지하고 조회 책임이 command adapter로 새지 않게 정리한다.
+- [x] TASK-005 `notification/src/main/java/org/codenbug/notification/application/port/NotificationInboxViewReader.java`, `notification/src/main/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapter.java`: recipient-scoped 목록, unread 필터, latest-first pagination을 side effect 없이 읽는 read adapter 계약을 고정한다.
+- [x] TEST-001 `notification/src/test/java/org/codenbug/notification/application/NotificationQueryServiceTest.java`: 목록/unread/count는 상태를 바꾸지 않고, missing/foreign-owned detail은 저장하지 않으며, unread detail만 1회 저장되고 repeated detail이 idempotent함을 검증한다.
+- [x] TEST-002 `notification/src/test/java/org/codenbug/notification/ui/NotificationQueryControllerTest.java`: unauthenticated/unauthorized 차단, authenticated `userId` 전달, page size clamp, latest-first sort normalization을 검증한다.
+- [x] TEST-003 `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`: cross-recipient no-leak, unread filter, latest-first pagination을 검증한다.
+- [x] TEST-004 `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`: application layer가 `NotificationRepository`나 `ui` query 구현이 아니라 `application.port`에만 의존함을 검증한다.
+- [x] TEST-005 `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`: ownership helper, unread/read 전이, `createNotification(...)`, `createLegacyNotification(...)` 회귀를 검증한다.
+- [x] TEST-006 `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`, `notification/src/test/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListenerTest.java`: shared aggregate 변경이 listener 경로에 회귀를 만들지 않는 최소 범위 검증을 추가한다.
 
 ## 집중 검증
 - scope repair 이후 executor는 notification-local 명령만 사용한다. 범위 밖 build artifact를 유발하는 런타임/ArchUnit 명령은 완료 조건에서 제외하고, architecture evidence는 notification 대상 Semgrep 결과로 대체한다.
-- [ ] VERIFY-001 Build: `./gradlew --no-daemon --console=plain :notification:build` -> `notification` 모듈 compile, test, packaging 성공
-- [ ] VERIFY-002 Focused tests: `./gradlew --no-daemon --console=plain :notification:test --tests '*NotificationQueryServiceTest' --tests '*NotificationQueryControllerTest' --tests '*NotificationInboxViewReaderAdapterTest' --tests '*NotificationApplicationServicePortTest' --tests '*NotificationDomainServiceTest'` -> UC-030 핵심 규칙 통과
-- [ ] VERIFY-003 Architecture test: N/A - repo root `./gradlew --no-daemon --console=plain architectureRules`는 `:app:architectureRules`로 위임돼 범위 밖 산출물을 만들 수 있으므로 재실행하지 않는다. 현재 architecture evidence는 `VERIFY-007`의 `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과로 대체하며 기대 결과는 notification 범위 blocking finding 0건이다.
-- [ ] VERIFY-004 E2E 또는 maintenance verification: `./gradlew --no-daemon --console=plain :notification:test` -> UC-030 및 shared aggregate 회귀 포함 전체 `notification` 테스트 통과
-- [ ] VERIFY-005 Test gate: `.codex/test-gate.yaml`의 `required: []` 확인 -> 추가 강제 stage 없이 현재 검증 묶음으로 gate 충족 기록
-- [ ] VERIFY-006 Runtime server verification: N/A - `python3 -m harness_codex run app --timeout 120`, `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh` 재실행은 gateway/build resource mirror를 생성해 current execution boundary를 벗어나므로 완료 게이트에서 제외한다.
-- [ ] VERIFY-007 Static analysis: `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` -> blocking architecture finding 0건
+- [x] VERIFY-001 Build: `./gradlew --no-daemon --console=plain :notification:build` -> `notification` 모듈 compile, test, packaging 성공
+- [x] VERIFY-002 Focused tests: `./gradlew --no-daemon --console=plain :notification:test --tests '*NotificationQueryServiceTest' --tests '*NotificationQueryControllerTest' --tests '*NotificationInboxViewReaderAdapterTest' --tests '*NotificationApplicationServicePortTest' --tests '*NotificationDomainServiceTest'` -> UC-030 핵심 규칙 통과
+- [x] VERIFY-003 Architecture test: N/A - repo root `./gradlew --no-daemon --console=plain architectureRules`는 `:app:architectureRules`로 위임돼 범위 밖 산출물을 만들 수 있으므로 재실행하지 않는다. 현재 architecture evidence는 `VERIFY-007`의 `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과로 대체하며 기대 결과는 notification 범위 blocking finding 0건이다.
+- [x] VERIFY-004 E2E 또는 maintenance verification: `./gradlew --no-daemon --console=plain :notification:test` -> UC-030 및 shared aggregate 회귀 포함 전체 `notification` 테스트 통과
+- [x] VERIFY-005 Test gate: `.codex/test-gate.yaml`의 `required: []` 확인 -> 추가 강제 stage 없이 현재 검증 묶음으로 gate 충족 기록
+- [x] VERIFY-006 Runtime server verification: N/A - `python3 -m harness_codex run app --timeout 120`, `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh` 재실행은 gateway/build resource mirror를 생성해 current execution boundary를 벗어나므로 완료 게이트에서 제외한다.
+- [x] VERIFY-007 Static analysis: `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` -> blocking architecture finding 0건
 ### 중단 조건
 - `notification` 밖 코드 수정이 필수로 드러나는 경우
 - `NotificationContent.content` required 규칙 또는 persisted `isRead` 호환성을 깨야만 구현 가능한 경우
@@ -208,9 +206,9 @@ work_item_id: UC-030
 - active -> completed 전이는 `complete-work-item-plan`만 수행한다.
 
 ## 10. 검증 결과
-- Build: pending
-- Tests: pending
-- E2E 또는 maintenance verification: pending
-- Test gate: pending
-- Runtime server verification: pending
-- Static analysis: pending
+- Build: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/build.txt`
+- Tests: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/tests.txt`
+- E2E 또는 maintenance verification: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/e2e.txt`
+- Test gate: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/test-gate.txt`
+- Runtime server verification: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/runtime.txt`
+- Static analysis: PASS `.harness/runs/run-ae96d9560a97/work-items/UC-030/steps/execute-work-item/evidence/static-analysis.txt`

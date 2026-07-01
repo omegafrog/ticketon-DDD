@@ -11,7 +11,6 @@ source_docs:
   - docs/changes/active/CHG-20260625-001.ddd-integration.md
   - docs/changes/active/CHG-20260625-001.ddd-integration.json
   - docs/use-cases/UC-032/technical-decisions.md
-  - docs/use-cases/UC-032/affected-files.md
   - docs/use-cases/UC-032/e2e-goal.md
   - ARCHITECTURE.md
   - .codex/repository-settings.md
@@ -36,7 +35,6 @@ work_item_id: UC-032
 ## 실행 경계
 - 대상 bounded context/module: `Notification Management Context` / `notification`
 - 대상 aggregate root: `org.codenbug.notification.domain.entity.Notification`
-- 범위 판정 기준: `docs/use-cases/UC-032/affected-files.md`의 legacy taxonomy는 현재 repo 실경로에 다음처럼 대응시킨다. `controller` -> `ui`, `application/service` -> `application`, `domain/service` -> `domain`, `infrastructure` -> `infra`.
 - scope repair: `execute-work-item`의 `scope_conflict` 근거에 따라 executor 경계는 `notification/**` 수정과 notification-local 검증으로 제한한다. `scripts/run-app-*.sh` 실행은 `platform/gateway/build/**`와 build resource mirror를 생성해 재차 차단되므로 이번 work item 완료 조건에서 제외한다.
 - architecture verification boundary: repo root `architectureRules`는 현재 `build.gradle`에서 `:app:architectureRules`에 위임되고, 직전 실행에서 `app/build/**`, `event/build/**`, `platform/gateway/build/**` 산출물을 만들어 declared scope를 넘었다. 이번 work item에서는 Gradle architecture task를 재실행하지 않고 `notification/src/main/java`, `notification/src/test/java` 대상 Semgrep 결과를 in-scope architecture evidence로 사용한다.
 - aggregate root 파일 계약: `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`는 기존 파일 제자리 수정만 허용한다. 삭제 후 재생성, 경로 이동, 신규 entity 치환은 금지한다.
@@ -104,7 +102,7 @@ work_item_id: UC-032
 ### 생성/수정 클래스와 정확한 package
 - `org.codenbug.notification.ui.NotificationCommandController`: create endpoint 유지, request DTO 검증 결과를 application 호출로 매핑.
 - `org.codenbug.notification.ui.dto.NotificationCreateRequestDto`: `userId`, `type`, `title`, `content` required, `targetUrl` optional 계약 고정.
-- `org.codenbug.notification.application.NotificationCommandService`: create 트랜잭션 경계, save 1회, DTO/event 변환, invalid path no-save 보장.
+- `org.codenbug.notification.application.NotificationCommandService`: create 트랜잭션 경계, save 1회, application result/event 변환, invalid path no-save 보장.
 - `org.codenbug.notification.application.port.NotificationStore`: create/query/delete에 쓰는 persistence port. 시그니처 변경은 필요 최소로만.
 - `org.codenbug.notification.domain.NotificationDomainService`: `UserId`, `NotificationContent`, unread `Notification` 생성 규칙 소유.
 - `org.codenbug.notification.domain.entity.Notification`: 생성 직후 `isRead=false`와 persisted payload 일관성 유지.
@@ -126,8 +124,9 @@ work_item_id: UC-032
 - `ui/dto`: API contract와 application/domain 사이 직렬화 경계 담당.
 
 ### 허용 의존성 방향
-- `ui`는 `application`, `ui.dto`, `platform/common Role`, `security-aop` annotation에만 의존한다.
-- `application`은 `application.port`, `domain`, `ui.dto`, Spring transaction/event API에만 의존한다.
+- `ui`는 `application` 계층 호출을 담당한다.
+- `ui`는 `ui.dto`, `platform/common Role`, `security-aop` annotation에 의존할 수 있다.
+- `application`은 `application.port`, `domain`, Spring transaction/event API에만 의존한다. UI DTO는 `ui` boundary에서 application 입력/result로 매핑한다.
 - `domain`은 `domain.entity`, JDK, 자체 도메인 helper에만 의존한다.
 - `infra`는 `application.port`, `domain`, Spring Data/JPA, Spring config에만 의존한다.
 - 테스트는 대상 layer와 test fixture에만 의존하고, application 테스트가 `NotificationRepository`를 직접 필드로 가지면 안 된다.
