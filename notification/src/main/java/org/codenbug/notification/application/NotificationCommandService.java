@@ -3,10 +3,13 @@ package org.codenbug.notification.application;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.codenbug.notification.application.port.NotificationStore;
+import org.codenbug.notification.domain.NotificationDeletionPolicy;
+import org.codenbug.notification.domain.NotificationDeletionPolicy.SelectionDeletionDecision;
+import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.domain.entity.Notification;
+import org.codenbug.notification.domain.entity.NotificationSelection;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.UserId;
-import org.codenbug.notification.domain.NotificationDomainService;
 import org.codenbug.notification.ui.dto.NotificationDto;
 import org.codenbug.notification.ui.dto.NotificationEventDto;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,6 +27,7 @@ public class NotificationCommandService {
 
 	private final NotificationStore notificationStore;
 	private final NotificationDomainService domainService;
+	private final NotificationDeletionPolicy deletionPolicy;
 	private final ApplicationEventPublisher eventPublisher;
 
 	public NotificationDto createNotification(String userId, NotificationType type, String title,
@@ -116,6 +120,26 @@ public class NotificationCommandService {
 
 		notificationStore.deleteAll(notifications);
 		log.debug("다건 알림 삭제 완료: count={}, userId={}", notifications.size(), userId);
+	}
+
+	public void deleteSelectedNotifications(NotificationSelection selection, String userId) {
+		UserId requesterId = new UserId(userId);
+		List<Notification> existingNotifications =
+			notificationStore.findAllByIdIn(selection.getNotificationIds());
+		SelectionDeletionDecision decision =
+			deletionPolicy.evaluate(requesterId, selection, existingNotifications);
+
+		if (decision.isRejected()) {
+			log.info("알림 선택 삭제 거절: requesterId={}, deletionScope=selected-set, requestedCount={}, deletedCount=0, rejectionReasonCategory={}",
+				requesterId.getValue(), decision.requestedCount(),
+				decision.rejectionReasonCategory());
+			throw new IllegalArgumentException("해당 알림에 접근할 권한이 없습니다.");
+		}
+
+		notificationStore.deleteAll(decision.deletableNotifications());
+		log.info("알림 선택 삭제 완료: requesterId={}, deletionScope=selected-set, requestedCount={}, deletedCount={}, rejectionReasonCategory={}",
+			requesterId.getValue(), decision.requestedCount(), decision.deletedCount(),
+			decision.rejectionReasonCategory());
 	}
 
 	public void deleteAllNotifications(String userId) {

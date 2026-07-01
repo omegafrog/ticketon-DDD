@@ -35,12 +35,17 @@ public class NotificationDomainService {
         return notification.isUnread();
     }
 
+    public boolean markAsReadIfUnread(Notification notification) {
+        return notification.markAsReadIfUnread();
+    }
+
     public boolean canRetry(Notification notification) {
         return notification.canRetry();
     }
 
     public void validateUserOwnership(Notification notification, String userId) {
-        if (!notification.getUserIdValue().equals(userId)) {
+        UserId requesterId = new UserId(userId);
+        if (!notification.isOwnedBy(requesterId)) {
             throw new IllegalArgumentException("해당 알림에 접근할 권한이 없습니다.");
         }
     }

@@ -13,6 +13,7 @@ import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.NotificationDomainService;
+import org.codenbug.notification.domain.NotificationDeletionPolicy;
 import org.codenbug.notification.infra.NotificationStoreAdapter;
 import org.codenbug.notification.infra.NotificationRepository;
 import org.junit.jupiter.api.Test;
@@ -45,7 +46,7 @@ class NotificationApplicationServicePortTest {
     List<Object> publishedEvents = new ArrayList<>();
     ApplicationEventPublisher publisher = publishedEvents::add;
     NotificationCommandService service = new NotificationCommandService(store,
-        new NotificationDomainService(), publisher);
+        new NotificationDomainService(), new NotificationDeletionPolicy(), publisher);
 
     service.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", "/target");
 
@@ -60,9 +61,9 @@ class NotificationApplicationServicePortTest {
     Notification notification = new NotificationDomainService()
         .createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
     store.notificationById = notification;
-    NotificationQueryService service = new NotificationQueryService(store,
-        org.mockito.Mockito.mock(NotificationInboxViewReader.class),
-        new NotificationDomainService());
+    store.ownedNotificationById = notification;
+    NotificationQueryService service =
+        new NotificationQueryService(store, org.mockito.Mockito.mock(NotificationInboxViewReader.class));
 
     service.getNotificationById(1L, "user-1");
 
@@ -78,6 +79,7 @@ class NotificationApplicationServicePortTest {
 
     private final List<Notification> savedNotifications = new ArrayList<>();
     private Notification notificationById;
+    private Notification ownedNotificationById;
 
     @Override
     public Notification save(Notification notification) {
@@ -88,6 +90,14 @@ class NotificationApplicationServicePortTest {
     @Override
     public Optional<Notification> findById(Long notificationId) {
       return Optional.ofNullable(notificationById);
+    }
+
+    @Override
+    public Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId) {
+      if (ownedNotificationById != null && ownedNotificationById.isOwnedBy(userId.getValue())) {
+        return Optional.of(ownedNotificationById);
+      }
+      return Optional.empty();
     }
 
     @Override

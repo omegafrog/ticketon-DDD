@@ -46,6 +46,7 @@ work_item_id: UC-032
 - `notification/src/main/java/org/codenbug/notification/application/NotificationCommandService.java`
 - `notification/src/main/java/org/codenbug/notification/application/port/NotificationStore.java`
 - `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`
+- `notification/src/main/java/org/codenbug/notification/domain/NotificationDeletionPolicy.java`
 - `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`
 - `notification/src/main/java/org/codenbug/notification/domain/entity/NotificationContent.java`
 - `notification/src/main/java/org/codenbug/notification/domain/entity/UserId.java`
@@ -57,6 +58,7 @@ work_item_id: UC-032
 - `notification/src/main/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListener.java`
 - `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`
 - `notification/src/test/java/org/codenbug/notification/application/NotificationCommandServiceIdempotencyTest.java`
+- `notification/src/test/java/org/codenbug/notification/domain/NotificationDeletionPolicyTest.java`
 - `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`
 - `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`
 - `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`
@@ -84,6 +86,7 @@ work_item_id: UC-032
 - `notification/src/main/java/org/codenbug/notification/ui/dto/NotificationCreateRequestDto.java`
 - `notification/src/main/java/org/codenbug/notification/application/NotificationCommandService.java`
 - `notification/src/main/java/org/codenbug/notification/domain/NotificationDomainService.java`
+- `notification/src/main/java/org/codenbug/notification/domain/NotificationDeletionPolicy.java`
 - `notification/src/main/java/org/codenbug/notification/domain/entity/Notification.java`
 - `notification/src/main/java/org/codenbug/notification/domain/entity/NotificationContent.java`
 - `notification/src/main/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapter.java`
@@ -93,6 +96,7 @@ work_item_id: UC-032
 - `notification/src/main/java/org/codenbug/notification/infra/event/PurchaseEventListener.java`
 - `notification/src/main/java/org/codenbug/notification/infra/messaging/PurchaseNotificationEventListener.java`
 - `notification/src/test/java/org/codenbug/notification/application/NotificationApplicationServicePortTest.java`
+- `notification/src/test/java/org/codenbug/notification/domain/NotificationDeletionPolicyTest.java`
 - `notification/src/test/java/org/codenbug/notification/domain/NotificationDomainServiceTest.java`
 - `notification/src/test/java/org/codenbug/notification/infra/NotificationInboxViewReaderAdapterTest.java`
 - `notification/src/test/java/org/codenbug/notification/infra/event/PurchaseEventListenerTest.java`

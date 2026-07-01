@@ -88,6 +88,14 @@ public class Notification {
         this.isRead = true;
     }
 
+    public boolean markAsReadIfUnread() {
+        if (!isUnread()) {
+            return false;
+        }
+        markAsRead();
+        return true;
+    }
+
     public void updateStatus(NotificationStatus status) {
         this.status = Objects.requireNonNull(status, "상태는 필수입니다.");
     }
@@ -113,6 +121,14 @@ public class Notification {
 
     public boolean isUnread() {
         return !isRead;
+    }
+
+    public boolean isOwnedBy(String userId) {
+        return userId != null && this.userId.getValue().equals(userId.trim());
+    }
+
+    public boolean isOwnedBy(UserId userId) {
+        return userId != null && this.userId.equals(userId);
     }
 
     public boolean isPending() {

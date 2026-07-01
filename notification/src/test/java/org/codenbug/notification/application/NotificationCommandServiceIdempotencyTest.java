@@ -11,6 +11,7 @@ import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.domain.entity.UserId;
 import org.codenbug.notification.domain.NotificationDomainService;
+import org.codenbug.notification.domain.NotificationDeletionPolicy;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,7 @@ class NotificationCommandServiceIdempotencyTest {
         List<Object> publishedEvents = new ArrayList<>();
         ApplicationEventPublisher publisher = publishedEvents::add;
         NotificationCommandService service = new NotificationCommandService(store,
-                new NotificationDomainService(), publisher);
+                new NotificationDomainService(), new NotificationDeletionPolicy(), publisher);
 
         Optional<?> result = service.createNotificationIfAbsent("user-1", NotificationType.PAYMENT,
                 "제목", "내용", "/target",
@@ -43,7 +44,7 @@ class NotificationCommandServiceIdempotencyTest {
         List<Object> publishedEvents = new ArrayList<>();
         ApplicationEventPublisher publisher = publishedEvents::add;
         NotificationCommandService service = new NotificationCommandService(store,
-                new NotificationDomainService(), publisher);
+                new NotificationDomainService(), new NotificationDeletionPolicy(), publisher);
 
         Optional<?> result = service.createNotificationIfAbsent("user-1", NotificationType.PAYMENT,
                 "제목", "내용", "/target",
@@ -69,6 +70,11 @@ class NotificationCommandServiceIdempotencyTest {
 
         @Override
         public Optional<Notification> findById(Long notificationId) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId) {
             return Optional.empty();
         }
 
