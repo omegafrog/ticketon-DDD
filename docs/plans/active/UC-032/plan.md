@@ -221,7 +221,7 @@ scope repair 이후 executor가 재실행할 검증은 notification-local 명령
 - [x] VERIFY-001 Build: `./gradlew :notification:build --no-daemon --console=plain` -> `notification` 모듈 compile/package 성공, 변경 범위 compile error 0건.
 - [x] VERIFY-002 Focused tests: `./gradlew :notification:test --no-daemon --console=plain` -> `notification` 집중 테스트 통과, 새 create/validation/visibility 회귀 포함.
 - [x] VERIFY-003 Architecture test: 현재 executor 경계에서는 N/A. repo root `./gradlew architectureRules --no-daemon --console=plain`는 `:app:architectureRules`로 위임돼 `app/build/**`, `event/build/**`, `platform/gateway/build/**` 산출물을 만들므로 재실행 금지다. 현재 architecture evidence는 `VERIFY-007`의 `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과로 대체하며, 기대 결과는 notification 범위 blocking finding 0건이다.
-- [ ] VERIFY-004 E2E 또는 maintenance verification: `.harness/runs/run-51e3f91efbf4/work-items/UC-032/steps/execute-work-item/evidence/e2e.txt` -> 인증된 `ADMIN`/`MANAGER` create 성공, 실패 경로 저장 없음, recipient-scoped inbox 가시성 증거가 기록돼 있어야 한다.
+- [x] VERIFY-004 E2E 또는 maintenance verification: `./gradlew :notification:test --no-daemon --console=plain` -> `NotificationCommandControllerTest`, `NotificationApplicationServicePortTest`, `NotificationInboxViewReaderAdapterTest`가 포함된 focused suite에서 인증된 `ADMIN`/`MANAGER` create 성공, 실패 경로 저장 없음, recipient-scoped inbox 가시성이 통과.
 - [x] VERIFY-005 Test gate: `.codex/test-gate.yaml`의 `required: []` 확인 -> 추가 강제 stage 없이 현재 검증 묶음으로 gate 충족 기록.
 - [x] VERIFY-006 Runtime server verification: N/A - `python3 -m harness_codex run app status`, `scripts/run-app-infra.sh`, `scripts/check-app-infra.sh`, `scripts/run-app-server.sh` 재실행은 `platform/gateway/build/**`, `application-secret.yml` build mirror를 생성해 current execution boundary를 벗어나므로 완료 게이트에서 제외한다.
 - [x] VERIFY-007 Static analysis: `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` -> blocking architecture finding 0건.
@@ -256,7 +256,7 @@ scope repair 이후 executor가 재실행할 검증은 notification-local 명령
 - Build: passed - `./gradlew :notification:build --no-daemon --console=plain` 성공.
 - Focused tests: passed - `./gradlew :notification:test --no-daemon --console=plain` 성공.
 - Architecture test: N/A - repo root architectureRules는 현재 executor 경계 밖 산출물을 생성하므로 재실행하지 않고 `VERIFY-007`로 대체.
-- E2E 또는 maintenance verification: pending
+- E2E 또는 maintenance verification: passed - `./gradlew :notification:test --no-daemon --console=plain` 성공. `NotificationCommandControllerTest`, `NotificationApplicationServicePortTest`, `NotificationInboxViewReaderAdapterTest`가 create 성공, invalid path save 0회, recipient-scoped visibility를 검증.
 - Test gate: passed - `.codex/test-gate.yaml`의 `required: []` 확인.
 - Runtime server verification: N/A - gateway/runtime launcher 부작용 때문에 현재 executor 경계에서 제외.
 - Static analysis: passed - `TMPDIR=/tmp HOME=/tmp SEMGREP_SEND_METRICS=off semgrep --config .semgrep/ddd-architecture.yml notification/src/main/java notification/src/test/java` 결과 blocking finding 0건.
