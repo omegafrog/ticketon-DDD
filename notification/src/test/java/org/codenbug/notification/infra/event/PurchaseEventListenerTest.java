@@ -88,4 +88,30 @@ class PurchaseEventListenerTest {
         verify(notificationCommandService, never()).createNotificationIfAbsent(any(), any(), any(),
                 any(), any(), any());
     }
+
+    @Test
+    void 환불완료_이벤트도_blank가_아닌_content를_전달한다() {
+        when(notificationCommandService.createNotificationIfAbsent(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Optional.of(new NotificationDto()));
+
+        listener.handleRefundCompletedEvent("""
+                {
+                  "userId": "user-1",
+                  "purchaseId": "purchase-1",
+                  "orderId": "order-1",
+                  "orderName": "Concert",
+                  "refundAmount": 1000,
+                  "refundReason": "reason",
+                  "refundedAt": "2026-06-19T10:15:30"
+                }
+                """);
+
+        ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(notificationCommandService).createNotificationIfAbsent(eq("user-1"),
+                eq(NotificationType.PAYMENT), eq("[티켓온] 환불 완료"), contentCaptor.capture(),
+                eq("/my-account/refund-history"),
+                eq("refund.completed:user-1:purchase-1:2026-06-19T10:15:30"));
+        org.assertj.core.api.Assertions.assertThat(contentCaptor.getValue()).isNotBlank()
+                .contains("주문번호: order-1", "환불 금액: 1000원");
+    }
 }

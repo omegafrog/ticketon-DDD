@@ -1,6 +1,7 @@
 package org.codenbug.notification.application;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -53,6 +54,22 @@ class NotificationApplicationServicePortTest {
     assertThat(store.savedNotifications).hasSize(1);
     assertThat(store.savedNotifications.get(0).getUserIdValue()).isEqualTo("user-1");
     assertThat(publishedEvents).hasSize(1);
+  }
+
+  @Test
+  void invalid_create는_save와_event를_실행하지_않는다() {
+    FakeNotificationStore store = new FakeNotificationStore();
+    List<Object> publishedEvents = new ArrayList<>();
+    ApplicationEventPublisher publisher = publishedEvents::add;
+    NotificationCommandService service = new NotificationCommandService(store,
+        new NotificationDomainService(), new NotificationDeletionPolicy(), publisher);
+
+    assertThatThrownBy(() -> service.createNotification("user-1", NotificationType.SYSTEM,
+        "제목", "   ", "/target")).isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("알림 내용은 필수입니다.");
+
+    assertThat(store.savedNotifications).isEmpty();
+    assertThat(publishedEvents).isEmpty();
   }
 
   @Test

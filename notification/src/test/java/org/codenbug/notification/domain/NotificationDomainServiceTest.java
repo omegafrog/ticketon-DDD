@@ -59,4 +59,34 @@ class NotificationDomainServiceTest {
         assertThat(legacy.getContent()).isEqualTo("legacy-content");
         assertThat(legacy.isUnread()).isTrue();
     }
+
+    @Test
+    void blank_리시피언트는_생성_전에_거절한다() {
+        assertThatThrownBy(() -> domainService.createNotification("   ", NotificationType.SYSTEM,
+                "제목", "내용", null)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("사용자 ID는 필수입니다.");
+    }
+
+    @Test
+    void blank_제목은_생성_전에_거절한다() {
+        assertThatThrownBy(() -> domainService.createNotification("user-1", NotificationType.SYSTEM,
+                "   ", "내용", null)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("알림 제목은 필수입니다.");
+    }
+
+    @Test
+    void blank_내용은_생성_전에_거절한다() {
+        assertThatThrownBy(() -> domainService.createNotification("user-1", NotificationType.SYSTEM,
+                "제목", "   ", null)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("알림 내용은 필수입니다.");
+    }
+
+    @Test
+    void targetUrl은_optional이며_blank면_null로_정규화한다() {
+        Notification notification = domainService.createNotification("user-1", NotificationType.SYSTEM,
+                "제목", "내용", "   ");
+
+        assertThat(notification.getTargetUrl()).isNull();
+        assertThat(notification.isUnread()).isTrue();
+    }
 }
