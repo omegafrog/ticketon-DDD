@@ -28,6 +28,11 @@ public class NotificationStoreAdapter implements NotificationStore {
     }
 
     @Override
+    public Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId) {
+        return notificationRepository.findByIdAndUserId(notificationId, userId);
+    }
+
+    @Override
     public boolean existsBySourceKey(String sourceKey) {
         return notificationRepository.existsBySourceKey(sourceKey);
     }
@@ -55,6 +60,11 @@ public class NotificationStoreAdapter implements NotificationStore {
     }
 
     @Override
+    public List<Notification> findAllByIdIn(List<Long> notificationIds) {
+        return notificationRepository.findAllByIdIn(notificationIds);
+    }
+
+    @Override
     public List<Notification> findAllByUserIdAndIdIn(UserId userId,
             List<Long> notificationIds) {
         return notificationRepository.findAllByUserIdAndIdIn(userId, notificationIds);
@@ -63,6 +73,11 @@ public class NotificationStoreAdapter implements NotificationStore {
     @Override
     public void delete(Notification notification) {
         notificationRepository.delete(notification);
+    }
+
+    @Override
+    public void deleteAllByIdInBatch(List<Long> notificationIds) {
+        notificationRepository.deleteAllByIdInBatch(notificationIds);
     }
 
     @Override

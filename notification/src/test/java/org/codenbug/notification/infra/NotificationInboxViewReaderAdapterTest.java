@@ -71,6 +71,19 @@ class NotificationInboxViewReaderAdapterTest {
         assertThat(notificationTitles(page)).containsExactly("title-3", "title-1");
     }
 
+    @Test
+    void 페이지네이션은_리시피언트_범위에서_최신순_슬라이스를_유지한다() {
+        Page<NotificationListProjection> firstPage = notificationInboxViewReader
+                .findUserNotificationList("user-1", PageRequest.of(0, 1));
+        Page<NotificationListProjection> secondPage = notificationInboxViewReader
+                .findUserNotificationList("user-1", PageRequest.of(1, 1));
+
+        assertThat(notificationTitles(firstPage)).containsExactly("title-3");
+        assertThat(notificationTitles(secondPage)).containsExactly("title-2");
+        assertThat(firstPage.getTotalElements()).isEqualTo(3);
+        assertThat(secondPage.getTotalElements()).isEqualTo(3);
+    }
+
     private void persistNotification(Long id, String userId, LocalDateTime sentAt, boolean isRead) {
         Notification notification = domainService.createNotification(userId, NotificationType.SYSTEM,
                 "title-" + id, "content-" + id, "/target/" + id);

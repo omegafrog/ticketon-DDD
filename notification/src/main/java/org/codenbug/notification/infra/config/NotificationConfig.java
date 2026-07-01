@@ -1,5 +1,6 @@
 package org.codenbug.notification.infra.config;
 
+import org.codenbug.notification.domain.NotificationDeletionPolicy;
 import org.codenbug.notification.domain.NotificationDomainService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,5 +22,10 @@ public class NotificationConfig {
     @Bean
     public NotificationDomainService notificationDomainService() {
         return new NotificationDomainService();
+    }
+
+    @Bean
+    public NotificationDeletionPolicy notificationDeletionPolicy() {
+        return new NotificationDeletionPolicy();
     }
 }

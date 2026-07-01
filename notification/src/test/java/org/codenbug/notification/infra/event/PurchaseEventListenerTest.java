@@ -12,6 +12,7 @@ import org.codenbug.notification.application.NotificationCommandService;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.ui.dto.NotificationDto;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,6 +43,32 @@ class PurchaseEventListenerTest {
         verify(notificationCommandService).createNotificationIfAbsent(eq("user-1"),
                 eq(NotificationType.PAYMENT), eq("[티켓온] 결제 완료"), any(), eq("/purchase-history/purchase-1"),
                 eq("payment.completed:user-1:purchase-1:2026-06-19T10:15:30"));
+    }
+
+    @Test
+    void 결제완료_이벤트는_content를_비우지_않는다() {
+        when(notificationCommandService.createNotificationIfAbsent(any(), any(), any(), any(), any(), any()))
+                .thenReturn(Optional.of(new NotificationDto()));
+
+        listener.handlePaymentCompletedEvent("""
+                {
+                  "userId": "user-1",
+                  "purchaseId": "purchase-1",
+                  "orderId": "order-1",
+                  "eventTitle": "Concert",
+                  "totalAmount": 1000,
+                  "paymentMethod": "CARD",
+                  "approvedAt": "2026-06-19T10:15:30"
+                }
+                """);
+
+        ArgumentCaptor<String> contentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(notificationCommandService).createNotificationIfAbsent(eq("user-1"),
+                eq(NotificationType.PAYMENT), eq("[티켓온] 결제 완료"), contentCaptor.capture(),
+                eq("/purchase-history/purchase-1"),
+                eq("payment.completed:user-1:purchase-1:2026-06-19T10:15:30"));
+        org.assertj.core.api.Assertions.assertThat(contentCaptor.getValue()).contains("주문번호: order-1",
+                "공연명: Concert", "결제 금액: 1000원");
     }
 
     @Test
