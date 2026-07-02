@@ -27,10 +27,11 @@ class NotificationDomainServiceTest {
                 domainService.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
 
         assertThat(domainService.canMarkAsRead(notification)).isTrue();
-
-        notification.markAsRead();
+        assertThat(domainService.markAsReadIfUnread(notification)).isTrue();
 
         assertThat(domainService.canMarkAsRead(notification)).isFalse();
+        assertThat(domainService.markAsReadIfUnread(notification)).isFalse();
+        assertThat(notification.isRead()).isTrue();
     }
 
     @Test
@@ -41,5 +42,21 @@ class NotificationDomainServiceTest {
         assertThatThrownBy(() -> domainService.validateUserOwnership(notification, "user-1"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("해당 알림에 접근할 권한이 없습니다.");
+    }
+
+    @Test
+    void 생성계약은_legacy와_신규_경로_모두_유지한다() {
+        Notification created = domainService.createNotification(" user-1 ", NotificationType.SYSTEM,
+                " 제목 ", "내용", "/target");
+        Notification legacy = domainService.createLegacyNotification("user-2",
+                NotificationType.PAYMENT, "legacy-content");
+
+        assertThat(created.getUserIdValue()).isEqualTo("user-1");
+        assertThat(created.getTitle()).isEqualTo("제목");
+        assertThat(created.getContent()).isEqualTo("내용");
+        assertThat(created.isUnread()).isTrue();
+        assertThat(legacy.getUserIdValue()).isEqualTo("user-2");
+        assertThat(legacy.getContent()).isEqualTo("legacy-content");
+        assertThat(legacy.isUnread()).isTrue();
     }
 }

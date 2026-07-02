@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.codenbug.common.Role;
 import org.codenbug.common.RsData;
 import org.codenbug.notification.application.NotificationCommandService;
+import org.codenbug.notification.domain.entity.NotificationSelection;
 import org.codenbug.notification.domain.entity.NotificationType;
 import org.codenbug.notification.ui.dto.NotificationCreateRequestDto;
 import org.codenbug.notification.ui.dto.NotificationDeleteRequestDto;
@@ -59,7 +60,8 @@ public class NotificationCommandController {
 	public ResponseEntity<RsData<Void>> batchDeleteNotifications(
 			@Valid @RequestBody NotificationDeleteRequestDto request) {
 		String userId = LoggedInUserContext.get().getUserId();
-		notificationCommandService.deleteNotifications(request.getNotificationIds(), userId);
+		notificationCommandService.deleteSelectedNotifications(
+			NotificationSelection.from(request.getNotificationIds()), userId);
 		return ResponseEntity.ok(new RsData<>("200", "알림 삭제 성공", null));
 	}
 

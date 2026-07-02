@@ -32,8 +32,7 @@ class NotificationQueryServiceTest {
         PageRequest pageable = PageRequest.of(0, 10);
         viewReader.notificationsPage = new PageImpl<>(List.of(
                 projection(1L, "user-1", false, LocalDateTime.now())), pageable, 1);
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         Page<NotificationListProjection> result = service.getNotifications("user-1", pageable);
 
@@ -47,8 +46,7 @@ class NotificationQueryServiceTest {
         FakeNotificationStore store = new FakeNotificationStore();
         FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
         store.unreadCount = 3L;
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         long count = service.getUnreadCount("user-1");
 
@@ -64,8 +62,7 @@ class NotificationQueryServiceTest {
         PageRequest pageable = PageRequest.of(0, 20);
         viewReader.unreadPage = new PageImpl<>(List.of(
                 projection(2L, "user-1", false, LocalDateTime.now())), pageable, 1);
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         Page<NotificationListProjection> result = service.getUnreadNotifications("user-1", pageable);
 
@@ -81,8 +78,8 @@ class NotificationQueryServiceTest {
         Notification notification =
                 domainService.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
         store.notificationById = notification;
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        store.ownedNotificationById = notification;
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         service.getNotificationById(1L, "user-1");
 
@@ -98,8 +95,8 @@ class NotificationQueryServiceTest {
                 domainService.createNotification("user-1", NotificationType.SYSTEM, "제목", "내용", null);
         notification.markAsRead();
         store.notificationById = notification;
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        store.ownedNotificationById = notification;
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         service.getNotificationById(1L, "user-1");
 
@@ -114,8 +111,7 @@ class NotificationQueryServiceTest {
         Notification notification =
                 domainService.createNotification("user-2", NotificationType.SYSTEM, "제목", "내용", null);
         store.notificationById = notification;
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         assertThatThrownBy(() -> service.getNotificationById(1L, "user-1"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -128,8 +124,7 @@ class NotificationQueryServiceTest {
     void 없는_알림_상세_조회는_저장없이_실패한다() {
         FakeNotificationStore store = new FakeNotificationStore();
         FakeNotificationInboxViewReader viewReader = new FakeNotificationInboxViewReader();
-        NotificationQueryService service =
-                new NotificationQueryService(store, viewReader, domainService);
+        NotificationQueryService service = new NotificationQueryService(store, viewReader);
 
         assertThatThrownBy(() -> service.getNotificationById(99L, "user-1"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -147,6 +142,7 @@ class NotificationQueryServiceTest {
 
         private final List<Notification> savedNotifications = new ArrayList<>();
         private Notification notificationById;
+        private Notification ownedNotificationById;
         private long unreadCount;
         private UserId lastUnreadCountUserId;
 
@@ -159,6 +155,14 @@ class NotificationQueryServiceTest {
         @Override
         public Optional<Notification> findById(Long notificationId) {
             return Optional.ofNullable(notificationById);
+        }
+
+        @Override
+        public Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId) {
+            if (ownedNotificationById != null && ownedNotificationById.isOwnedBy(userId.getValue())) {
+                return Optional.of(ownedNotificationById);
+            }
+            return Optional.empty();
         }
 
         @Override

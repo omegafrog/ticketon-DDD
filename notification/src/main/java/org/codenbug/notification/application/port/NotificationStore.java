@@ -14,6 +14,8 @@ public interface NotificationStore {
 
     Optional<Notification> findById(Long notificationId);
 
+    Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId);
+
     boolean existsBySourceKey(String sourceKey);
 
     Page<Notification> findByUserIdOrderBySentAtDesc(UserId userId, Pageable pageable);
@@ -25,9 +27,17 @@ public interface NotificationStore {
 
     long countByUserIdAndIsReadFalse(UserId userId);
 
+    default List<Notification> findAllByIdIn(List<Long> notificationIds) {
+        throw new UnsupportedOperationException("ID 목록 알림 조회를 지원하지 않습니다.");
+    }
+
     List<Notification> findAllByUserIdAndIdIn(UserId userId, List<Long> notificationIds);
 
     void delete(Notification notification);
+
+    default void deleteAllByIdInBatch(List<Long> notificationIds) {
+        throw new UnsupportedOperationException("ID 목록 알림 삭제를 지원하지 않습니다.");
+    }
 
     void deleteAll(Iterable<? extends Notification> notifications);
 }

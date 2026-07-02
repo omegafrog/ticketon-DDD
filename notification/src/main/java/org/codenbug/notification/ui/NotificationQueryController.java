@@ -38,7 +38,7 @@ public class NotificationQueryController {
 	@RoleRequired({Role.USER})
 	public RsData<Page<NotificationListProjection>> getNotifications(
 			@PageableDefault(size = 10, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		String userId = LoggedInUserContext.get().getUserId();
+		String userId = currentUserId();
 		Page<NotificationListProjection> notifications =
 			notificationQueryService.getNotifications(userId, normalizeInboxPageable(pageable, 10));
 		return new RsData<>("200", "알림 목록 조회 성공", notifications);
@@ -48,8 +48,9 @@ public class NotificationQueryController {
 	@AuthNeeded
 	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<NotificationDto>> getNotificationDetail(@PathVariable Long id) {
-		String userId = LoggedInUserContext.get().getUserId();
-		NotificationDto notification = notificationQueryService.getNotificationById(id, userId);
+		String userId = currentUserId();
+		NotificationDto notification =
+			NotificationDto.from(notificationQueryService.getNotificationById(id, userId));
 		return ResponseEntity.ok(new RsData<>("200", "알림 조회 성공", notification));
 	}
 
@@ -58,7 +59,7 @@ public class NotificationQueryController {
 	@RoleRequired({Role.USER})
 	public RsData<Page<NotificationListProjection>> getUnreadNotifications(
 			@PageableDefault(size = 20, sort = "sentAt", direction = Sort.Direction.DESC) Pageable pageable) {
-		String userId = LoggedInUserContext.get().getUserId();
+		String userId = currentUserId();
 		Page<NotificationListProjection> unreadPage =
 			notificationQueryService.getUnreadNotifications(userId, normalizeInboxPageable(pageable, 20));
 		return new RsData<>("200", "미읽은 알림 조회 성공", unreadPage);
@@ -69,7 +70,7 @@ public class NotificationQueryController {
 	@RoleRequired({Role.ADMIN})
 	public SseEmitter subscribeNotifications(
 			@RequestHeader(value = "Last-Event-ID", required = false) String lastEventId) {
-		String userId = LoggedInUserContext.get().getUserId();
+		String userId = currentUserId();
 		return emitterService.createEmitter(userId, lastEventId);
 	}
 
@@ -77,7 +78,7 @@ public class NotificationQueryController {
 	@AuthNeeded
 	@RoleRequired({Role.USER})
 	public ResponseEntity<RsData<Long>> getUnreadCount() {
-		String userId = LoggedInUserContext.get().getUserId();
+		String userId = currentUserId();
 		long count = notificationQueryService.getUnreadCount(userId);
 		return ResponseEntity.ok(new RsData<>("200", "미읽은 알림 개수 조회 성공", count));
 	}
@@ -86,5 +87,9 @@ public class NotificationQueryController {
 		int pageSize = pageable.getPageSize() > 0 ? pageable.getPageSize() : defaultPageSize;
 		return PageRequest.of(pageable.getPageNumber(), Math.min(pageSize, MAX_INBOX_PAGE_SIZE),
 			Sort.by(Sort.Direction.DESC, "sentAt"));
+	}
+
+	private String currentUserId() {
+		return LoggedInUserContext.get().getUserId();
 	}
 }

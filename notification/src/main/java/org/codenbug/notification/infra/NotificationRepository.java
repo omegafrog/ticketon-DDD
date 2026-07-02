@@ -17,6 +17,8 @@ import org.springframework.data.repository.query.Param;
  */
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
+    java.util.Optional<Notification> findByIdAndUserId(Long notificationId, UserId userId);
+
     boolean existsBySourceKey(String sourceKey);
 
     /**
@@ -85,6 +87,8 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      * @return 조회된 알림 목록
      */
     List<Notification> findAllByUserIdAndIdIn(UserId userId, List<Long> notificationIds);
+
+    List<Notification> findAllByIdIn(List<Long> notificationIds);
 
 
     /**

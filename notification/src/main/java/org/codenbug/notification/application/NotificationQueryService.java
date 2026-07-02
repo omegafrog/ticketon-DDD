@@ -5,8 +5,6 @@ import org.codenbug.notification.application.port.NotificationInboxViewReader;
 import org.codenbug.notification.application.port.NotificationStore;
 import org.codenbug.notification.domain.entity.Notification;
 import org.codenbug.notification.domain.entity.UserId;
-import org.codenbug.notification.domain.NotificationDomainService;
-import org.codenbug.notification.ui.dto.NotificationDto;
 import org.codenbug.notification.ui.projection.NotificationListProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,25 +18,22 @@ public class NotificationQueryService {
 
 	private final NotificationStore notificationStore;
 	private final NotificationInboxViewReader notificationInboxViewReader;
-	private final NotificationDomainService domainService;
 
 	public Page<NotificationListProjection> getNotifications(String userId, Pageable pageable) {
 		return notificationInboxViewReader.findUserNotificationList(userId, pageable);
 	}
 
 	@Transactional
-	public NotificationDto getNotificationById(Long notificationId, String userId) {
-		Notification notification = notificationStore.findById(notificationId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
+	public Notification getNotificationById(Long notificationId, String userId) {
+		UserId recipientUserId = new UserId(userId);
+		Notification notification = notificationStore.findByIdAndUserId(notificationId, recipientUserId)
+			.orElseGet(() -> loadOwnedNotificationOrThrow(notificationId, recipientUserId));
 
-		domainService.validateUserOwnership(notification, userId);
-
-		if (domainService.canMarkAsRead(notification)) {
-			notification.markAsRead();
+		if (notification.markAsReadIfUnread()) {
 			notificationStore.save(notification);
 		}
 
-		return NotificationDto.from(notification);
+		return notification;
 	}
 
 	public Page<NotificationListProjection> getUnreadNotifications(String userId, Pageable pageable) {
@@ -48,5 +43,14 @@ public class NotificationQueryService {
 	public long getUnreadCount(String userId) {
 		UserId userIdVO = new UserId(userId);
 		return notificationStore.countByUserIdAndIsReadFalse(userIdVO);
+	}
+
+	private Notification loadOwnedNotificationOrThrow(Long notificationId, UserId userId) {
+		Notification notification = notificationStore.findById(notificationId)
+			.orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
+		if (!notification.isOwnedBy(userId.getValue())) {
+			throw new IllegalArgumentException("해당 알림에 접근할 권한이 없습니다.");
+		}
+		return notification;
 	}
 }
