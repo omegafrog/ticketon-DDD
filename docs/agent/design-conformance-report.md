@@ -2,7 +2,7 @@
 
 ## Assessment Status
 
-Not assessed. LLM analysis status: completed.
+Not assessed. LLM analysis status: skipped (disabled).
 
 ## Evidence Reviewed
 

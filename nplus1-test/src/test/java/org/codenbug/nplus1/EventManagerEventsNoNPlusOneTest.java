@@ -120,11 +120,11 @@ class EventManagerEventsNoNPlusOneTest {
     }
 
     private EventCategory buildCategory(Long id) {
-        EventCategory category = new EventCategory();
-        ReflectionTestUtils.setField(category, "id", new CategoryId(id));
-        ReflectionTestUtils.setField(category, "name", "Category " + id);
-        ReflectionTestUtils.setField(category, "thumbnailUrl", "http://example.com/cat-" + id);
-        return category;
+        return new EventCategory(
+            new CategoryId(id),
+            "Category " + id,
+            "http://example.com/cat-" + id
+        );
     }
 
     private SeatLayout buildSeatLayout(int index, int seatsPerLayout) {

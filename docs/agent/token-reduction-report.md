@@ -10,17 +10,17 @@
 - Existing root `AGENTS.md` was preserved because it was not harness-managed.
 - Detailed repo context now lives under `docs/agent/`.
 - Analyzer mode: static repository scan.
-- LLM summary status: completed.
+- LLM summary status: skipped (disabled).
 - Detected technologies: Java/Gradle.
 
 ## Agent Doc Counts
 
-- `docs/agent/codebase-artifacts.md`: 164 words
+- `docs/agent/codebase-artifacts.md`: 165 words
 - `docs/agent/commands.md`: 204 words
-- `docs/agent/context.md`: 290 words
-- `docs/agent/design-conformance-report.md`: 115 words
-- `docs/agent/session-state.md`: 100 words
-- `docs/agent/token-reduction-report.md`: 99 words
+- `docs/agent/context.md`: 257 words
+- `docs/agent/design-conformance-report.md`: 116 words
+- `docs/agent/session-state.md`: 101 words
+- `docs/agent/token-reduction-report.md`: 100 words
 
 ## Verification Commands
 

@@ -1,0 +1,305 @@
+{
+  "status": "accepted",
+  "change_set": "CHG-20260625-001",
+  "base_architecture_hash": "sha256:545481719bb793d99ad8bf0e7e97cc321ba09c288ad87194e58a4d94b050eebb",
+  "candidate_inputs": [
+    {
+      "uc_id": "UC-030",
+      "path": "docs/use-cases/UC-030/ddd-design.md",
+      "sha256": "sha256:0828c0f76506dca7ad9f46aafad6ded283110d5fcc1a6f1ac4b09f537799d7f4"
+    },
+    {
+      "uc_id": "UC-031",
+      "path": "docs/use-cases/UC-031/ddd-design.md",
+      "sha256": "sha256:d19e18b543d70eb85ad6fc49a54e486f411a5d91c5647e73210288f3909742f3"
+    },
+    {
+      "uc_id": "UC-032",
+      "path": "docs/use-cases/UC-032/ddd-design.md",
+      "sha256": "sha256:dcc7c12c5f53098cbc55f6f99c189daf1f01735dd0c648b84ca84f6e8b334089"
+    }
+  ],
+  "coverage": [
+    {
+      "uc_id": "UC-030",
+      "accepted": true,
+      "candidate_path": "docs/use-cases/UC-030/ddd-design.md",
+      "notes": [
+        "recipient-scoped inbox query view accepted",
+        "UNREAD -> READ single-root transition accepted"
+      ]
+    },
+    {
+      "uc_id": "UC-031",
+      "accepted": true,
+      "candidate_path": "docs/use-cases/UC-031/ddd-design.md",
+      "notes": [
+        "foreign-owned selected-set rejection accepted",
+        "missing owned selection entries ignored without request failure"
+      ]
+    },
+    {
+      "uc_id": "UC-032",
+      "accepted": true,
+      "candidate_path": "docs/use-cases/UC-032/ddd-design.md",
+      "notes": [
+        "authorized sender creates exactly one unread notification",
+        "created notification must become visible in recipient inbox"
+      ]
+    }
+  ],
+  "canonical_models": {
+    "bounded_contexts": [
+      {
+        "name": "Access Control Context",
+        "responsibilities": [
+          "authenticate requester before notification operations",
+          "authorize sender role for notification creation"
+        ],
+        "owned_elements": [
+          "AuthenticationDecision",
+          "AuthorizationDecision"
+        ],
+        "provenance": [
+          "UC-030",
+          "UC-031",
+          "UC-032"
+        ]
+      },
+      {
+        "name": "Notification Management Context",
+        "responsibilities": [
+          "create unread notification",
+          "serve recipient-scoped inbox queries",
+          "apply single-notification read transition after successful detail retrieval",
+          "delete owned notifications by one, selected-set, and all-owned scopes"
+        ],
+        "aggregates": [
+          "NotificationAggregate"
+        ],
+        "provenance": [
+          "UC-030",
+          "UC-031",
+          "UC-032"
+        ]
+      }
+    ],
+    "aggregates": [
+      {
+        "name": "NotificationAggregate",
+        "bounded_context": "Notification Management Context",
+        "root": "Notification",
+        "members": [
+          {
+            "kind": "entity",
+            "name": "Notification",
+            "attributes": [
+              "notificationId: Long",
+              "recipientUserId: UserId",
+              "type: NotificationType",
+              "content: NotificationContent",
+              "sentAt: LocalDateTime",
+              "readState: NotificationReadState",
+              "sourceKey: String?"
+            ]
+          },
+          {
+            "kind": "value_object",
+            "name": "UserId",
+            "attributes": [
+              "value: String"
+            ]
+          },
+          {
+            "kind": "value_object",
+            "name": "NotificationContent",
+            "attributes": [
+              "title: String",
+              "content: String",
+              "targetUrl: String?"
+            ]
+          },
+          {
+            "kind": "value_object",
+            "name": "NotificationReadState",
+            "attributes": [
+              "value: ReadStateCode"
+            ],
+            "allowed_values": [
+              "UNREAD",
+              "READ"
+            ]
+          },
+          {
+            "kind": "value_object",
+            "name": "NotificationSelection",
+            "attributes": [
+              "notificationIds: List<Long>"
+            ],
+            "usage_scope": [
+              "UC-031"
+            ]
+          },
+          {
+            "kind": "domain_service",
+            "name": "NotificationDomainService",
+            "operations": [
+              "createUnread(UserId recipientUserId, NotificationType type, NotificationContent content, String? sourceKey)"
+            ],
+            "usage_scope": [
+              "UC-032"
+            ]
+          },
+          {
+            "kind": "domain_service",
+            "name": "NotificationDeletionPolicy",
+            "operations": [
+              "rejectIfForeignOwned(NotificationSelection selection, List<Notification> requestedExistingNotifications, UserId requesterId)",
+              "keepExistingOwned(NotificationSelection selection, List<Notification> requestedExistingNotifications, UserId requesterId)"
+            ],
+            "usage_scope": [
+              "UC-031"
+            ]
+          }
+        ],
+        "commands": [
+          "CreateNotification",
+          "GetNotificationInbox",
+          "GetUnreadNotificationInbox",
+          "GetUnreadNotificationCount",
+          "GetNotificationDetail",
+          "DeleteNotification",
+          "DeleteSelectedNotifications",
+          "DeleteAllOwnedNotifications"
+        ],
+        "events": [
+          "NotificationCreated",
+          "NotificationInboxReturned",
+          "UnreadNotificationsReturned",
+          "UnreadNotificationCountReturned",
+          "NotificationDetailReturned",
+          "NotificationReadStateChanged",
+          "NotificationDeleted",
+          "NotificationAccessRejected",
+          "NotificationDeletionRejected",
+          "NotificationCreationRejected"
+        ],
+        "states": [
+          {
+            "name": "UNREAD",
+            "meaning": "notification exists and has not yet been successfully retrieved in detail by its recipient"
+          },
+          {
+            "name": "READ",
+            "meaning": "notification exists and has been successfully retrieved in detail by its recipient"
+          }
+        ],
+        "invariants": [
+          "all query and delete effects remain within authenticated requester Recipient User ID scope",
+          "Notification Inbox is a derived recipient-scoped query view, not a separate persisted entity",
+          "inbox list is always latest-first and paginated",
+          "unread list and unread count never change NotificationReadState",
+          "successful detail retrieval changes only the retrieved notification from UNREAD to READ",
+          "valid create request persists exactly one unread notification for the specified recipient",
+          "create requires Recipient User ID, Notification type, title, and content; targetUrl is optional",
+          "single delete and selected-set delete reject the whole request when any foreign-owned notification is included",
+          "selected-set delete ignores already-missing owned notifications and deletes only remaining existing owned notifications",
+          "selected-set delete still succeeds when zero existing owned notifications remain after filtering",
+          "all-owned delete applies only to requester-owned notifications at request time",
+          "delete removes the aggregate; no persistent Deleted state is accepted in this ChangeSet"
+        ],
+        "provenance": [
+          "UC-030",
+          "UC-031",
+          "UC-032"
+        ]
+      }
+    ]
+  },
+  "resolution_log": [
+    {
+      "claim": "shared Notification aggregate ownership",
+      "status": "accepted",
+      "resolution": "UC-030, UC-031, and UC-032 share one NotificationAggregate rooted at persisted Notification",
+      "provenance": [
+        "UC-030",
+        "UC-031",
+        "UC-032"
+      ]
+    },
+    {
+      "claim": "Notification Inbox persistence model",
+      "status": "accepted",
+      "resolution": "Notification Inbox is a recipient-scoped query view, not a separate stored entity",
+      "provenance": [
+        "UC-030",
+        "UC-031",
+        "docs/design/ubiquitous-language.md"
+      ]
+    },
+    {
+      "claim": "read-state representation",
+      "status": "accepted",
+      "resolution": "baseline boolean isRead is normalized into shared NotificationReadState value object with UNREAD and READ values",
+      "provenance": [
+        "UC-030",
+        "UC-032"
+      ]
+    },
+    {
+      "claim": "NotificationContent.content optionality",
+      "status": "rejected",
+      "resolution": "shared contract requires content: String; optional content proposal from UC-030 is not retained",
+      "provenance": [
+        "UC-030",
+        "UC-032",
+        "docs/design/ubiquitous-language.md"
+      ]
+    },
+    {
+      "claim": "delete lifecycle representation",
+      "status": "accepted",
+      "resolution": "deletion removes the aggregate and does not introduce a persistent Deleted state",
+      "provenance": [
+        "UC-031"
+      ]
+    },
+    {
+      "claim": "access-control terminology split",
+      "status": "accepted",
+      "resolution": "authentication and sender-role authorization are normalized as complementary responsibilities inside Access Control Context",
+      "provenance": [
+        "UC-030",
+        "UC-031",
+        "UC-032"
+      ]
+    },
+    {
+      "claim": "sentAt shared attribute",
+      "status": "accepted",
+      "resolution": "sentAt remains part of Notification because latest-first inbox ordering depends on it",
+      "provenance": [
+        "UC-030"
+      ]
+    },
+    {
+      "claim": "sourceKey shared attribute",
+      "status": "accepted",
+      "resolution": "sourceKey remains an optional shared identifier",
+      "provenance": [
+        "UC-030",
+        "docs/design/ubiquitous-language.md"
+      ]
+    },
+    {
+      "claim": "baseline NotificationStatus",
+      "status": "deferred",
+      "resolution": "delivery-status semantics are outside the affected use-case evidence and are not added to the canonical aggregate in this stage",
+      "provenance": [
+        "UC-030",
+        "UC-032"
+      ]
+    }
+  ],
+  "blocked_conflicts": []
+}
