@@ -2,7 +2,7 @@ package org.codenbug.notification.ui.dto;
 
 import org.codenbug.notification.domain.entity.NotificationType;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,16 +16,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class NotificationCreateRequestDto {
 
-    @NotNull(message = "사용자 ID는 필수입니다")
+    @NotBlank(message = "사용자 ID는 필수입니다")
     private String userId;
 
     @NotNull(message = "알림 유형은 필수입니다")
     private NotificationType type;
 
-    @NotEmpty(message = "알림 제목은 필수입니다")
+    @NotBlank(message = "알림 제목은 필수입니다")
     private String title;
 
-    @NotEmpty(message = "알림 내용은 필수입니다")
+    @NotBlank(message = "알림 내용은 필수입니다")
     private String content;
 
     private String targetUrl;

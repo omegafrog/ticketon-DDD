@@ -75,7 +75,7 @@ public class Notification {
         this.notificationContent = Objects.requireNonNull(content, "알림 내용은 필수입니다.");
         this.isRead = false;
         this.status = NotificationStatus.PENDING;
-        this.sourceKey = sourceKey;
+        this.sourceKey = normalizeSourceKey(sourceKey);
     }
 
     public static Notification createFromLegacy(String userId, NotificationType type,
@@ -149,5 +149,13 @@ public class Notification {
 
     public String getUserIdValue() {
         return userId.getValue();
+    }
+
+    private String normalizeSourceKey(String sourceKey) {
+        if (sourceKey == null) {
+            return null;
+        }
+        String trimmed = sourceKey.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
